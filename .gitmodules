@@ -1,0 +1,9 @@
+[submodule "server/163Api"]
+	path = server/163Api
+	url = https://github.com/Binaryify/NeteaseCloudMusicApi.git
+[submodule "server/qqApi"]
+	path = server/qqApi
+	url = git@github.com:jsososo/QQMusicApi.git
+[submodule "server/mixApi"]
+	path = server/mixApi
+	url = git@github.com:jsososo/MixMusicApi.git
