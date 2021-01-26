@@ -1,7 +1,8 @@
 import { app, protocol, BrowserWindow } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
-import api from '../server/api';
+import action from './mainUtil/action';
+
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -14,8 +15,9 @@ protocol.registerSchemesAsPrivileged([
 async function createWindow() {
   // Create the browser window.
   const win = new BrowserWindow({
-    width: 800,
+    width: 900,
     height: 600,
+    titleBarStyle: 'hidden',
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
@@ -23,8 +25,16 @@ async function createWindow() {
       nodeIntegration: true,
       nodeIntegrationInWorker: true,
       webSecurity: false,
+      webviewTag: true,
     }
   })
+  win.setMenu(null);
+  win.on('close', function (e) {
+    e.preventDefault();
+    win.hide();
+  })
+
+  app.win = win;
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
@@ -50,6 +60,8 @@ app.on('activate', () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) createWindow()
+
+  app.win && app.win.show();
 })
 
 // This method will be called when Electron has finished
@@ -64,7 +76,10 @@ app.on('ready', async () => {
       console.error('Vue Devtools failed to install:', e.toString())
     }
   }
-  createWindow()
+  createWindow();
+
+  action(app);
+
 })
 
 // Exit cleanly on request from parent process in development mode.
@@ -81,5 +96,3 @@ if (isDevelopment) {
     })
   }
 }
-
-api(3000);

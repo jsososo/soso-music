@@ -1,17 +1,27 @@
 const axios = require('axios');
 const StringHelper = require('../mixApi/util/StringHelper');
-const hostMap = {
-  qq: 'http://localhost:3000/qqApi',
-  163: 'http://localhost:3000/163Api',
-}
 
 class MixRequest {
-  constructor({ req, res }) {
+  constructor({ req, res, port }) {
     const { platform } = req.query || {};
-    this.domain = hostMap[platform];
+
+    this.port = port
+    this.domain = this.hostMap[platform];
     this.req = req;
     this.res = res;
     this.request = this.request.bind(this);
+  }
+
+  get hostMap() {
+    const port = this.port;
+    return {
+      qq: `http://localhost:${port}/qqApi`,
+      163: `http://localhost:${port}/163Api`,
+    }
+  }
+
+  updateDomain(platform) {
+    this.domain = this.hostMap[platform];
   }
 
   async request(obj) {

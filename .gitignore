@@ -1,7 +1,8 @@
 .DS_Store
 node_modules
-/server/mixApi/node_modules
 /dist
+/server/mixApi/node_modules
+
 
 
 # local env files

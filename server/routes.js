@@ -125,6 +125,7 @@ module.exports = {
 	'163Api_playlist_delete': require('./163Api/module/playlist_delete.js'),
 	'163Api_playlist_desc_update': require('./163Api/module/playlist_desc_update.js'),
 	'163Api_playlist_detail': require('./163Api/module/playlist_detail.js'),
+	'163Api_playlist_detail_dynamic': require('./163Api/module/playlist_detail_dynamic.js'),
 	'163Api_playlist_highquality_tags': require('./163Api/module/playlist_highquality_tags.js'),
 	'163Api_playlist_hot': require('./163Api/module/playlist_hot.js'),
 	'163Api_playlist_mylike': require('./163Api/module/playlist_mylike.js'),

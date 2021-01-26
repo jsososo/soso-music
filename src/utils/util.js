@@ -172,8 +172,8 @@ export const handlePlayingList = {
   },
 
   playList: (arr) => {
-    const { $store, $message } = VUE_APP;
-    const { state, dispatch } = $store;
+    const { $store, $message } = window.VUE_APP;
+    const { dispatch } = $store;
     const { allSongs } = $store.state;
     const list = arr.filter((s) => allSongs[s].url);
     if (!list.length) {
@@ -202,4 +202,11 @@ export const handlePlayingList = {
     dispatch('updatePlayingList', { list: playingList.raw.filter((s) => s !== id)});
     $message.success('移出播放列表！');
   }
+}
+
+export const clearObj = (obj) => Object.keys(obj).forEach(k => delete obj[k]);
+
+export const replaceObj = (o1, o2) => {
+  clearObj(o1);
+  Object.keys(o2).forEach(k => o1[k] = o2[k]);
 }

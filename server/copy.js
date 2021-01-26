@@ -25,4 +25,4 @@ module.exports = {
 \t${Object.keys(pathMap).map((k) => `'${k}': require('${pathMap[k]}')`).join(',\n\t')}
 }
 `
-fs.writeFile(path.join(__dirname, 'routes.js'), js);
+fs.writeFileSync(path.join(__dirname, 'routes.js'), js);

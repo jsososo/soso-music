@@ -5,6 +5,8 @@
 * @params key: 想要筛选得到的值， 选填（如果未填，返回一个包含所有query信息的object）
 *
 * */
+import Num from "./num";
+
 export function getQueryFromUrl(key, search = window.location.href) {
   try {
     const sArr = search.split('?');
@@ -65,7 +67,7 @@ export function handleLyric(str, type, obj) {
         if (!s) {
           return;
         }
-        const timeKey = Number(timeArr[0] * 60000) + Number(timeArr[1]) * 1000;
+        const timeKey = Math.round(Number(timeArr[0] * 60000) + Number(timeArr[1]) * 1000);
         obj[timeKey] = obj[timeKey] || {};
         obj[timeKey][type] = s;
       });
@@ -109,3 +111,10 @@ export const numToStr = (n) => {
   }
   return n;
 };
+
+export const transUrl = (url) => {
+  const { setting } = window.$state;
+  return `http://localhost:${setting.SERVER_PORT}/trans?_=${encodeURIComponent(url)}`
+}
+
+export const timeToStr = (v = 0) => `${Num(v / 60, 0, -1)}:${Num(v % 60, 0) < 10 ? `0${Num(v % 60, 0)}` : Num(v % 60, 0)}`;

@@ -7,11 +7,14 @@ const { cookieToJson } = require('./163Api/util/index')
 const Cache = require('./qqApi/util/cache');
 const MixRequest = require('./util/mixRequest');
 const dataHandle = require('./mixApi/util/dataHandle');
+const cookieRouter = require('./route/cookie');
+const transRouter = require('./route/trans');
 const allApi = require('./routes');
 
 const app = express();
 /**/
 global.cache = new Cache();
+global.userCookie = {};
 
 // CORS & Preflight request
 // app.use((req, res, next) => {
@@ -26,6 +29,8 @@ global.cache = new Cache();
 //   }
 //   req.method === 'OPTIONS' ? res.status(204).end() : next()
 // })
+
+let port;
 
 // cookie parser
 app.use((req, res, next) => {
@@ -78,7 +83,7 @@ Object.keys(allApi).forEach((k) => {
           ? special[route]
           : `/${route}`;
 
-      app.use(`/163api${route}`, (req, res) => {
+      app.use(`/163api${route}`, (req, res, next) => {
         if (typeof req.query.cookie === 'string') {
           req.query.cookie = cookieToJson(req.query.cookie)
         }
@@ -89,6 +94,9 @@ Object.keys(allApi).forEach((k) => {
           req.body,
           req.files,
         )
+        if (req.path !== '/') {
+          return next();
+        }
 
         handler(query, request)
           .then((answer) => {
@@ -108,49 +116,69 @@ Object.keys(allApi).forEach((k) => {
       });
       break;
     case 'qqApi':
-      app.use(`/qqApi/${route}`, (req, res, next) => {
-        global.response = res;
-        global.req = req;
-        req.query = {
-          ...req.query,
-          ...req.body,
-        };
-        // qq 登录
-        let uin = (req.cookies.uin || '');
-        // login_type 2 微信登录
-        if (Number(req.cookies.login_type) === 2) {
-          uin = req.cookies.wxuin;
-        }
-        req.cookies.uin = uin.replace(/\D/g, '');
-        const callback = handler;
-        callback(req, res, next);
+      Object.keys(handler).forEach((path) => {
+        app.use(`/qqApi/${route}${path}`, (req, res, next) => {
+          const router = express.Router();
+          global.response = res;
+          global.req = req;
+          req.query = {
+            ...req.query,
+            ...req.body,
+          };
+          // qq 登录
+          let uin = (req.cookies.uin || '');
+          // login_type 2 微信登录
+          if (Number(req.cookies.login_type) === 2) {
+            uin = req.cookies.wxuin;
+          }
+          req.cookies.uin = uin.replace(/\D/g, '');
+
+          router.post('/', handler[path]);
+          router.get('/', handler[path]);
+          router(req, res, next);
+        })
       });
       break;
     case 'mixApi':
-      app.use(`/mixApi/${route}`, (req, res, next) => {
-        const router = express.Router();
-        req.query = {
-          ...req.query,
-          ...req.body,
-        };
-        req.query.platform = req.query['_p'].toLowerCase();
-        const RouterMap = handler;
-        Object.keys(RouterMap).forEach((path) => {
-          const func = (req, res, next) => RouterMap[path]({
+      Object.keys(handler).forEach((path) => {
+        app.use(`/mixApi/${route}${path}`, (req, res, next) => {
+          const router = express.Router();
+          req.query = {
+            ...req.query,
+            ...req.body,
+          };
+          req.query.platform = req.query['_p'].toLowerCase();
+          const R = new MixRequest({ req, res, port });
+          const func = (req, res, next) => handler[path]({
             req,
             res,
             next,
             dataHandle: new dataHandle(req.query.platform),
             platform: req.query.platform,
-            request: new MixRequest({ req, res }).request,
+            request: R.request,
+            R,
           });
-          router.post(path, func);
-          router.get(path, func);
-        });
-        router(req, res, next);
+          router.post('/', func);
+          router.get('/', func);
+          router(req, res, next);
+        })
       });
       break;
   }
+})
+
+app.use('/cookie', (req, res, next) => {
+  global.req = req;
+  global.res = res;
+  const router = express.Router();
+  router.get('/get', cookieRouter["/get"])
+  router(req, res, next);
+})
+
+app.use('/trans', (req, res, next) => {
+  const router = express.Router();
+  router.get('/', transRouter['/']);
+  router(req, res, next);
 })
 // 网易云接口
 // fs.readdirSync(path.join(__dirname, '163Api/module'))
@@ -248,9 +276,11 @@ Object.keys(allApi).forEach((k) => {
 // });
 
 
-const server = (port) => {
-  console.log(`listen on http://localhost:${port}`);
-  app.server = app.listen(port);
+const server = (p) => {
+  app.server && app.server.close();
+  port = p;
+  console.log(`listen on http://localhost:${p}`);
+  app.server = app.listen(p);
 }
 
 module.exports = server;
