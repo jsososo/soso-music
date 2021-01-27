@@ -10,7 +10,7 @@ const state = {
   },
   // 下载信息
   downloadInfo: {
-    count: 0,
+    count: 0, // 正在下载中的歌曲，不算 waiting 状态
   },
   // 搜索信息
   searchInfo: {
@@ -50,6 +50,8 @@ const state = {
   downloadList: Storage.get('soso_music_download', true, '[]').map((v) => {
     if (!v.finished) {
       v.finished = true;
+      v.waiting = false;
+      v.errMsg = '下载中断';
     }
     return v;
   }),
@@ -58,7 +60,7 @@ const state = {
     path: '',
     platform: '163', // 默认平台
     mode: 'default', // 模式
-    volume: 1, // 音量
+    volume: 100, // 音量
     orderType: 'suiji',
     tab: 'default',
     DOWN_SIZE: 'flac', // 下载格式

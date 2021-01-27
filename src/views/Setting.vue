@@ -11,19 +11,19 @@
             <el-button v-if="serverPort !== setting.SERVER_PORT" size="small" class="ml_15" @click="savePort">重启</el-button>
           </div>
         </div>
-        <div class="input-line">
-          <div class="input-label">播放格式：</div>
-          <div class="input-content">
-            <el-radio-group v-model="setting.DOWN_SIZE" size="small">
-              <el-radio-button label="128">128k</el-radio-button>
-              <el-radio-button label="320">320k</el-radio-button>
-              <el-radio-button label="flac">无损</el-radio-button>
-            </el-radio-group>
-            <div class="explain">
-              网易云非会员可能无法播放无损格式，任何无法播放对应格式的歌曲会向下获取音质
-            </div>
-          </div>
-        </div>
+<!--        <div class="input-line">-->
+<!--          <div class="input-label">播放格式：</div>-->
+<!--          <div class="input-content">-->
+<!--            <el-radio-group v-model="setting.DOWN_SIZE" size="small">-->
+<!--              <el-radio-button label="128">128k</el-radio-button>-->
+<!--              <el-radio-button label="320">320k</el-radio-button>-->
+<!--              <el-radio-button label="flac">无损</el-radio-button>-->
+<!--            </el-radio-group>-->
+<!--            <div class="explain">-->
+<!--              网易云非会员可能无法播放无损格式，任何无法播放对应格式的歌曲会向下获取音质-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
       </div>
       <div v-if="setting.tab === 'download'">
         <div class="input-line">

@@ -12,7 +12,13 @@
       <div class="pt_20 about-content">
         <div v-if="type === 'about'">
           <div>
-            项目基于 vue3 + electron + express
+            <span @click="jumpOutside('https://github.com/jsososo/soso-music')">
+              <i class="iconfont icon-git ft_20 pr_10" />
+              <b class="link-span ft_20">soso music</b>
+            </span>
+            <div>
+              项目基于 vue3 + electron + express
+            </div>
           </div>
           <div>
             前端改造自：
@@ -57,6 +63,7 @@
   import PageTitle from "../components/PageTitle";
   import Tab from "../components/Tab";
   import { ref } from 'vue';
+  import { shell } from 'electron';
 
   export default {
     name: "About",
@@ -106,9 +113,7 @@
           '音频可视化',
           '。。。'
         ],
-        jumpOutside(url) {
-          console.log(url)
-        },
+        jumpOutside: (url) => shell.openExternal(url),
       }
     }
   }

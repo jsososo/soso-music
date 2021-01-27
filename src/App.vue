@@ -37,7 +37,7 @@ import InfoBox from "./components/InfoBox";
 import request from "./utils/request";
 import {handlePlayLists, queryPlayListDetail, updatePlaying, cutSong, initLogin} from "./utils/store/action";
 import { ipcRenderer } from 'electron'
-// import Num from './utils/num';
+import { ElMessage } from 'element-plus';
 
 export default {
   name: 'App',
@@ -94,18 +94,14 @@ export default {
         codes.push(keyCode);
       }
 
-      volume *= 100;
-
       switch (codes.join('-')) {
         case codeMap.VOLUME_DOWN:
-          volume = Math.max(volume - 5, 0);
-          // this.changeVolume(volume);
-          // this.$message.info(`音量调至${Num(volume, 0)}%`);
+          state.setting.volume = Math.max(volume - 5, 0);
+          ElMessage.info(`音量调至${state.setting.volume}`);
           return false;
         case codeMap.VOLUME_UP:
-          volume = Math.min(volume + 5, 100);
-          // this.changeVolume(volume);
-          // this.$message.info(`音量调至${Num(volume, 0)}%`);
+          state.setting.volume = Math.min(volume + 5, 100);
+          ElMessage.info(`音量调至${state.setting.volume}`);
           return false;
         case codeMap.PLAY_PREV:
           cutSong('prev');
@@ -125,7 +121,6 @@ export default {
           }
           return false;
       }
-      state.setting.volume = volume;
     };
     window.onkeypress = window.onkeydown;
     // window.onkeyup = ({ keyCode }) => keys = keys.filter((c) => c !== keyCode);

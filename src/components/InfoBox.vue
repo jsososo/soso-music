@@ -29,6 +29,7 @@
         </div>
       </div>
     </div>
+    <slot />
   </div>
 </template>
 
@@ -72,6 +73,9 @@
 
 <style scoped lang="scss">
   .info-box-container {
+    position: relative;
+    font-size: 0;
+
     .pic-container {
       display: inline-block;
       background: #fff7;

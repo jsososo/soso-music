@@ -21,7 +21,7 @@
               <!--            </el-tooltip>-->
               <span v-if="listInfo.creator">By <span class="creator-name">{{listInfo.creator.nick}}</span></span>
             </div>
-            <div class="list-desc" v-html="listInfo.desc" />
+            <div class="list-desc" v-html="listInfo.desc"/>
           </div>
         </div>
         <div class="search-container" ref="searchDom">
@@ -38,11 +38,11 @@
                 <i class="iconfont icon-list-add pl_10 pr_10"/>
               </div>
             </el-tooltip>
-            <!--          <el-tooltip class="item" effect="dark" content="下载" placement="top">-->
-            <!--            <div @click="downShow" class="inline-block mt_15 pt_5 pointer play" style="line-height: 20px;">-->
-            <!--              <i class="iconfont icon-download pl_10 pr_10"/>-->
-            <!--            </div>-->
-            <!--          </el-tooltip>-->
+            <el-tooltip class="item" effect="dark" content="下载" placement="top">
+              <div @click="downShow" class="inline-block pt_5 pointer play" style="line-height: 20px;">
+                <i class="iconfont icon-download pl_10 pr_10"/>
+              </div>
+            </el-tooltip>
           </div>
         </div>
       </div>
@@ -66,38 +66,36 @@
           <!--        </el-tooltip>-->
           <span class="song-artist">{{(allSongs[s].ar || []).map((a) => a.name).join('/')}}</span>
           <div class="icon-container">
-<!--            <el-tooltip class="item" effect="dark" content="喜欢" placement="top">-->
-<!--              <i-->
-<!--                :class="`operation-icon operation-icon-1 iconfont icon-${true ? 'like' : 'unlike'}`"-->
-<!--              />-->
-<!--            </el-tooltip>-->
-<!--            <el-tooltip v-if="allSongs[s].from !== 'migu'"-->
-<!--                        class="item" effect="dark" content="添加到歌单" placement="top">-->
-<!--              <i-->
-<!--                @click="playlistTracks(s, listId, 'add', 'ADD_SONG_2_LIST', allSongs[s].platform)"-->
-<!--                class="operation-icon operation-icon-2 iconfont icon-add"-->
-<!--              />-->
-<!--            </el-tooltip>-->
+            <!--            <el-tooltip class="item" effect="dark" content="喜欢" placement="top">-->
+            <!--              <i-->
+            <!--                :class="`operation-icon operation-icon-1 iconfont icon-${true ? 'like' : 'unlike'}`"-->
+            <!--              />-->
+            <!--            </el-tooltip>-->
+            <!--            <el-tooltip v-if="allSongs[s].from !== 'migu'"-->
+            <!--                        class="item" effect="dark" content="添加到歌单" placement="top">-->
+            <!--              <i-->
+            <!--                @click="playlistTracks(s, listId, 'add', 'ADD_SONG_2_LIST', allSongs[s].platform)"-->
+            <!--                class="operation-icon operation-icon-2 iconfont icon-add"-->
+            <!--              />-->
+            <!--            </el-tooltip>-->
             <el-tooltip v-if="playingList.map[s]" class="item" effect="dark" content="移出播放列表" placement="top">
               <i
                 @click="removeFromPlayinig([s])"
                 class="operation-icon operation-icon-3 iconfont icon-list-reomve"
               />
             </el-tooltip>
-            <el-tooltip v-if="allSongs[s].url && !playingList.map[s]" class="item" effect="dark" content="加入播放列表"
-                        placement="top">
+            <el-tooltip v-if="allSongs[s].url && !playingList.map[s]" class="item" effect="dark" content="加入播放列表" placement="top">
               <i
                 @click="addToPlaying([s])"
                 class="operation-icon operation-icon-3 iconfont icon-list-add"
               />
             </el-tooltip>
-            <!--          <el-tooltip class="item" effect="dark" content="下载" placement="top">-->
-            <!--            <i-->
-            <!--              v-if="!!allSongs[s].url"-->
-            <!--              @click="download(s)"-->
-            <!--              class="operation-icon operation-icon-4 iconfont icon-download"-->
-            <!--            />-->
-            <!--          </el-tooltip>-->
+            <el-tooltip v-if="!!allSongs[s].url" class="item" effect="dark" content="下载" placement="top">
+              <i
+                @click="download(s)"
+                class="operation-icon operation-icon-4 iconfont icon-download"
+              />
+            </el-tooltip>
             <!--          <el-tooltip class="item" effect="dark" content="从歌单中删除" placement="top">-->
             <!--            <i-->
             <!--              @click="playlistTracks(s, aId, 'del', 'DEL_SONG')"-->
@@ -122,8 +120,9 @@
 <script>
   import {changeUrlQuery} from "../utils/stringHelper";
   import {mixInject} from "../utils/store/state";
-  import {ref, computed, watch} from 'vue';
-  import {updatePlaying, updatePlayingList} from "../utils/store/action";
+  import {ref, computed, watch, nextTick} from 'vue';
+  import {mixSongHandle, updatePlaying, updatePlayingList, download} from "../utils/store/action";
+  import {ElMessage, ElMessageBox} from 'element-plus';
 
   export default {
     name: "PlayListInfo",
@@ -194,6 +193,9 @@
 
       const getShowIndex = () => {
         const dom = containerDom.value;
+        if (!dom) {
+          return nextTick(getShowIndex)
+        }
         const smallHeight = Math.max(dom.scrollTop - 500, 0);
         smallIndex.value = Math.floor(smallHeight / 71);
         const bigHeight = dom.clientHeight + dom.scrollTop + 300;
@@ -222,14 +224,31 @@
 
         // 播放展示的歌曲
         playListShow(force) {
-          const {allSongs, playerStatus} = state;
+          const {allSongs, playerStatus, playNow} = state;
           const aId = list.value.find((s) => allSongs[s].url);
           if (!aId) {
-            return this.$message.error('无可播放歌曲');
+            return ElMessage.error('无可播放歌曲');
           }
-          updatePlaying(aId, list, force)
+          updatePlayingList(list.value, force);
+          force ?
+            (playNow.aId = aId) :
+            ElMessage.success('已添加至播放列表');
           playerStatus.playing = true;
-          !force && this.$message.success('已添加至播放列表');
+        },
+
+        downShow() {
+          const {allSongs} = state;
+          const ids = list.value.filter((s) => allSongs[s].url);
+          if (!ids.length) {
+            return ElMessage.info('没有歌呢');
+          }
+          ElMessageBox.confirm(`批量下载${ids.length}首歌曲？`, '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            ids.forEach((id) => download(id));
+          });
         },
 
         // 清空正在播放列表
@@ -248,15 +267,7 @@
           state.playerStatus.playing = true;
         },
 
-        addToPlaying(list) {
-          window.event.stopPropagation();
-          updatePlayingList(list);
-        },
-
-        removeFromPlayinig(list) {
-          window.event.stopPropagation();
-          updatePlayingList(state.playingList.raw.filter((id) => id.indexOf(list) > -1), true)
-        }
+        ...mixSongHandle,
       }
     },
     methods: {

@@ -13,7 +13,7 @@
           <div class="song-name">{{item.filename}}</div>
         </div>
         <div class="down-status">
-          <span class="color-red" v-if="item.failed">{{item.errMsg}}</span>
+          <span class="color-red" v-if="item.errMsg">{{item.errMsg}}</span>
           <span v-if="!item.finished && !item.waiting">{{item.progress}}%</span>
           <span v-if="item.waiting">waiting...</span>
         </div>

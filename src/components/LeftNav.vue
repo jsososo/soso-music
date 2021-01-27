@@ -26,7 +26,7 @@
     </div>
     <div class="nav-line">
       <a href="#/download">
-        <el-badge :value="downloadInfo.count" :hidden="downloadInfo.count === 0" class="item" >
+        <el-badge :value="downCount" :hidden="!downCount" class="item" >
           <i class="iconfont icon-down" />
         </el-badge>
         <div class="icon-text">下载</div>
@@ -37,12 +37,15 @@
 
 <script>
   import { mixInject } from "../utils/store/state";
+  import { computed } from 'vue';
 
   export default {
     name: "PageLeft",
     setup() {
+      const state = mixInject(['user', 'downloadList'])
       return {
-        ...mixInject(['user', 'downloadInfo'])
+        ...state,
+        downCount: computed(() => state.downloadList.filter((d) => !d.finished).length),
       }
     },
     methods: {

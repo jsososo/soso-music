@@ -1,5 +1,5 @@
 import { watch, toRaw } from 'vue';
-import {getLyric, search, updatePlayingList} from './action';
+import {getLyric, search, updatePlayingList, downReq} from './action';
 import Storage from "../Storage";
 import { ipcRenderer } from 'electron';
 import { ElMessage } from "element-plus";
@@ -15,13 +15,16 @@ export const allWatch = (state) => {
     playerStatus,
     setting,
     downloadList,
+    downloadInfo,
   } = state;
 
   // 设置
   watch(() => Object.values(setting), () => Storage.set('soso_music_setting', toRaw(setting), true))
 
+  watch(() => setting.volume, (v) => playerStatus.pDom && (playerStatus.pDom.volume = v / 100));
+
   // 搜索
-  watch(() => [searchInfo.keyword, searchInfo.type, searchInfo.pageNo, searchInfo.platform], async (
+  watch(() => [searchInfo.keyword, searchInfo.type, searchInfo.pageNo], async (
     newVal,
     oldVal
   ) => {
@@ -82,6 +85,9 @@ export const allWatch = (state) => {
       pDom && pDom.pause();
     }
   })
+
+  // 当正在下载的歌曲小于3，就继续下载
+  watch(() => downloadInfo.count, (v) => (v < 3) && downReq(downloadList.filter((v) => v.waiting).pop()))
 
   // 更新后端端口
   watch(() => setting.SERVER_PORT, (v) => ipcRenderer.send('UPDATE_SERVER_POINT', v));

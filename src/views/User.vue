@@ -33,7 +33,12 @@
             { text: u.nick, className: 'text-title' },
             { text: u.desc, className: 'text-small' },
           ]"
-        />
+        >
+          <div class="log-out-btn" @click="logOut">
+            <i class="iconfont icon-logout" />
+            <span class="pl_5">退出</span>
+          </div>
+        </info-box>
         <div class="page-right-container">
           <playlist :list="u.playlist || []" />
         </div>
@@ -51,6 +56,7 @@
   import {get163LoginStatus, getQQLoginStatus, getUserList} from "../utils/store/action";
   import InfoBox from "../components/InfoBox";
   import Playlist from "../components/list/playlist";
+  import docCookie from '../utils/cookie';
 
   export default {
     name: "User",
@@ -86,7 +92,6 @@
               .then(res => console.log('css ', res))
             webView.value.executeJavaScript('document.cookie')
               .then(cookie => {
-                console.log(cookie);
                 return cookie
               })
               .then(cookie => getQQLoginStatus(cookie))
@@ -135,13 +140,23 @@
 
           res && get163LoginStatus();
         },
+
+        async logOut() {
+          const { platform } = setting;
+          switch (platform) {
+            case '163':
+              await request('163_LOGOUT');
+              break;
+            case 'qq':
+              setting.oldQmKeyst = docCookie.getItem('qm_keyst');
+              docCookie.removeItem('qm_keyst');
+              break;
+          }
+          user[platform] = {};
+
+        },
       }
     },
-    methods: {
-      updateDownloadInfo() {
-        this.downloadInfo.count += 1;
-      }
-    }
   }
 </script>
 
@@ -265,6 +280,29 @@
     }
 
     .user-info {
+      .log-out-btn {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        line-height: 24px;
+        font-size: 12px;
+        padding: 0 5px;
+        background: #0003;
+        display: inline-block;
+        color: #fff;
+        cursor: pointer;
+        transition: 0.3s;
+
+
+        &:hover {
+          color: $red;
+          background: #0006;
+        }
+
+        .iconfont {
+          font-size: 12px;
+        }
+      }
       .right-container {
 
       }

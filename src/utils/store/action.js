@@ -8,12 +8,6 @@ import Id3 from "browser-id3-writer";
 import timer from "../timer";
 import docCookie from '../cookie';
 
-export const updateSetting = (setting, obj) => {
-  Object.keys(obj).forEach(k => {
-    setting[k] = obj[k];
-  })
-}
-
 // 更新歌曲信息，有链接的走这边，会顺带更新播放列表
 export const updateSongInfo = (songInfo) => {
   const { allSongs, playingList, playNow } = window.$state;
@@ -197,7 +191,8 @@ export const queryPlayListDetail = async (aId) => {
 }
 
 // 搜索
-export const search = async ({ keyword: key, type, platform: _p, pageNo, pageSize }) => {
+export const search = async ({ keyword: key, type, pageNo, pageSize }) => {
+  const _p = window.$state.setting.platform;
   const { data: { list, total }} = await request({
     api: 'SEARCH',
     data: { key, type, _p, pageSize, pageNo },
@@ -393,6 +388,7 @@ export const get163LoginStatus = async () => {
 // qq 登录状态检查
 export const getQQLoginStatus = async (cookie = document.cookie) => {
   const cookieObj = {};
+  const { setting, user } = window.$state;
 
   if (typeof cookie === 'string') {
     cookie.split(';').forEach((v) => {
@@ -415,11 +411,10 @@ export const getQQLoginStatus = async (cookie = document.cookie) => {
   Object.keys(cookieObj).forEach((k) => !docCookie.hasItem(k) && docCookie.setItem(k, cookieObj[k], 86400));
   const result = cookieObj['qm_keyst'];
 
-  if (!result) {
+  if (!result || result === setting.oldQmKeyst) {
     return false;
   }
 
-  const { setting, user } = window.$state;
   setting.qCookie = cookie;
   user.qq.id = uin;
   user.qq.logined = true;
@@ -495,15 +490,11 @@ const downLyric = async (info) => {
     rawTrans = info.rawTrans;
   }
 
-  console.log(info)
-
-
   if (!rawLyric) {
     return false;
   }
 
   let lyric = rawLyric;
-
 
   if (setting.DOWN_TRANS && rawTrans) {
     const lyricArr = lyric.split('\n');
@@ -520,14 +511,18 @@ const downLyric = async (info) => {
     lyric = result.join('\n');
   }
 
-  console.log(lyric);
   setTimeout(() => {
     Download(lyric, getDownName(info, 'lrc'))
   }, 3000)
 }
 
-const downReq = async (info) => {
-  const { downloadList, setting } = window.$state;
+// 下载歌曲，并把同时下载的数量控制在3
+export const downReq = async (info) => {
+  const { downloadList, setting, downloadInfo } = window.$state;
+  if (!info || downloadInfo.count >= 3) {
+    return;
+  }
+  downloadInfo.count += 1;
   const { dUrl, filename, name, ar, al, songEndType } = info;
   let picData;
   const getDInfo = () => downloadList.find((v) => v.dId === info.dId);
@@ -555,6 +550,7 @@ const downReq = async (info) => {
   }
 
   if (!data) {
+    downloadInfo.count -= 1;
     return getDInfo().finished = true;
   }
 
@@ -581,9 +577,11 @@ const downReq = async (info) => {
   getDInfo().finished = true;
   getDInfo().successed = true;
   setting.DOWN_LYRIC && downLyric(info);
+  downloadInfo.count -= 1;
 }
 
 export const download = async (aId, info) => {
+  window.event && window.event.stopPropagation();
   const { allSongs, downloadList } = window.$state;
   const s = info || allSongs[aId];
   const { br, songEndType, url } = await getSingleUrl(aId, 'download');
@@ -592,6 +590,7 @@ export const download = async (aId, info) => {
     ...s,
     waiting: true,
     filename: getDownName(s, songEndType),
+    lyric: undefined,
     progress: 0,
     finished: false,
     successed: false,
@@ -600,10 +599,20 @@ export const download = async (aId, info) => {
     dId: `${aId}${(new Date().valueOf()).toString(36)}`
   }
   downloadList.unshift(dInfo);
+  // 如果下载列表本地存储最大 2000
+  (downloadList.length > 2000) && downloadList.pop();
   downReq(dInfo);
-
 }
 
 export const mixSongHandle = {
   download,
+  addToPlaying(list) {
+    window.event.stopPropagation();
+    updatePlayingList(list);
+  },
+  removeFromPlayinig(list) {
+    console.log(list);
+    window.event.stopPropagation();
+    updatePlayingList(window.$state.playingList.raw.filter((id) => id.indexOf(list) === -1), true)
+  }
 }

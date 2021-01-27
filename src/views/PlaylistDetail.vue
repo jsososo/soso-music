@@ -23,11 +23,11 @@
       PlaylistInfo,
     },
     setup() {
-      const state = mixInject(['setting', 'allList'])
+      const state = mixInject(['setting', 'allList', 'playingList'])
       const route = useRoute();
 
       const [platform, id, listInfo] = [ref(''), ref(''), reactive({})];
-      const updateRouter = async (aId) => {
+      const updateRouter = async ([aId, trueList]) => {
         if (!aId) {
           return;
         }
@@ -36,6 +36,7 @@
         [platform.value, id.value] = idArr;
         switch (id.value) {
           case 'playing':
+            replaceObj(listInfo, { list: trueList, aId: '_playing' })
             break;
           default: {
             const data = await queryPlayListDetail(aId);
@@ -44,10 +45,10 @@
           }
         }
       }
-      updateRouter(route.query.aId)
+      updateRouter([route.query.aId, state.playingList.trueList])
 
 
-      watch(() => route.query.aId, updateRouter);
+      watch(() => [route.query.aId, state.playingList.trueList], updateRouter);
 
       return {
         ...state,

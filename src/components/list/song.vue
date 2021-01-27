@@ -26,12 +26,12 @@
         <div class="song-name">
           {{allSongs[s].name}}
 
-          <a
-            :href="changeUrlQuery({ id: allSongs[s].mvId, from: allSongs[s].platform }, '#/mv', false)"
-            class="inline-block ml_5 iconfont icon-mv"
-            style="font-size: 14px;font-weight: 100"
-            v-if="showCover && allSongs[s].mvId"
-          />
+<!--          <a-->
+<!--            :href="changeUrlQuery({ id: allSongs[s].mvId, from: allSongs[s].platform }, '#/mv', false)"-->
+<!--            class="inline-block ml_5 iconfont icon-mv"-->
+<!--            style="font-size: 14px;font-weight: 100"-->
+<!--            v-if="showCover && allSongs[s].mvId"-->
+<!--          />-->
         </div>
         <div>
           <div class="song-ar">
@@ -43,24 +43,24 @@
             {{allSongs[s].ar.map((a) => a.name).join('/')}}
           </div>
           <div class="song-operation">
-            <i
-              v-if="favSongMap[allSongs[s].platform]"
-              @click="likeMusic(s)"
-              :class="`operation-icon operation-icon-1 iconfont icon-${Boolean(favSongMap[allSongs[s].platform][s]) ? 'like' : 'unlike'}`"
-            />
-            <i
-              v-if="allSongs[s].platform !== 'migu'"
-              @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST')"
-              class="operation-icon operation-icon-2 iconfont icon-add"
-            />
+<!--            <i-->
+<!--              v-if="favSongMap[allSongs[s].platform]"-->
+<!--              @click="likeMusic(s)"-->
+<!--              :class="`operation-icon operation-icon-1 iconfont icon-${Boolean(favSongMap[allSongs[s].platform][s]) ? 'like' : 'unlike'}`"-->
+<!--            />-->
+<!--            <i-->
+<!--              v-if="allSongs[s].platform !== 'migu'"-->
+<!--              @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST')"-->
+<!--              class="operation-icon operation-icon-2 iconfont icon-add"-->
+<!--            />-->
             <i
               v-if="!!allSongs[s].url && playingList.map[s]"
-              @click="removePlaying(s)"
+              @click="removeFromPlayinig([s])"
               class="operation-icon operation-icon-3 iconfont icon-list-reomve"
             />
             <i
               v-if="!!allSongs[s].url && !playingList.map[s]"
-              @click="addPlaying(s)"
+              @click="addToPlaying([s])"
               class="operation-icon operation-icon-3 iconfont icon-list-add"
             />
             <i

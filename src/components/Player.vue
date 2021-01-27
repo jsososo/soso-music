@@ -1,10 +1,10 @@
 <template>
   <div class="main-player-container">
-    <div class="p-bg" />
+    <div class="p-bg"/>
     <!-- 播放，上一首、下一首进度 -->
     <div v-if="pDom" class="control-btn">
       <div class="inline-block">
-        <i class="icon-shangyishou1 iconfont" @click="cutSong('prev')" />
+        <i class="icon-shangyishou1 iconfont" @click="cutSong('prev')"/>
       </div>
       <div class="inline-block">
         <i
@@ -13,14 +13,14 @@
         />
       </div>
       <div class="inline-block">
-        <i class="icon-xiayishou1 iconfont" @click="cutSong('next')" />
+        <i class="icon-xiayishou1 iconfont" @click="cutSong('next')"/>
       </div>
     </div>
 
     <!-- 歌曲信息 -->
     <div class="song-info" v-if="pDom">
       <span class="player-song-title pointer" @click="changeUrlQuery({}, '#/')">
-        <i class="el-icon-loading mr_10" v-if="playerStatus.loading" />
+        <i class="el-icon-loading mr_10" v-if="playerStatus.loading"/>
         {{playNow.name}}
       </span>
       <div class="ar-container">
@@ -64,102 +64,140 @@
       controls
       @canplaythrough="canPlayThrough"
       @timeupdate="({ target }) => playerStatus.currentTime = target.currentTime"
-      @ended="cutSong('next')"
+      @ended="playEnd"
     />
 
     <div class="control-btn opt-btn" v-if="playNow.url">
+      <!-- 音量控制 -->
+      <div class="volume-control" @mouseleave="showVolume = false">
+        <div v-if="showVolume" class="volume-slider-container" @mouseleave="showVolume = false"
+             @mouseover="showVolume = true">
+          <div class="volume-slider">
+            <el-slider
+              v-model="setting.volume"
+              :vertical="true"
+              height="80px"
+              :max="100"/>
+          </div>
+        </div>
+        <i class="iconfont icon-volume ml_15 pd_5 ft_18" @mouseover="showVolume = true"/>
+      </div>
+      <!-- 播放顺序 -->
+      <div class="order-control" @mouseleave="showOrder = false">
+        <div
+          v-if="showOrder"
+          class="order-list-container"
+          @mouseleave="showOrder = false"
+          @mouseover="showOrder = true"
+        >
+          <div class="order-list">
+            <div
+              v-for="key in orderList"
+              :key="`order-${key}`"
+              @click="setting.orderType = key"
+            >
+              <i :class="`ft_18 iconfont icon-${key}`" />
+            </div>
+          </div>
+        </div>
+        <div class="now-order-type" @mouseover="showOrder = true">
+          <i :class="`ft_18 iconfont icon-${setting.orderType}`" />
+        </div>
+      </div>
       <!--下载-->
       <el-tooltip class="item" effect="dark" content="下载" placement="top">
-        <div class="inline-block ml_5 pd_5">
-            <span @click="download(playNow.aId)">
-              <i class="iconfont icon-download ft_16 pointer" />
-            </span>
+        <div class="inline-block pd_5">
+          <span @click="download(playNow.aId)">
+            <i class="iconfont icon-download ft_16 pointer" />
+          </span>
+        </div>
+      </el-tooltip>
+    </div>
+
+    <div class="control-btn opt-btn right-control">
+      <el-tooltip class="item" effect="dark" content="正在播放" placement="top">
+        <div @click="changeUrlQuery({ aId: 'playing' }, '#/playlist/detail')" class="inline-block ml_5 pd_5">
+          <span>
+            <i class="iconfont icon-list ft_16 pointer" />
+          </span>
         </div>
       </el-tooltip>
     </div>
 
     <!-- 音量、播放顺序、列表等控制 -->
-<!--    <div class="other-control inline-block">-->
-<!--      &lt;!&ndash; 音量控制 &ndash;&gt;-->
-<!--      <div class="volume-control"  @mouseleave="showVolume = false">-->
-<!--        <div v-if="showVolume" class="volume-slider-container" @mouseleave="showVolume = false" @mouseover="showVolume = true">-->
-<!--          <div class="volume-slider" >-->
-<!--            <el-slider-->
-<!--              v-model="volume"-->
-<!--              @input="changeVolume"-->
-<!--              :vertical="true"-->
-<!--              height="80px"-->
-<!--              :max="100"/>-->
-<!--          </div>-->
-<!--        </div>-->
-<!--        <i class="iconfont icon-volume" @mouseover="showVolume = true" />-->
-<!--      </div>-->
-<!--      &lt;!&ndash; 播放顺序 &ndash;&gt;-->
-<!--      <div class="order-control"  @mouseleave="showOrder = false">-->
-<!--        <div v-if="showOrder" class="order-list-container" @mouseleave="showOrder = false" @mouseover="showOrder = true">-->
-<!--          <div class="order-list">-->
-<!--            <div v-for="key in orderList" v-if="orderType !== key" :key="`order-${key}`" @click="changeOrderType(key)">-->
-<!--              <i :class="`iconfont icon-${key}`" />-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </div>-->
-<!--        <div class="now-order-type" @mouseover="showOrder = true" >-->
-<!--          <i :class="`iconfont icon-${orderType}`" />-->
-<!--        </div>-->
-<!--      </div>-->
+    <!--    <div class="other-control inline-block">-->
+    <!--      &lt;!&ndash; 音量控制 &ndash;&gt;-->
+    <!--      <div class="volume-control"  @mouseleave="showVolume = false">-->
+    <!--        <div v-if="showVolume" class="volume-slider-container" @mouseleave="showVolume = false" @mouseover="showVolume = true">-->
+    <!--          <div class="volume-slider" >-->
+    <!--            <el-slider-->
+    <!--              v-model="volume"-->
+    <!--              @input="changeVolume"-->
+    <!--              :vertical="true"-->
+    <!--              height="80px"-->
+    <!--              :max="100"/>-->
+    <!--          </div>-->
+    <!--        </div>-->
+    <!--        <i class="iconfont icon-volume" @mouseover="showVolume = true" />-->
+    <!--      </div>-->
+    <!--      &lt;!&ndash; 播放顺序 &ndash;&gt;-->
+    <!--      <div class="order-control"  @mouseleave="showOrder = false">-->
+    <!--        <div v-if="showOrder" class="order-list-container" @mouseleave="showOrder = false" @mouseover="showOrder = true">-->
+    <!--          <div class="order-list">-->
+    <!--            <div v-for="key in orderList" v-if="orderType !== key" :key="`order-${key}`" @click="changeOrderType(key)">-->
+    <!--              <i :class="`iconfont icon-${key}`" />-->
+    <!--            </div>-->
+    <!--          </div>-->
+    <!--        </div>-->
+    <!--        <div class="now-order-type" @mouseover="showOrder = true" >-->
+    <!--          <i :class="`iconfont icon-${orderType}`" />-->
+    <!--        </div>-->
+    <!--      </div>-->
 
-<!--      &lt;!&ndash; 添加到歌单 &ndash;&gt;-->
-<!--      <el-tooltip class="item" effect="dark" content="添加到歌单" placement="top">-->
-<!--        <div class="inline-block ml_5 pd_5" v-if="playNow.platform !== 'migu'">-->
-<!--            <span @click="playlistTracks(playNow.aId, 'add', 'ADD_SONG_2_LIST')">-->
-<!--              <i class="iconfont icon-add ft_16 pointer" />-->
-<!--            </span>-->
-<!--        </div>-->
-<!--      </el-tooltip>-->
+    <!--      &lt;!&ndash; 添加到歌单 &ndash;&gt;-->
+    <!--      <el-tooltip class="item" effect="dark" content="添加到歌单" placement="top">-->
+    <!--        <div class="inline-block ml_5 pd_5" v-if="playNow.platform !== 'migu'">-->
+    <!--            <span @click="playlistTracks(playNow.aId, 'add', 'ADD_SONG_2_LIST')">-->
+    <!--              <i class="iconfont icon-add ft_16 pointer" />-->
+    <!--            </span>-->
+    <!--        </div>-->
+    <!--      </el-tooltip>-->
 
-<!--      <input id="cp-share-input" :value="changeUrlQuery({ shareId: playNow.id, from: playNow.platform, shareCid: playNow.cid }, 'http://music.jsososo.com/#/', false)">-->
+    <!--      <input id="cp-share-input" :value="changeUrlQuery({ shareId: playNow.id, from: playNow.platform, shareCid: playNow.cid }, 'http://music.jsososo.com/#/', false)">-->
 
-<!--      <el-tooltip class="item" effect="dark" content="正在播放" placement="top">-->
-<!--        <div @click="goTo('#/playlist/detail?id=playing')" class="inline-block ml_5 pd_5">-->
-<!--            <span>-->
-<!--              <i class="iconfont icon-list ft_16 pointer" />-->
-<!--            </span>-->
-<!--        </div>-->
-<!--      </el-tooltip>-->
-
-<!--      &lt;!&ndash; 更多 &ndash;&gt;-->
-<!--      <div class="more-control"  @mouseleave="showMore = false">-->
-<!--        <div v-if="showMore" class="more-list-container" @mouseleave="showMore = false" @mouseover="showMore = true">-->
-<!--          <div class="more-list">-->
-<!--            <div v-for="more in moreList" @click="handleClickMore(more.key)" :key="`more-key-${more.key}`">-->
-<!--              <i :class="`iconfont icon-${more.key}`" />-->
-<!--              <span style="padding-left: 5px;">{{more.text}}</span>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </div>-->
-<!--        <div class="ml_10" @mouseover="showMore = true" >-->
-<!--          <i class="iconfont icon-more" />-->
-<!--        </div>-->
-<!--        <div class="rate-slider" v-if="showRateSlider" @mouseleave="showRateSlider = false">-->
-<!--          <el-slider-->
-<!--            @input="(v) => playerDom.playbackRate = v"-->
-<!--            v-model="rate"-->
-<!--            :max="3"-->
-<!--            :min="0.3"-->
-<!--            :step="0.1"-->
-<!--          />-->
-<!--        </div>-->
-<!--      </div>-->
-<!--      -->
-<!--    </div>-->
+    <!--      &lt;!&ndash; 更多 &ndash;&gt;-->
+    <!--      <div class="more-control"  @mouseleave="showMore = false">-->
+    <!--        <div v-if="showMore" class="more-list-container" @mouseleave="showMore = false" @mouseover="showMore = true">-->
+    <!--          <div class="more-list">-->
+    <!--            <div v-for="more in moreList" @click="handleClickMore(more.key)" :key="`more-key-${more.key}`">-->
+    <!--              <i :class="`iconfont icon-${more.key}`" />-->
+    <!--              <span style="padding-left: 5px;">{{more.text}}</span>-->
+    <!--            </div>-->
+    <!--          </div>-->
+    <!--        </div>-->
+    <!--        <div class="ml_10" @mouseover="showMore = true" >-->
+    <!--          <i class="iconfont icon-more" />-->
+    <!--        </div>-->
+    <!--        <div class="rate-slider" v-if="showRateSlider" @mouseleave="showRateSlider = false">-->
+    <!--          <el-slider-->
+    <!--            @input="(v) => playerDom.playbackRate = v"-->
+    <!--            v-model="rate"-->
+    <!--            :max="3"-->
+    <!--            :min="0.3"-->
+    <!--            :step="0.1"-->
+    <!--          />-->
+    <!--        </div>-->
+    <!--      </div>-->
+    <!--      -->
+    <!--    </div>-->
   </div>
 </template>
 
 <script>
   import {mixInject} from "../utils/store/state";
   import {cutSong, mixSongHandle} from "../utils/store/action";
-  import { changeUrlQuery, transUrl, timeToStr } from '../utils/stringHelper';
-  import { ref } from 'vue';
+  import {changeUrlQuery, transUrl, timeToStr} from '../utils/stringHelper';
+  import {ref, computed} from 'vue';
 
   export default {
     name: "Player",
@@ -180,13 +218,24 @@
       return {
         ...state,
 
+        showVolume: ref(false),
+        showOrder: ref(false),
+        orderList: computed(() => ['suiji', 'liebiao', 'danquxunhuan'].filter((k) => k !== state.setting.orderType)),
+
         pDom,
 
         // 加载完成
-        canPlayThrough: ({ target }) => {
+        canPlayThrough: ({target}) => {
           state.playerStatus.loading = false;
           state.playerStatus.duration = target.duration;
           state.playerStatus.playing && pDom.value.play();
+        },
+
+        playEnd() {
+          const { setting,  } = state;
+          setting.orderType === 'danquxunhuan' ?
+            (pDom  && pDom.value.play()):
+            cutSong('next');
         },
 
         ...mixSongHandle,
@@ -236,9 +285,15 @@
       &.opt-btn {
         padding-top: 8px;
         padding-left: 0;
+
         .iconfont {
           line-height: 30px;
         }
+      }
+
+      &.right-control {
+        float: right;
+        margin-right: 80px;
       }
 
       .iconfont {
@@ -249,6 +304,7 @@
         &.icon-zanting1 {
           font-size: 34px;
         }
+
         &.icon-bofang {
           margin: 0 7px;
         }
@@ -274,6 +330,7 @@
 
       .ar-container {
         margin-top: -5px;
+
         .ar-name {
           color: #fff7;
         }
@@ -296,7 +353,7 @@
       }
     }
 
-    .el-slider__button-wrapper {
+    .m-progress .el-slider__button-wrapper {
       opacity: 0;
     }
 
@@ -313,8 +370,9 @@
       &:hover {
         height: 26px;
         transform: translateY(-40%);
+
         .el-slider__runway {
-          height: 18px;
+          height: 20px;
 
           .el-slider__bar:after {
             width: 5px;
@@ -332,6 +390,7 @@
         .el-slider__button-wrapper {
           opacity: 0;
         }
+
         .el-slider__bar {
           height: 100%;
           transition: 0.3s;
@@ -359,6 +418,63 @@
       opacity: 0;
       position: fixed;
       bottom: -1000px;
+    }
+
+    .volume-control {
+      display: inline-block;
+      position: relative;
+
+      .volume-slider-container {
+        position: absolute;
+        padding-bottom: 40px;
+        top: -110px;
+        margin-left: 10px;
+        opacity: 1;
+        transition: opacity 0.4s, top 0.4s;
+        z-index: 10;
+      }
+
+      .volume-slider {
+        background: rgba(255, 255, 255, 0.4);
+        border: #eaeaea 1px solid;
+        padding: 15px 0;
+        border-radius: 10px;
+      }
+    }
+
+    .order-control {
+      display: inline-block;
+      position: relative;
+
+      .now-order-type {
+        margin-top: -5px;
+      }
+
+      .order-list-container {
+        padding-bottom: 40px;
+        position: absolute;
+        top: -91px;
+        left: -6px;
+        z-index: 10;
+      }
+
+      .order-list {
+        position: relative;
+        padding: 4px 0;
+        border-radius: 10px;
+        border: 1px solid #eaeaea;
+        opacity: 1;
+        transition: 0.4s opacity;
+        background: rgba(255,255,255,0.4);
+
+        div {
+          padding: 3px 5px;
+          cursor: pointer;
+          &:hover {
+            background: rgba(255,255,255,0.3);
+          }
+        }
+      }
     }
 
   }
