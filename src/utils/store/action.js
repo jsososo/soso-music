@@ -163,6 +163,7 @@ export const handleSongs = (list) => {
   })
 
   getBatchUrl(getUrlArr);
+  return list.map(({ aId }) => aId);
 }
 
 // 批量处理歌单
@@ -171,6 +172,7 @@ export const handlePlayLists = (list) => {
   return list.map((p) => {
     p.aId = p.aId || p.listId;
     allList[p.aId] = { ...(allList[p.aId] || {}), ...p };
+    allList[p.aId].list = (allList[p.aId].list || []).map((s) => typeof s === 'string' ? s : s.aId);
     return p.aId;
   })
 }
@@ -328,14 +330,6 @@ export const getUrl = async (id, br, _p) => {
   })
 }
 
-export const downloadMusic = async (id) => {
-  const { allSongs } = window.$state;
-  if (!allSongs[id].url) {
-    // 报错提示
-    return;
-  }
-}
-
 // 获取用户歌单
 export const getUserList = async ({ id, platform } = {}) => {
   const { user, setting } = window.$state;
@@ -355,16 +349,23 @@ export const getUserList = async ({ id, platform } = {}) => {
     }
   })
 
-  user[_p].subList = user[_p].subList || {};
-  user[_p].myList = user[_p].myList || {};
+  const listIds = handlePlayLists(data)
 
-  user[_p].playlist = handlePlayLists(data);
+  if (uId === user[_p].id) {
+    user[_p].subList = user[_p].subList || {};
+    user[_p].myList = user[_p].myList || {};
 
-  data.forEach(({ creator: { id }, aId }) => {
-    (`${id}` === `${uId}`) ?
-      (user[_p].myList[aId] = 1) :
-      (user[_p].subList[aId] = 1)
-  })
+    user[_p].playlist = listIds;
+
+    data.forEach(({ creator: { id }, aId }) => {
+      (`${id}` === `${uId}`) ?
+        (user[_p].myList[aId] = 1) :
+        (user[_p].subList[aId] = 1)
+    })
+  }
+
+  return listIds;
+
 }
 
 // 网易云登录校验
@@ -373,7 +374,8 @@ export const get163LoginStatus = async () => {
   if (!account) {
     return false;
   }
-  window.$state.user['163'] = {
+  const { user, setting } = window.$state;
+  user['163'] = {
     ...account,
     ...profile,
     nick: profile.nickname,
@@ -381,6 +383,7 @@ export const get163LoginStatus = async () => {
     desc: profile.signature,
     logined: true,
   };
+  setting.store_163 = setting.store_163 || user.id;
   getUserList({ platform: '163' })
   return true;
 }
@@ -408,7 +411,7 @@ export const getQQLoginStatus = async (cookie = document.cookie) => {
   if (!uin) {
     return false;
   }
-  Object.keys(cookieObj).forEach((k) => !docCookie.hasItem(k) && docCookie.setItem(k, cookieObj[k], 86400));
+  Object.keys(cookieObj).forEach((k) => docCookie.setItem(k, cookieObj[k], 86400));
   const result = cookieObj['qm_keyst'];
 
   if (!result || result === setting.oldQmKeyst) {
@@ -418,6 +421,7 @@ export const getQQLoginStatus = async (cookie = document.cookie) => {
   setting.qCookie = cookie;
   user.qq.id = uin;
   user.qq.logined = true;
+  setting.store_qq = setting.store_qq || uin;
 
   const { data: { creator }} = await request({ api: 'QQ_USER_DETAIL', data: { id: user.qq.id }});
   user.qq = {

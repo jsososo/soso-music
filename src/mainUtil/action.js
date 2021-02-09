@@ -1,4 +1,4 @@
-import { ipcMain, dialog } from 'electron';
+import { ipcMain, dialog, Menu } from 'electron';
 import api from '../../server/api';
 import path from 'path';
 
@@ -39,4 +39,42 @@ export default (app) => {
     item.setSavePath(filePath);
 
   })
+
+  const quit = () => {
+    app.exit(0);
+    process.exit(0);
+  }
+  const template = [
+    {
+      label: 'soso music',
+      submenu: [
+        {
+          label: 'Quit',
+          accelerator: 'Command+Q',
+          click: () => quit(),
+        },
+        {
+          type: 'separator'
+        },
+        {
+          label: 'hello world',
+        },
+      ]
+    },
+    {
+      label: "Edit",
+      submenu: [
+        { label: '撤销', accelerator: "CmdOrCtrl+Z", selector: "undo:" },
+        { label: '重做', accelerator: "Shift+CmdOrCtrl+Z", selector: "redo:" },
+        { type: "separator" },
+        { label: '剪切', accelerator: "CmdOrCtrl+X", selector: "cut:" },
+        { label: '复制', accelerator: "CmdOrCtrl+C", selector: "copy:" },
+        { label: '粘贴', accelerator: "CmdOrCtrl+V", selector: "paste:" },
+        { label: '全选', accelerator: "CmdOrCtrl+A", selector: "selectAll:" }
+      ]
+    }
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
 }

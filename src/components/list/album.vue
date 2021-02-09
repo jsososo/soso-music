@@ -24,12 +24,14 @@
       className: String,
       emptyText: String,
     },
-    methods: {
-      goTo({ id, mid, platform }) {
-        changeUrlQuery({
-          id, mid, from: platform
-        }, '#/album')
-      },
+    setup() {
+      return {
+        goTo({ id, mid, platform }) {
+          changeUrlQuery({
+            id, mid, platform
+          }, '#/album')
+        },
+      }
     }
   }
 </script>

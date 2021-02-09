@@ -34,6 +34,9 @@
             <br />
             <span class="link-span" @click="jumpOutside('https://github.com/jsososo/MixMusicApi')">jsososo/MixMusicApi</span>
           </div>
+          <div>
+            改版本也属于 alpha 版，在功能体验ui上都还有许多不足！也会有些细节的bug等，后续会慢慢完善，感谢大家的支持！
+          </div>
         </div>
 
         <div v-else-if="type === 'history'">
@@ -55,6 +58,12 @@
           </div>
         </div>
       </div>
+
+      <div class="pay-container">
+        <div class="ft_20 pl_10">感谢支持</div>
+        <img src="http://music.jsososo.com/img/pay-1.52708186.png" />
+        <img src="http://music.jsososo.com/img/pay-2.d70586c2.jpeg" />
+      </div>
     </div>
   </div>
 </template>
@@ -75,7 +84,7 @@
       const type = ref('about');
 
       return {
-        version: '0.0.1',
+        version: '0.0.2',
         versioinType: 'alpha',
         type,
         tablist: [
@@ -97,21 +106,26 @@
         ],
         history: [
           {
+            version: '0.0.2',
+            versionType: 'alpha',
+            explain: '🍪 歌手、专辑、歌单页',
+            created: '21-02-09',
+          },
+          {
             version: '0.0.1',
             versionType: 'alpha',
-            explain: '超级先行版！',
-            created: '21-1-26',
+            explain: '🍎 超级先行版！',
+            created: '21-01-26',
           }
         ],
         todoList: [
-          '专辑页',
-          '歌手页',
+          '评论',
           '歌曲操作',
           '播放历史',
           '排行榜',
           '极简模式',
           '音频可视化',
-          '。。。'
+          '。。。',
         ],
         jumpOutside: (url) => shell.openExternal(url),
       }
@@ -121,6 +135,7 @@
 
 <style scoped lang="scss">
   .about-page {
+    position: relative;
     .version-txt {
       font-weight: bold;
       font-size: 18px;
@@ -141,8 +156,21 @@
       }
     }
 
+    .pay-container {
+      position: absolute;
+      right: 20px;
+      top: 50px;
+      font-weight: 900;
+
+      img {
+        width: 120px;
+        margin: 10px;
+      }
+    }
+
     .about-content {
       line-height: 1.75em;
+      width: calc(100% - 280px);
 
       div {
         margin-bottom: 20px;

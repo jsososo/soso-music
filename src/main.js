@@ -33,5 +33,9 @@ let imageIsExist = function(url) {
 createApp(App)
   .use(router)
   .use(ElementPlus)
-  .directive('error', async (el, { value }) => !(await imageIsExist(el.src)) && el.setAttribute('src', value))
+  .directive('error',
+    async (el, { value }) =>
+      !(await imageIsExist(el.style.backgroundImage.replace(/^url\("|"\)$/g, ''))) &&
+      (el.tagName === 'img' ? (el.src = value) : (el.style.backgroundImage = `url("${value}")`))
+  )
   .mount('#app')

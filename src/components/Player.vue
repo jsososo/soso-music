@@ -19,18 +19,19 @@
 
     <!-- 歌曲信息 -->
     <div class="song-info" v-if="pDom">
-      <span class="player-song-title pointer" @click="changeUrlQuery({}, '#/')">
+      <a class="player-song-title pointer" href="#/">
         <i class="el-icon-loading mr_10" v-if="playerStatus.loading"/>
         {{playNow.name}}
-      </span>
+      </a>
       <div class="ar-container">
         <a
-          v-for="a in playNow.ar"
+          v-for="(a, i) in playNow.ar"
           :key="`player-ar-${a.aId}`"
           class="ar-name"
-          :href="changeUrlQuery({ id: a.id, mid: a.mid, from: playNow.platform }, '#/singer', false)"
+          :href="changeUrlQuery({ id: a.id, mid: a.mid, platform: playNow.platform }, '#/singer', false)"
         >
           {{a.name}}
+          <span v-if="i < playNow.ar.length - 1">/</span>
         </a>
       </div>
       <!--        <span-->
@@ -330,6 +331,9 @@
 
       .ar-container {
         margin-top: -5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
         .ar-name {
           color: #fff7;

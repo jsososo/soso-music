@@ -7,7 +7,6 @@ const { cookieToJson } = require('./163Api/util/index')
 const Cache = require('./qqApi/util/cache');
 const MixRequest = require('./util/mixRequest');
 const dataHandle = require('./mixApi/util/dataHandle');
-const cookieRouter = require('./route/cookie');
 const transRouter = require('./route/trans');
 const allApi = require('./routes');
 
@@ -131,6 +130,7 @@ Object.keys(allApi).forEach((k) => {
           if (Number(req.cookies.login_type) === 2) {
             uin = req.cookies.wxuin;
           }
+          req.query.ownCookie = 1;
           req.cookies.uin = uin.replace(/\D/g, '');
 
           router.post('/', handler[path]);
@@ -165,14 +165,6 @@ Object.keys(allApi).forEach((k) => {
       });
       break;
   }
-})
-
-app.use('/cookie', (req, res, next) => {
-  global.req = req;
-  global.res = res;
-  const router = express.Router();
-  router.get('/get', cookieRouter["/get"])
-  router(req, res, next);
 })
 
 app.use('/trans', (req, res, next) => {

@@ -11,11 +11,7 @@
             v-if="showPlayingInfo && playNow.al"
             :pic="playNow.al.picUrl"
             err-pic="https://y.gtimg.cn/mediastyle/global/img/album_300.png"
-            :list="[
-              { text: playNow.name, icon: 'icon-song' },
-              { text: playNow.al.name, icon: 'icon-album' },
-              { text: playNow.ar.map(({ name }) => ({ text: name })), icon: 'icon-singer' },
-            ]"
+            :list="infoBoxList"
           />
           <router-view />
         </div>
@@ -30,14 +26,15 @@ import LeftNav from "./components/LeftNav";
 import TopNav from "./components/TopNav";
 import Player from "./components/Player";
 import store from './utils/store/index';
-import {useRoute} from "vue-router";
-import { watch, computed } from 'vue';
+import {useRoute, useRouter} from "vue-router";
+import { computed } from 'vue';
 import InfoBox from "./components/InfoBox";
 
 import request from "./utils/request";
 import {handlePlayLists, queryPlayListDetail, updatePlaying, cutSong, initLogin} from "./utils/store/action";
 import { ipcRenderer } from 'electron'
 import { ElMessage } from 'element-plus';
+import { changeUrlQuery } from "./utils/stringHelper";
 
 export default {
   name: 'App',
@@ -50,25 +47,38 @@ export default {
   setup() {
     // 初始化 store state
     const state = store();
+    const { playNow } = state;
 
     const route = useRoute();
+    const router = useRouter();
+    window.route = route;
+    window.router = router;
 
-    watch(() => route, () => {
-      // console.log('router', v);
-    })
+    const infoBoxList = computed(() => ([
+      { text: playNow.name, icon: 'icon-song' },
+      { text: playNow.al.name, link: changeUrlQuery({ id: playNow.al.id, mid: playNow.al.mid, platform: playNow.al.platform }, '#/album', false), icon: 'icon-album' },
+      {
+        text: playNow.ar.map(({ name, id, mid, platform }, i) =>
+          ({
+            text: `${name}${(i < playNow.ar.length - 1) ? '/' : ''}`,
+            link: changeUrlQuery({ id, mid, platform }, '#/singer', false)
+          })),
+        icon: 'icon-singer'
+      },
+    ]))
 
     initLogin();
 
+    // 左侧显示播放信息的页面
     const showPlayingInfo = computed(() => !!{
       '/': true,
       '/playlist/detail': true,
       '/playlist': true,
+      '/recommend': true,
     }[route.path])
 
-    // 获取服务器 cookie 信息做基础
-    request('GET_SERVER_COOKIE')
-      // 查询推荐歌单
-      .then(() => request('RECOMMEND_PLAYLIST', state.setting.platform))
+    // 查询推荐歌单
+    request('RECOMMEND_PLAYLIST', state.setting.platform)
       // 处理歌单信心，获取第一个推荐歌单
       .then(async ({ data = []}) => {
         let list;
@@ -79,7 +89,7 @@ export default {
       })
 
     // 键盘事件绑定
-    window.onkeydown = ({ keyCode, target, ctrlKey, altKey, shiftKey }) => {
+    window.onkeydown = ({ keyCode, target, ctrlKey, altKey, shiftKey, metaKey }) => {
       // 输入框内的操作，忽略掉
       if (['textarea', 'input'].indexOf(target.tagName.toLowerCase()) > -1) {
         return;
@@ -89,11 +99,11 @@ export default {
       ctrlKey && codes.push('ctrl');
       altKey && codes.push('alt');
       shiftKey && codes.push('shiftKey');
+      metaKey && codes.push('meta');
 
-      if ([16, 17, 18].indexOf(keyCode) === -1) {
+      if ([16, 17, 18, 91].indexOf(keyCode) === -1) {
         codes.push(keyCode);
       }
-
       switch (codes.join('-')) {
         case codeMap.VOLUME_DOWN:
           state.setting.volume = Math.max(volume - 5, 0);
@@ -120,7 +130,10 @@ export default {
             window.location = '#/';
           }
           return false;
+        // case 'meta-82':
+        //   return location.reload();
       }
+      return true;
     };
     window.onkeypress = window.onkeydown;
     // window.onkeyup = ({ keyCode }) => keys = keys.filter((c) => c !== keyCode);
@@ -132,6 +145,7 @@ export default {
     return {
       ...state,
       showPlayingInfo,
+      infoBoxList,
     };
   }
 }
@@ -212,16 +226,7 @@ export default {
       cursor: pointer;
     }
 
-    $colors: (
-      red: $red,
-      blue: $blue,
-      green: $green,
-      yellow: $yellow,
-      gray: $gray
-    );
-
     $cls: color, background, border-color;
-    $colors_key: blue, red, yellow, green;
     @each $n in $cls {
       @each $k, $v in $colors {
         .#{$n}-#{$k} {
@@ -271,6 +276,7 @@ export default {
       }
     }
 
+    /* 播放中的歌曲 */
     .playing-bg {
       position: absolute;
       height: 76px;
@@ -307,23 +313,78 @@ export default {
       }
     }
 
-    .page-right-container {
-      width: 50%;
-      min-width: 425px;
-      max-width: 750px;
-      position: absolute;
-      right: 0;
-      height: 100%;
-      top: 0;
-      overflow-y: auto;
-      background: #0001;
-      border-left: 1px solid #fff5;
-      &::-webkit-scrollbar
-      {
-        width: 0;
-        height: 0;
+    .input-line.so-input {
+      line-height: 48px;
+      font-size: 20px;
+
+      input {
+        background: transparent;
+        border: none;
+        outline: none;
+        color: #fff;
+        width: 250px;
+        font-size: 20px;
+
+        &::-webkit-input-placeholder {
+          color: #fff5;
+        }
+      }
+
+      .input-content, .input-label {
+        display: inline-block;
+        padding: 6px;
+        position: relative;
+        vertical-align: top;
+
+        &:before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          display: inline-block;
+          transition: 0.4s;
+        }
+      }
+      .input-label {
+        &:before {
+          height: 40px;
+          top: 8px;
+          width: 0;
+          background: #{$blue}cc;
+          z-index: -1;
+          opacity: 0.5;
+        }
+      }
+      .input-content {
+        width: 250px;
+        overflow: hidden;
+        margin-left: 15px;
+
+        &:before {
+          width: 650px;
+          background: linear-gradient(to right, $blue, $blue 50%, #fffc 51% , #fffc);
+          height: 2px;
+          top: 40px;
+          transform: translateX(-330px);
+          opacity: 0.6;
+        }
+      }
+
+      &:hover {
+        .input-label:before {
+          width: 10px;
+        }
+      }
+
+      &:focus-within {
+        .input-label:before {
+          opacity: 1;
+          width: 20px;
+        }
+        .input-content:before {
+          transform: translateX(0);
+        }
       }
     }
-  ;
   }
 </style>

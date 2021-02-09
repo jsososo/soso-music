@@ -18,9 +18,11 @@
       emptyText: String,
       className: String,
     },
-    methods: {
-      goTo({ id, mid, platform: from }) {
-        changeUrlQuery({ id, mid, from }, '#/singer');
+    setup() {
+      return {
+        goTo({ id, mid, platform }) {
+          changeUrlQuery({ id, mid, platform }, '#/singer');
+        }
       }
     }
   }

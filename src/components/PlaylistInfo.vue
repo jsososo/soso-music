@@ -1,5 +1,5 @@
 <template>
-  <div class="list-detail-container page-right-container">
+  <page-right-container className="list-detail-container">
     <div class="scroll-content" ref="containerDom" @scroll="getShowIndex">
       <div v-if="!listInfo && loading && list.length === 0" class="text-center fc_fff ft_20"
            style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">拼命查找了！
@@ -114,7 +114,7 @@
         <!--      </div>-->
       </div>
     </div>
-  </div>
+  </page-right-container>
 </template>
 
 <script>
@@ -123,6 +123,7 @@
   import {ref, computed, watch, nextTick} from 'vue';
   import {mixSongHandle, updatePlaying, updatePlayingList, download} from "../utils/store/action";
   import {ElMessage, ElMessageBox} from 'element-plus';
+  import PageRightContainer from "./PageRightContainer";
 
   export default {
     name: "PlayListInfo",
@@ -132,6 +133,9 @@
       platform: String,
       loading: Boolean,
       listInfo: Object,
+    },
+    components: {
+      PageRightContainer,
     },
     setup(props) {
       const state = mixInject([

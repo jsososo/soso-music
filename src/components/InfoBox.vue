@@ -1,7 +1,7 @@
 <template>
   <div :class="`info-box-container ${className}`">
     <div class="pic-container">
-      <img :src="pic" class="pic-content" v-error="errPic" />
+      <div class="pic-content" v-error="errPic" :style="`background-image: url('${pic}')`" />
     </div>
     <div class="text-info">
       <div v-for="(item, index) in list" :key="`${id}-${index}`">
@@ -86,6 +86,7 @@
         width: 230px;
         height: 230px;
         background-position: center;
+        background-size: cover;
         border-radius: 0 0 20px 0;
         opacity: 0.8;
       }

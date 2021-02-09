@@ -2,8 +2,8 @@
   <div class="page-top-nav">
 
     <span class="router-icon">
-      <i class="el-icon-arrow-left" />
-      <i class="el-icon-arrow-right" />
+      <i :class="`el-icon-arrow-left ${canBack && 'actived'}`" @click="canBack && (router.isBack = true)" />
+      <i :class="`el-icon-arrow-right ${canReBack && 'actived'}`" @click="canReBack && (router.isReBack = true)" />
     </span>
 
     <input :class="`search-input ${isSearchPage && 'is-search-page'}`" v-model="keyword" @keyup="onKeyUp" type="text" placeholder="SEARCH..." />
@@ -33,15 +33,19 @@
   export default {
     name: "TopNav",
     setup() {
-      const state = mixInject(['setting', 'searchInfo', 'user']);
+      const state = mixInject(['setting', 'searchInfo', 'user', 'router']);
       const keyword = ref('');
       const u = computed(() => state.user[state.setting.platform]);
       const isSearchPage = computed(() => useRoute().path === '/search');
+      const canBack = computed(() => state.router.history.length > 1);
+      const canReBack = computed(() => !!state.router.back.length);
       return {
         ...state,
         keyword,
         u,
         isSearchPage,
+        canBack,
+        canReBack,
         updatePlatform(platform) {
           state.setting.platform = platform;
         },
@@ -82,6 +86,11 @@
       i {
         padding: 0 5px;
         cursor: pointer;
+        opacity: 0.3;
+
+        &.actived {
+          opacity: 1;
+        }
       }
     }
 

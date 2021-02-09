@@ -25,6 +25,7 @@
     setup() {
       const state = mixInject(['setting', 'allList', 'playingList'])
       const route = useRoute();
+      const { setting, allList } = state;
 
       const [platform, id, listInfo] = [ref(''), ref(''), reactive({})];
       const updateRouter = async ([aId, trueList]) => {
@@ -38,6 +39,9 @@
           case 'playing':
             replaceObj(listInfo, { list: trueList, aId: '_playing' })
             break;
+          case 'daily':
+            replaceObj(listInfo, { list: (allList[`${setting.platform}_daily`] || {}).list || [], aId: `${setting.platform}_daily` });
+            break;
           default: {
             const data = await queryPlayListDetail(aId);
             replaceObj(listInfo, data);
@@ -46,7 +50,6 @@
         }
       }
       updateRouter([route.query.aId, state.playingList.trueList])
-
 
       watch(() => [route.query.aId, state.playingList.trueList], updateRouter);
 

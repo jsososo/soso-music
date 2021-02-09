@@ -3,19 +3,19 @@
     <div v-if="!u.logined" class="login-container">
       <div v-if="setting.platform === '163'">
         <page-title title="网易云 LOGIN" />
-        <div class="input-line">
+        <div class="input-line so-input">
           <div class="input-label">账号</div>
           <div class="input-content">
             <input type="text" v-model="inputUser" placeholder="邮箱/手机号" />
           </div>
         </div>
-        <div class="input-line">
+        <div class="input-line so-input">
           <div class="input-label">密码</div>
           <div class="input-content">
             <input type="password" v-model="inputPassword" />
           </div>
         </div>
-        <div :class="`login-btn ${isLogin && 'actived'}`" @click="login163">
+        <div :class="`so-btn login-btn ${isLogin && 'actived'}`" @click="login163">
           登 录
         </div>
       </div>
@@ -39,9 +39,9 @@
             <span class="pl_5">退出</span>
           </div>
         </info-box>
-        <div class="page-right-container">
+        <page-right-container>
           <playlist :list="u.playlist || []" />
-        </div>
+        </page-right-container>
       </div>
     </div>
   </div>
@@ -57,6 +57,8 @@
   import InfoBox from "../components/InfoBox";
   import Playlist from "../components/list/playlist";
   import docCookie from '../utils/cookie';
+  import PageRightContainer from "../components/PageRightContainer";
+  // import BookMark from "../components/BookMark";
 
   export default {
     name: "User",
@@ -64,6 +66,8 @@
       PageTitle,
       InfoBox,
       Playlist,
+      PageRightContainer,
+      // BookMark,
     },
     setup() {
       const state = mixInject(['user', 'downloadInfo', 'setting'])
@@ -91,9 +95,6 @@
             webView.value.insertCSS('.popup_guide { display: none !important;}')
               .then(res => console.log('css ', res))
             webView.value.executeJavaScript('document.cookie')
-              .then(cookie => {
-                return cookie
-              })
               .then(cookie => getQQLoginStatus(cookie))
           }
           webView.value && (webView.value.addEventListener('dom-ready', onReady) && onReady());
@@ -155,6 +156,11 @@
           user[platform] = {};
 
         },
+
+        // tabs: [
+        //   { icon: 'song', val: 'song', color: 'red', text: '歌曲' },
+        // ],
+        // type: 'song',
       }
     },
   }
@@ -167,80 +173,6 @@
     .login-container {
       text-align: center;
       padding-top: 50px;
-
-      .input-line {
-        line-height: 48px;
-        font-size: 20px;
-
-        input {
-          background: transparent;
-          border: none;
-          outline: none;
-          color: #fff;
-          width: 250px;
-          font-size: 20px;
-
-          &::-webkit-input-placeholder {
-            color: #fff5;
-          }
-        }
-
-        .input-content, .input-label {
-          display: inline-block;
-          padding: 6px;
-          position: relative;
-          vertical-align: top;
-
-          &:before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            display: inline-block;
-            transition: 0.4s;
-          }
-        }
-        .input-label {
-          &:before {
-            height: 40px;
-            top: 8px;
-            width: 0;
-            background: #{$blue}cc;
-            z-index: -1;
-            opacity: 0.5;
-          }
-        }
-        .input-content {
-          width: 250px;
-          overflow: hidden;
-          margin-left: 15px;
-
-          &:before {
-            width: 650px;
-            background: linear-gradient(to right, $blue, $blue 50%, #fffc 51% , #fffc);
-            height: 2px;
-            top: 40px;
-            transform: translateX(-330px);
-            opacity: 0.6;
-          }
-        }
-
-        &:hover {
-          .input-label:before {
-            width: 10px;
-          }
-        }
-
-        &:focus-within {
-          .input-label:before {
-            opacity: 1;
-            width: 20px;
-          }
-          .input-content:before {
-            transform: translateX(0);
-          }
-        }
-      }
 
       .login-btn {
         padding: 12px 0;

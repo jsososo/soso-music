@@ -4,6 +4,16 @@ $green: #67C23A;
 $yellow: #E6A23C;
 $gray: #666;
 
+$colors: (
+        red: $red,
+        blue: $blue,
+        green: $green,
+        yellow: $yellow,
+        gray: $gray
+);
+
+$colors_key: #0000ff;
+
 $mainHeight: calc(100vh - 160px);
 $innerTabHeight: calc(100vh - 195px);
 $minWidth: 870px;

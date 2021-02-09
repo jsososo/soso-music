@@ -81,10 +81,5 @@
 </script>
 
 <style scoped lang="scss">
-  .search-content {
-    .search-list {
-      /*height: calc;*/
-    }
-  }
 
 </style>

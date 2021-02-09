@@ -11,8 +11,13 @@
       <!--        <div class="bg-item-inside" />-->
       <!--      </div>-->
       <!--    </div>-->
-      <img :src="`${allList[aId].cover}?param=50y50`" v-error="`https://y.gtimg.cn/mediastyle/global/img/album_300.png`" class="list-bg-img" />
-      <img :src="`${allList[aId].cover}?param=200y200`" v-error="`https://y.gtimg.cn/mediastyle/global/img/album_300.png`" class="list-img" />
+      <block v-if="allList[aId].id === 'daily'">
+        <div class="list-img daily-img">{{date}}</div>
+      </block>
+      <block v-else>
+        <img :src="`${allList[aId].cover}?param=50y50`" v-error="`https://y.gtimg.cn/mediastyle/global/img/album_300.png`" class="list-bg-img" />
+        <img :src="`${allList[aId].cover}?param=200y200`" v-error="`https://y.gtimg.cn/mediastyle/global/img/album_300.png`" class="list-img" />
+      </block>
       <span class="list-name" v-html="allList[aId].name" />
       <span class="list-count" v-if="allList[aId].trackCount">{{allList[aId].trackCount}}</span>
       <div class="bottom-text">
@@ -60,6 +65,8 @@
         changeUrlQuery,
 
         numToStr,
+
+        date: new Date().getDate(),
       }
     }
   }
@@ -140,6 +147,11 @@
       line-height: 200px;
       font-weight: bold;
       color: #fff5;
+      text-align: center;
+
+      &.daily-img {
+        border: 1px solid #fff6;
+      }
     }
     .list-name {
       display: inline-block;

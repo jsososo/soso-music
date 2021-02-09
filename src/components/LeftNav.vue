@@ -18,12 +18,12 @@
         <div class="icon-text">推荐</div>
       </a>
     </div>
-    <div class="nav-line">
-      <a href="#/top">
-        <i class="iconfont icon-top"></i>
-        <div class="icon-text">榜单</div>
-      </a>
-    </div>
+<!--    <div class="nav-line">-->
+<!--      <a href="#/top">-->
+<!--        <i class="iconfont icon-top"></i>-->
+<!--        <div class="icon-text">榜单</div>-->
+<!--      </a>-->
+<!--    </div>-->
     <div class="nav-line">
       <a href="#/download">
         <el-badge :value="downCount" :hidden="!downCount" class="item" >

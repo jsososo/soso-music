@@ -9,7 +9,8 @@ const request = (param, platform) => {
   }
   const { method = 'get', api, data = {} } = obj;
   data._t = param.cache ? 0 : new Date().getTime();
-  data._p = data._p || platform;
+  data._p = data._p || data.platform || platform;
+  data.ownCookie = 1;
   let url =  apiList[api];
   if (method === 'get') {
     url += `?${Object.keys(data).map((k) => `${k}=${encodeURI(data[k])}`).join('&')}`

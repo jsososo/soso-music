@@ -55,6 +55,12 @@ const state = {
     }
     return v;
   }),
+  router: {
+    history: ['/'],
+    back: [],
+    isBack: false,
+    isReBack: false,
+  },
   // 系统设置
   setting: {
     path: '',
@@ -72,6 +78,8 @@ const state = {
     DOWN_DIR: '', // 下载路径
     qCookie: '',
     SERVER_PORT: '3090',
+    store_qq: '',
+    store_163: '',
     codeMap: {
       PLAY_NEXT: '39',
       PLAY_PREV: '37',
@@ -88,9 +96,7 @@ const state = {
 
 const result = {};
 
-Object.keys(state).forEach(k => {
-  result[k] = [k, reactive(state[k])];
-})
+Object.keys(state).forEach(k => result[k] = [k, reactive(state[k])])
 
 const mixHandle = (type, keys) => {
   const func = { provide, inject }[type];

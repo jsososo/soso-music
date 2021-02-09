@@ -1,6 +1,7 @@
 import { watch, toRaw } from 'vue';
 import {getLyric, search, updatePlayingList, downReq} from './action';
 import Storage from "../Storage";
+import { useRoute, useRouter } from 'vue-router';
 import { ipcRenderer } from 'electron';
 import { ElMessage } from "element-plus";
 
@@ -18,19 +19,42 @@ export const allWatch = (state) => {
     downloadInfo,
   } = state;
 
+  const route = useRoute();
+  const router = useRouter();
+
+  // 监听路由变化，前进后退存储
+  watch(() => route.fullPath, (v) => {
+    const { isBack, isReBack, history, back } = state.router;
+    console.log(isBack, state.router.back);
+    if (isBack && history.length > 1) {
+      state.router.isBack = false;
+      return back.unshift(history.pop());
+    }
+    if (isReBack && back.length) {
+      state.router.isReBack = false;
+      return history.push(back.shift());
+    }
+    history.push(v);
+    state.router.back = [];
+  })
+
+  // 触发了路由后退
+  watch(() => state.router.isBack, (v) => v && (state.router.history.length > 1) && router.back());
+
+  // 触发了路由前进
+  watch(() => state.router.isReBack, (v) => v && (state.router.back.length) && router.push(state.router.back[0]));
+
   // 设置
   watch(() => Object.values(setting), () => Storage.set('soso_music_setting', toRaw(setting), true))
 
   watch(() => setting.volume, (v) => playerStatus.pDom && (playerStatus.pDom.volume = v / 100));
 
   // 搜索
-  watch(() => [searchInfo.keyword, searchInfo.type, searchInfo.pageNo], async (
+  watch(() => [searchInfo.pageNo, searchInfo.keyword, searchInfo.type, searchInfo.platform], async (
     newVal,
     oldVal
   ) => {
-    if (newVal[2] !== oldVal[2]) {
-      searchInfo.pageNo = 1;
-    }
+    (newVal[0] === oldVal[0]) && (searchInfo.pageNo = 1)
 
     await search(searchInfo);
   })

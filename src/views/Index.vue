@@ -1,7 +1,5 @@
 <template>
-  <div>
-    <Lyric />
-  </div>
+  <Lyric />
 </template>
 
 <script>
