@@ -35,6 +35,7 @@ import {handlePlayLists, queryPlayListDetail, updatePlaying, cutSong, initLogin}
 import { ipcRenderer } from 'electron'
 import { ElMessage } from 'element-plus';
 import { changeUrlQuery } from "./utils/stringHelper";
+import Storage from "./utils/Storage";
 
 export default {
   name: 'App',
@@ -141,6 +142,12 @@ export default {
     ipcRenderer.send('UPDATE_SERVER_POINT', state.setting.SERVER_PORT);
 
     ipcRenderer.send('SET_DOWNLOAD_DIR', state.setting.DOWN_DIR);
+
+    setInterval(() => {
+      if (Storage.get('q_cookie_time') < new Date().valueOf() - 86400000) {
+        state.user.qq = { id: state.user.qq.id };
+      }
+    }, 60000)
 
     return {
       ...state,

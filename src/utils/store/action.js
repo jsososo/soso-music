@@ -6,7 +6,7 @@ import axios from 'axios';
 import Download from "../download";
 import Id3 from "browser-id3-writer";
 import timer from "../timer";
-import docCookie from '../cookie';
+import Storage from "../Storage";
 
 // 更新歌曲信息，有链接的走这边，会顺带更新播放列表
 export const updateSongInfo = (songInfo) => {
@@ -389,8 +389,20 @@ export const get163LoginStatus = async () => {
 }
 
 // qq 登录状态检查
-export const getQQLoginStatus = async (cookie = document.cookie) => {
+export const getQQLoginStatus = async (c) => {
   const cookieObj = {};
+  let cookie;
+  if (c) {
+    cookie = c;
+    Storage.set('q_cookie', c);
+    Storage.set('q_cookie_time', new Date().valueOf());
+  } else {
+    if (Storage.get('q_cookie_time') < new Date().valueOf() - 86400000) {
+      Storage.set('q_cookie_time', 0);
+      return false;
+    }
+    cookie = Storage.get('q_cookie');
+  }
   const { setting, user } = window.$state;
 
   if (typeof cookie === 'string') {
@@ -409,12 +421,13 @@ export const getQQLoginStatus = async (cookie = document.cookie) => {
   const { uin } = cookieObj;
 
   if (!uin) {
+    Storage.set('q_cookie_time', 0);
     return false;
   }
-  Object.keys(cookieObj).forEach((k) => docCookie.setItem(k, cookieObj[k], 86400));
   const result = cookieObj['qm_keyst'];
 
   if (!result || result === setting.oldQmKeyst) {
+    Storage.set('q_cookie_time', 0);
     return false;
   }
 
@@ -422,7 +435,7 @@ export const getQQLoginStatus = async (cookie = document.cookie) => {
   user.qq.id = uin;
   user.qq.logined = true;
   setting.store_qq = setting.store_qq || uin;
-
+  c && await request({ api: 'SET_COOKIE', method: 'post', data: { cookieObj }})
   const { data: { creator }} = await request({ api: 'QQ_USER_DETAIL', data: { id: user.qq.id }});
   user.qq = {
     ...user.qq,
@@ -430,6 +443,7 @@ export const getQQLoginStatus = async (cookie = document.cookie) => {
     avatar: creator.headpic,
   }
   getUserList({ platform: 'qq' })
+
   return true;
 }
 

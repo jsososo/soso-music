@@ -21,6 +21,7 @@ const apiList = {
   'MV': '/mixApi/mv',
   'TOP_CATEGORY': '/mixApi/top/category',
   'TOP_SONGS': '/mixApi/top',
+  'SET_COOKIE': '/cookie/set',
 
   '163_SEARCH': '/163Api/search',
   '163_LOGIN_PHONE': '/163Api/login/cellphone',

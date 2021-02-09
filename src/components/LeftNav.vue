@@ -2,7 +2,7 @@
   <div class="page-left-nav">
     <div class="nav-line home-line">
       <a href="#/">
-        <div class="iconfont el-icon-s-home" />
+        <div class="iconfont icon-earphone" />
         <div class="icon-text">soso</div>
       </a>
     </div>

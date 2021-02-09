@@ -34,7 +34,7 @@ async function createWindow() {
     !win.isVisible() ? (app.exit(0) && process.exit(0)) : win.hide();
   })
 
-  win.webContents.openDevTools();
+  // win.webContents.openDevTools();
   app.win = win;
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {

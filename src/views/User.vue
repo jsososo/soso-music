@@ -22,6 +22,7 @@
 
       <div v-if="setting.platform === 'qq'">
         <page-title title="QQ LOGIN" />
+        <div class="text-left">登录后如果没有自动跳转可以尝试切换一下其他平台再切换回来</div>
         <webview ref="webView" id="login-qq" src="https://y.qq.com" />
       </div>
     </div>
@@ -58,6 +59,7 @@
   import Playlist from "../components/list/playlist";
   import docCookie from '../utils/cookie';
   import PageRightContainer from "../components/PageRightContainer";
+  import Storage from "../utils/Storage";
   // import BookMark from "../components/BookMark";
 
   export default {
@@ -150,7 +152,8 @@
               break;
             case 'qq':
               setting.oldQmKeyst = docCookie.getItem('qm_keyst');
-              docCookie.removeItem('qm_keyst');
+              Storage.set('q_cookie', '');
+              Storage.set('q_cookie_time', 0);
               break;
           }
           user[platform] = {};

@@ -172,6 +172,11 @@ app.use('/trans', (req, res, next) => {
   router.get('/', transRouter['/']);
   router(req, res, next);
 })
+app.use('/cookie', (req, res, next) => {
+  const router = express.Router();
+  router.post('/set', require('./route/cookie')['/set']);
+  router(req, res, next);
+})
 // 网易云接口
 // fs.readdirSync(path.join(__dirname, '163Api/module'))
 //   .forEach((file) => {

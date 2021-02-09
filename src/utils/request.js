@@ -1,11 +1,17 @@
 import apiList from './apiList';
 import timer from './timer';
 import axios from 'axios';
+import Storage from "./Storage";
 
 const request = (param, platform) => {
   let obj = param;
   if (typeof param === 'string') {
     obj = { api: param };
+  }
+  if (Storage.get('q_cookie_time') < new Date().valueOf() - 86400000) {
+    Storage.set('q_cookie_time', 0);
+    Storage.set('q_cookie', '');
+    window.$state.user.qq.logined = false;
   }
   const { method = 'get', api, data = {} } = obj;
   data._t = param.cache ? 0 : new Date().getTime();

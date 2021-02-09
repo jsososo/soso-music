@@ -1,4 +1,4 @@
-import { ipcMain, dialog, Menu } from 'electron';
+import { ipcMain, dialog, Menu, session } from 'electron';
 import api from '../../server/api';
 import path from 'path';
 

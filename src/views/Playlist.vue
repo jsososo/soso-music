@@ -20,6 +20,7 @@
         >我的</div>
       </div>
     </div>
+    <div v-if="!uId && route.path === '/playlist'" class="text-center mt_40">登录或输入id</div>
     <playlists :list="list" />
   </page-right-container>
 </template>
@@ -59,15 +60,15 @@
         const { platform } = setting;
 
         inputId.value = uId.value;
-
-        if (!uId.value) {
-          return;
-        }
+        list.length = 0;
 
         let listIds = [];
 
         switch (route.path) {
           case '/playlist': {
+            if (!uId.value) {
+              return;
+            }
             listIds = uId.value ? await getUserList({ id: uId.value, platform }): [];
             if (uId.value === user[platform].id) {
               request('DAILY_PLAYLIST', platform)
@@ -96,12 +97,11 @@
             break;
           }
         }
-        list.length = 0;
         replaceObj(list, listIds)
       }
 
       // 当平台、存储的账号变更时触发
-      watch(() => [setting.store_qq, setting.store_163, setting.platform], getList)
+      watch(() => [setting.store_qq, setting.store_163, setting.platform, route.path], getList)
 
       getList();
 
