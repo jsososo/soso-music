@@ -46,10 +46,10 @@
           </div>
         </div>
       </div>
-      <div class="song-list" ref="listDom" v-if="list && list.length">
+      <div class="song-list" ref="listDom" v-if="list.list && list.list.length">
         <div :style="`height:${smallIndex*71}px;`"></div>
         <div
-          v-for="(s, i) in list"
+          v-for="(s, i) in list.list"
           :key="`${s}-${i}`"
           :class="`song-item ${playNow.aId === s ? 'played' : ''} ${!allSongs[s].url ? 'disabled' : ''}`"
           @click="playMusic({ aId: s, list: listInfo.list, listId })"
@@ -105,7 +105,7 @@
             <!--          </el-tooltip>-->
           </div>
         </div>
-        <div :style="`min-height:0;height:${hideBigHeight}px;`"></div>
+        <div :style="`min-height:0;height:${list.hideBigHeight}px;`"></div>
         <!--      <div class="focus-btn" v-if="list.indexOf(playNow.aId) > -1" @click="scrollToPlayNow">-->
         <!--        <i class="iconfont icon-focus" />-->
         <!--      </div>-->
@@ -156,7 +156,7 @@
         searchDom,
         listDom,
         hideBigHeight, // 隐藏的底下的高度
-        listNum,
+        // listNum,
         searchFix,
       ] = [
         ref(''),
@@ -190,9 +190,13 @@
             .toLowerCase()
             .indexOf(rex) > -1
         )));
-        hideBigHeight.value = (filterList.length - bigIndex.value) * 71;
-        listNum.value = filterList.length;
-        return filterList.filter((id, i) => state.allSongs[id] && i >= smallIndex.value && i <= bigIndex.value)
+        // hideBigHeight.value = (filterList.length - bigIndex.value) * 71;
+        // listNum.value = filterList.length;
+        return {
+          hideBigHeight: (filterList.length - bigIndex.value) * 71,
+          listNum: filterList.length,
+          list: filterList.filter((id, i) => state.allSongs[id] && i >= smallIndex.value && i <= bigIndex.value),
+        }
       })
 
       const getShowIndex = () => {
@@ -203,11 +207,11 @@
         const smallHeight = Math.max(dom.scrollTop - 500, 0);
         smallIndex.value = Math.floor(smallHeight / 71);
         const bigHeight = dom.clientHeight + dom.scrollTop + 300;
-        bigIndex.value = Math.min(Math.floor(bigHeight / 71), listNum.value);
+        bigIndex.value = Math.min(Math.floor(bigHeight / 71), list.value.listNum);
         searchFix.value = (containerDom.value && searchDom.value) && (containerDom.value.scrollTop > searchDom.value.offsetTop)
       }
 
-      watch(listNum, getShowIndex);
+      watch(list.listNum, getShowIndex);
 
       return {
         ...state,
