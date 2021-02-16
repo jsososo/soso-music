@@ -12,7 +12,17 @@
             :pic="playNow.al.picUrl"
             err-pic="https://y.gtimg.cn/mediastyle/global/img/album_300.png"
             :list="infoBoxList"
-          />
+          >
+            <div class="index-icon-content">
+              <a href="#/" class="mg_10 iconfont icon-lyric">
+                <i class="fake-icon iconfont icon-lyric" />
+              </a>
+              <a href="#/comment" class="iconfont icon-comment mg_10">
+                <i class="fake-icon iconfont icon-comment" />
+                <span v-if="playNow.totalComments" style="font-weight: normal;vertical-align: 4px" class="pl_5 ft_12">{{numToStr(playNow.totalComments)}}</span>
+              </a>
+            </div>
+          </info-box>
           <router-view />
         </div>
       </div>
@@ -34,7 +44,7 @@ import request from "./utils/request";
 import {handlePlayLists, queryPlayListDetail, updatePlaying, cutSong, initLogin} from "./utils/store/action";
 import { ipcRenderer } from 'electron'
 import { ElMessage } from 'element-plus';
-import { changeUrlQuery } from "./utils/stringHelper";
+import { changeUrlQuery, numToStr } from "./utils/stringHelper";
 import Storage from "./utils/Storage";
 
 export default {
@@ -70,12 +80,17 @@ export default {
 
     initLogin();
 
+    ipcRenderer.send('UPDATE_SERVER_POINT', state.setting.SERVER_PORT);
+
+    ipcRenderer.send('SET_DOWNLOAD_DIR', state.setting.DOWN_DIR);
+
     // 左侧显示播放信息的页面
     const showPlayingInfo = computed(() => !!{
       '/': true,
       '/playlist/detail': true,
       '/playlist': true,
       '/recommend': true,
+      '/comment': true,
     }[route.path])
 
     // 查询推荐歌单
@@ -139,10 +154,6 @@ export default {
     window.onkeypress = window.onkeydown;
     // window.onkeyup = ({ keyCode }) => keys = keys.filter((c) => c !== keyCode);
 
-    ipcRenderer.send('UPDATE_SERVER_POINT', state.setting.SERVER_PORT);
-
-    ipcRenderer.send('SET_DOWNLOAD_DIR', state.setting.DOWN_DIR);
-
     setInterval(() => {
       if (Storage.get('q_cookie_time') < new Date().valueOf() - 86400000) {
         state.user.qq = { id: state.user.qq.id };
@@ -153,6 +164,7 @@ export default {
       ...state,
       showPlayingInfo,
       infoBoxList,
+      numToStr,
     };
   }
 }
@@ -273,12 +285,47 @@ export default {
 
       .main-content {
         padding: 0 20px;
-        margin-top: 80px;
+        margin-top: 70px;
         height: $mainHeight;
         position: relative;
 
         .inner_tab_content {
           height: $innerTabHeight;
+        }
+        .index-icon-content {
+          font-weight: 900;
+          padding-top: 25px;
+
+          .icon-comment {
+            font-size: 20px;
+          }
+
+          a {
+            position: relative;
+            vertical-align: middle;
+            transition: 0.3s;
+            opacity: 0.6;
+
+            &:hover {
+              opacity: 0.8;
+
+              .fake-icon {
+                transform: translate(2px, 1px);
+                opacity: 0.8;
+              }
+            }
+
+            .fake-icon {
+              position: absolute;
+              top: 0;
+              left: 0;
+              transform: translate(0, 0);
+              opacity: 0;
+              color: $blue;
+              transition: 0.3s;
+              z-index: -1;
+            }
+          }
         }
       }
     }

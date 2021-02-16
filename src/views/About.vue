@@ -35,7 +35,7 @@
             <span class="link-span" @click="jumpOutside('https://github.com/jsososo/MixMusicApi')">jsososo/MixMusicApi</span>
           </div>
           <div>
-            改版本也属于 alpha 版，在功能体验ui上都还有许多不足！也会有些细节的bug等，后续会慢慢完善，感谢大家的支持！
+            当前版本为测试版，主要缺失功能为：对无法获取链接的歌曲替换，会在下一个版本安排，同时，qq音乐的部分功能在未登录时无法使用，可以先登录
           </div>
         </div>
 
@@ -84,8 +84,8 @@
       const type = ref('about');
 
       return {
-        version: '0.0.2',
-        versioinType: 'alpha',
+        version: '0.1.0',
+        versioinType: 'beta',
         type,
         tablist: [
           {
@@ -106,6 +106,12 @@
         ],
         history: [
           {
+            version: '0.1.0',
+            versionType: 'beta',
+            explain: '🎡 歌曲操作、评论、日推等',
+            created: '21-02-16',
+          },
+          {
             version: '0.0.2',
             versionType: 'alpha',
             explain: '🍪 歌手、专辑、歌单页',
@@ -119,12 +125,12 @@
           }
         ],
         todoList: [
-          '评论',
-          '歌曲操作',
+          '无音源替换',
           '播放历史',
           '排行榜',
           '极简模式',
           '音频可视化',
+          '电台',
           '。。。',
         ],
         jumpOutside: (url) => shell.openExternal(url),

@@ -46,6 +46,10 @@ const routes = [
   {
     path: '/singer',
     component: () => import('./views/Singer'),
+  },
+  {
+    path: '/comment',
+    component: () => import('./views/Comment'),
   }
 ]
 

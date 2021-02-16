@@ -55,7 +55,7 @@
   export default {
     name: "playlist",
     props: {
-      list: Array,
+      list: Object,
     },
     setup() {
       const state = mixInject([ 'allList', 'setting' ])

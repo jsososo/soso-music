@@ -21,8 +21,14 @@ const apiList = {
   'MV': '/mixApi/mv',
   'TOP_CATEGORY': '/mixApi/top/category',
   'TOP_SONGS': '/mixApi/top',
+  'COMMENT': '/mixApi/comment',
+  'COMMENT_SEND': '/mixApi/comment/send',
+  'COMMENT_DEL': '/mixApi/comment/del',
+  'COMMENT_LIKE': '/mixApi/comment/like',
   'SET_COOKIE': '/cookie/set',
+  'SONG_PLAYLIST': '/mixApi/song/playlist',
 
+  '163_LIKELIST': '/163Api/likelist',
   '163_SEARCH': '/163Api/search',
   '163_LOGIN_PHONE': '/163Api/login/cellphone',
   '163_LOGOUT': '/163Api/logout',
@@ -49,7 +55,7 @@ const apiList = {
   'GET_SINGER_ALBUMS': '/163Api/artist/album', // 获取歌手的转接
   // 'GET_HEART_MODE': '/163Api/playmode/intelligence/list', // 心动模式
   'GET_ALBUM': '/163Api/album', // 获取专辑信息
-  'COMMENT': '/163Api/comment', // 发送、删除 评论
+  // 'COMMENT': '/163Api/comment', // 发送、删除 评论
   'SIMI_ARTIST': '/163Api/simi/artist', // 相似歌手
   'SCROBBLE': '/163Api/scrobble', // 听歌打卡
   'GET_USER_RECORD': '/163Api/user/record', // 获取听歌记录

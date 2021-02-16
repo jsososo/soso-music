@@ -57,7 +57,6 @@
           data: { id: mid || id, platform }
         })
         data.songs = handleSongs(data.list);
-        console.log(data);
         replaceObj(albumInfo, data)
       }
 

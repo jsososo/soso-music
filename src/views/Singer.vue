@@ -59,10 +59,10 @@
 
       // 获取歌手的专辑、热门信息、相似歌手等信息
       const getMoreInfo = async () => {
-        if (type.value === 'info' || singerInfo[`${type.value}s`]) {
+        const { id, mid, platform } = route.query;
+        if (type.value === 'info' || singerInfo[`${type.value}s`] || (!mid && !id)) {
           return;
         }
-        const { id, mid, platform } = route.query;
         const { data } = await request({
           api: `SINGER_${type.value.toUpperCase()}`,
           data: { id: mid || id, platform },
@@ -92,12 +92,6 @@
       watch(() => type.value, getMoreInfo);
 
       updateSinger();
-      // request({
-      //   api: 'SINGER_INFO',
-      //   data: {
-      //     id: '',
-      //   }
-      // })
 
       return {
         tabs: [

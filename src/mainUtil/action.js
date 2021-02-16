@@ -1,4 +1,4 @@
-import { ipcMain, dialog, Menu, session } from 'electron';
+import {ipcMain, dialog, Menu, Tray} from 'electron';
 import api from '../../server/api';
 import path from 'path';
 
@@ -8,9 +8,9 @@ export default (app) => {
     try {
       global.port = v;
       api(v);
-      e.reply('REPLY_SERVER_PPINT', { result: true});
+      e.reply('REPLY_SERVER_PPINT', {result: true});
     } catch (err) {
-      e.reply('REPLY_SERVER_PPINT', { result: false, errMsg: err.message});
+      e.reply('REPLY_SERVER_PPINT', {result: false, errMsg: err.message});
     }
   })
 
@@ -21,7 +21,7 @@ export default (app) => {
     }).catch(() => false);
     app.selectDir = app.selectDir || {};
     !canceled && (app.selectDir[type] = filePaths[0]);
-    !canceled && e.reply('REPLY_SELECT_DIR', { type, path: filePaths[0] });
+    !canceled && e.reply('REPLY_SELECT_DIR', {type, path: filePaths[0]});
   })
 
   // 设置下载地址
@@ -29,7 +29,7 @@ export default (app) => {
     const path = v || app.getPath('downloads');
     app.selectDir = app.selectDir || {};
     app.selectDir.download = path;
-    e.reply('REPLY_SELECT_DIR', { path, type: 'download' });
+    e.reply('REPLY_SELECT_DIR', {path, type: 'download'});
   })
 
   // 静默下载
@@ -64,17 +64,51 @@ export default (app) => {
     {
       label: "Edit",
       submenu: [
-        { label: '撤销', accelerator: "CmdOrCtrl+Z", selector: "undo:" },
-        { label: '重做', accelerator: "Shift+CmdOrCtrl+Z", selector: "redo:" },
-        { type: "separator" },
-        { label: '剪切', accelerator: "CmdOrCtrl+X", selector: "cut:" },
-        { label: '复制', accelerator: "CmdOrCtrl+C", selector: "copy:" },
-        { label: '粘贴', accelerator: "CmdOrCtrl+V", selector: "paste:" },
-        { label: '全选', accelerator: "CmdOrCtrl+A", selector: "selectAll:" }
+        {label: '撤销', accelerator: "CmdOrCtrl+Z", selector: "undo:"},
+        {label: '重做', accelerator: "Shift+CmdOrCtrl+Z", selector: "redo:"},
+        {type: "separator"},
+        {label: '剪切', accelerator: "CmdOrCtrl+X", selector: "cut:"},
+        {label: '复制', accelerator: "CmdOrCtrl+C", selector: "copy:"},
+        {label: '粘贴', accelerator: "CmdOrCtrl+V", selector: "paste:"},
+        {label: '全选', accelerator: "CmdOrCtrl+A", selector: "selectAll:"}
       ]
     }
   ];
 
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
+
+  const tray = new Tray(path.join(__static, './16x16.png'))
+  tray.setToolTip('soso music')
+  tray.setContextMenu(Menu.buildFromTemplate([
+    {
+      label: '显示',
+      click() {
+        app.win.show();
+      }
+    },
+    {
+      label: '隐藏',
+      click() {
+        app.win.hide();
+      }
+    },
+    {
+      label: '退出',
+      accelerator: 'Command+Q',
+      selector: 'terminate:',
+      click() {
+        quit();
+      }
+    }
+  ]))
+  app.tray = tray;
+  // 单击右下角小图标显示应用左键
+  tray.on('click', function () {
+    app.win.show();
+  })
+  // // 右键
+  // tray.on('right-click', () => {
+  //   app.win.popUpContextMenu();
+  // });
 }

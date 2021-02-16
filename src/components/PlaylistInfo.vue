@@ -52,7 +52,7 @@
           v-for="(s, i) in list.list"
           :key="`${s}-${i}`"
           :class="`song-item ${playNow.aId === s ? 'played' : ''} ${!allSongs[s].url ? 'disabled' : ''}`"
-          @click="playMusic({ aId: s, list: listInfo.list, listId })"
+          @click="allSongs[s].url && playMusic({ aId: s, list: listInfo.list, listId })"
         >
           <div class="playing-bg" v-if="playNow.aId === s" :style="`width: ${playerStatus.percentage * 100}%`">
             <div class="wave-bg"></div>
@@ -61,30 +61,23 @@
           <span class="song-order">{{smallIndex+i+1}}</span>
           <img class="song-cover" :src="`${allSongs[s].al && allSongs[s].al.picUrl}?param=50y50`" alt=""/>
           <span class="song-name">{{allSongs[s].name}}</span>
-          <!--        <el-tooltip class="item" effect="dark" content="mv" placement="top" v-if="allSongs[s].mvId">-->
-          <!--          <a :href="changeUrlQuery({ id: allSongs[s].mvId, from: allSongs[s].platform }, '#/mv', false)" class="song-mv iconfont icon-mv"></a>-->
-          <!--        </el-tooltip>-->
           <span class="song-artist">{{(allSongs[s].ar || []).map((a) => a.name).join('/')}}</span>
           <div class="icon-container">
-            <!--            <el-tooltip class="item" effect="dark" content="喜欢" placement="top">-->
-            <!--              <i-->
-            <!--                :class="`operation-icon operation-icon-1 iconfont icon-${true ? 'like' : 'unlike'}`"-->
-            <!--              />-->
-            <!--            </el-tooltip>-->
-            <!--            <el-tooltip v-if="allSongs[s].from !== 'migu'"-->
-            <!--                        class="item" effect="dark" content="添加到歌单" placement="top">-->
-            <!--              <i-->
-            <!--                @click="playlistTracks(s, listId, 'add', 'ADD_SONG_2_LIST', allSongs[s].platform)"-->
-            <!--                class="operation-icon operation-icon-2 iconfont icon-add"-->
-            <!--              />-->
-            <!--            </el-tooltip>-->
+            <el-tooltip class="item" effect="dark" content="喜欢" placement="top">
+              <i
+                :class="`operation-icon operation-icon-1 iconfont icon-${favSongMap[allSongs[s].platform][s] ? 'like' : 'unlike'}`"
+                @click="likeMusic(s)"
+              />
+            </el-tooltip>
+            <handle-song :a-id="s" class-name="operation-icon operation-icon-2 ft_14" />
             <el-tooltip v-if="playingList.map[s]" class="item" effect="dark" content="移出播放列表" placement="top">
               <i
                 @click="removeFromPlayinig([s])"
                 class="operation-icon operation-icon-3 iconfont icon-list-reomve"
               />
             </el-tooltip>
-            <el-tooltip v-if="allSongs[s].url && !playingList.map[s]" class="item" effect="dark" content="加入播放列表" placement="top">
+            <el-tooltip v-if="allSongs[s].url && !playingList.map[s]" class="item" effect="dark" content="加入播放列表"
+                        placement="top">
               <i
                 @click="addToPlaying([s])"
                 class="operation-icon operation-icon-3 iconfont icon-list-add"
@@ -94,6 +87,18 @@
               <i
                 @click="download(s)"
                 class="operation-icon operation-icon-4 iconfont icon-download"
+              />
+            </el-tooltip>
+            <el-tooltip
+              v-if="user[listInfo.platform] && user[listInfo.platform].myList && user[listInfo.platform].myList[listId]"
+              class="item"
+              effect="dark"
+              content="从歌单中删除"
+              placement="top"
+            >
+              <i
+                @click="delSongFromList(s, listInfo.id)"
+                class="operation-icon operation-icon-5 iconfont icon-delete"
               />
             </el-tooltip>
             <!--          <el-tooltip class="item" effect="dark" content="从歌单中删除" placement="top">-->
@@ -124,6 +129,7 @@
   import {mixSongHandle, updatePlaying, updatePlayingList, download} from "../utils/store/action";
   import {ElMessage, ElMessageBox} from 'element-plus';
   import PageRightContainer from "./PageRightContainer";
+  import HandleSong from "./HandleSong";
 
   export default {
     name: "PlayListInfo",
@@ -136,6 +142,7 @@
     },
     components: {
       PageRightContainer,
+      HandleSong,
     },
     setup(props) {
       const state = mixInject([
@@ -146,6 +153,7 @@
         'playingList',
         'playerStatus',
         'user',
+        'favSongMap',
       ]);
       const [
         search,
@@ -233,11 +241,11 @@
         // 播放展示的歌曲
         playListShow(force) {
           const {allSongs, playerStatus, playNow} = state;
-          const aId = list.value.find((s) => allSongs[s].url);
+          const aId = list.value.list.find((s) => allSongs[s].url);
           if (!aId) {
             return ElMessage.error('无可播放歌曲');
           }
-          updatePlayingList(list.value, force);
+          updatePlayingList(list.value.list, force);
           force ?
             (playNow.aId = aId) :
             ElMessage.success('已添加至播放列表');
@@ -246,7 +254,7 @@
 
         downShow() {
           const {allSongs} = state;
-          const ids = list.value.filter((s) => allSongs[s].url);
+          const ids = list.value.list.filter((s) => allSongs[s].url);
           if (!ids.length) {
             return ElMessage.info('没有歌呢');
           }
@@ -266,7 +274,7 @@
 
         scrollToPlayNow() {
           const {aId} = state.playNow;
-          const index = list.value.findIndex((v) => v === aId);
+          const index = list.value.list.findIndex((v) => v === aId);
           (index > -1) && containerDom.value.scrollTo(0, index * 71 + listDom.value.offsetTop);
         },
 
@@ -313,7 +321,7 @@
   }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
   @import "../assets/style/value";
 
   .list-detail-container {
@@ -393,8 +401,6 @@
         .list-desc {
           display: -webkit-box;
           overflow: hidden;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
           transition: 0.4s;
           max-height: 44px;
           margin-top: 5px;
@@ -402,8 +408,7 @@
           opacity: 0.8;
 
           &:hover {
-            max-height: 220px;
-            -webkit-line-clamp: 10;
+            max-height: 1000px;
             opacity: 1;
           }
         }

@@ -43,16 +43,11 @@
             {{allSongs[s].ar.map((a) => a.name).join('/')}}
           </div>
           <div class="song-operation">
-<!--            <i-->
-<!--              v-if="favSongMap[allSongs[s].platform]"-->
-<!--              @click="likeMusic(s)"-->
-<!--              :class="`operation-icon operation-icon-1 iconfont icon-${Boolean(favSongMap[allSongs[s].platform][s]) ? 'like' : 'unlike'}`"-->
-<!--            />-->
-<!--            <i-->
-<!--              v-if="allSongs[s].platform !== 'migu'"-->
-<!--              @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST')"-->
-<!--              class="operation-icon operation-icon-2 iconfont icon-add"-->
-<!--            />-->
+            <i
+              @click="likeMusic(s)"
+              :class="`operation-icon operation-icon-1 iconfont icon-${(favSongMap[allSongs[s].platform][s]) ? 'like' : 'unlike'}`"
+            />
+            <handle-song :a-id="s" class-name="operation operation-icon-2" />
             <i
               v-if="!!allSongs[s].url && playingList.map[s]"
               @click="removeFromPlayinig([s])"
@@ -84,6 +79,8 @@
 <script>
   import {mixInject} from "../../utils/store/state";
   import {mixSongHandle, updatePlaying} from "../../utils/store/action";
+  import HandleSong from "../HandleSong";
+  import { changeUrlQuery } from "../../utils/stringHelper";
 
   export default {
     name: "Song",
@@ -95,8 +92,9 @@
       showIndex: Boolean,
       showCover: Boolean,
     },
+    components: { HandleSong },
     setup(props) {
-      const state = mixInject(['allSongs', 'playNow', 'favSongMap', 'playingList', 'playerStatus']);
+      const state = mixInject(['allSongs', 'playNow', 'favSongMap', 'playingList', 'playerStatus', 'favSongMap']);
       return {
         ...state,
 
@@ -114,30 +112,11 @@
           playerStatus.playing = true;
         },
 
+        changeUrlQuery,
+
         ...mixSongHandle,
       };
     },
-    methods: {
-      likeMusic: () => {
-      },
-      changeUrlQuery: () => {
-      },
-      playlistTracks: () => {
-
-      },
-      // ...handlePlayingList,
-      //
-      // likeMusic,
-      //
-      // download,
-      //
-      // changeUrlQuery,
-      //
-      // playlistTracks(tracks, op, type, platform) {
-      //   window.event.stopPropagation();
-      //   this.$store.dispatch('setOperation', { data: { tracks, op }, type, platform });
-      // },
-    }
   }
 </script>
 

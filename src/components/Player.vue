@@ -69,6 +69,12 @@
     />
 
     <div class="control-btn opt-btn" v-if="playNow.url">
+      <span v-if="user[playNow.platform] && user[playNow.platform].logined" class="ml_15 inline-block pd_5" @click="likeMusic(playNow.aId)">
+        <i :class="`iconfont icon-${favSongMap[playNow.platform][playNow.aId] ? 'like' : 'unlike'} ft_16 pointer`" />
+      </span>
+
+      <handle-song :a-id="playNow.aId" className="pd_5" />
+
       <!-- 音量控制 -->
       <div class="volume-control" @mouseleave="showVolume = false">
         <div v-if="showVolume" class="volume-slider-container" @mouseleave="showVolume = false"
@@ -81,7 +87,7 @@
               :max="100"/>
           </div>
         </div>
-        <i class="iconfont icon-volume ml_15 pd_5 ft_18" @mouseover="showVolume = true"/>
+        <i class="iconfont icon-volume pd_5 ft_18" @mouseover="showVolume = true"/>
       </div>
       <!-- 播放顺序 -->
       <div class="order-control" @mouseleave="showOrder = false">
@@ -196,12 +202,14 @@
 
 <script>
   import {mixInject} from "../utils/store/state";
-  import {cutSong, mixSongHandle} from "../utils/store/action";
+  import {cutSong, mixSongHandle, likeMusic} from "../utils/store/action";
   import {changeUrlQuery, transUrl, timeToStr} from '../utils/stringHelper';
   import {ref, computed} from 'vue';
+  import HandleSong from "./HandleSong";
 
   export default {
     name: "Player",
+    components: { HandleSong },
     setup() {
       const state = mixInject([
         'playNow',
@@ -210,6 +218,7 @@
         'allSongs',
         'user',
         'playerList',
+        'favSongMap',
       ])
 
       const pDom = ref();
@@ -248,6 +257,8 @@
         transUrl,
 
         timeToStr,
+
+        likeMusic,
 
       }
     },
@@ -432,7 +443,6 @@
         position: absolute;
         padding-bottom: 40px;
         top: -110px;
-        margin-left: 10px;
         opacity: 1;
         transition: opacity 0.4s, top 0.4s;
         z-index: 10;

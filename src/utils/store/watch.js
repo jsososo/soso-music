@@ -4,6 +4,7 @@ import Storage from "../Storage";
 import { useRoute, useRouter } from 'vue-router';
 import { ipcRenderer } from 'electron';
 import { ElMessage } from "element-plus";
+import request from "../request";
 
 // 监听变化
 export const allWatch = (state) => {
@@ -59,13 +60,29 @@ export const allWatch = (state) => {
     await search(searchInfo);
   })
 
+  watch(() => playNow.pUrl, (v) => {
+    console.log('pUrl', v);
+  })
+
   // 更新正在播放的音乐
   watch(() => playNow.aId, async (aId) => {
     const s = allSongs[aId];
+    const { id, songid, platform } = s;
     !playingList.map[aId] && updatePlayingList([aId]);
     Object.keys(playNow).forEach((k) => delete playNow[k]);
     Object.keys(s).forEach(k => playNow[k] = s[k]);
     !s.lyric && getLyric(aId);
+
+    const { data: { list = [], total = 0 }} = await request({
+      api: 'COMMENT',
+      data: {
+        id: songid || id,
+        platform,
+        hot: 1,
+      }
+    })
+    playNow.hotComments = list;
+    playNow.totalComments = total;
   })
 
   // 更新正在播放的列表

@@ -47,6 +47,7 @@ const state = {
     playing: false,
     loading: true,
   },
+  // 下载列表
   downloadList: Storage.get('soso_music_download', true, '[]').map((v) => {
     if (!v.finished) {
       v.finished = true;
@@ -55,6 +56,22 @@ const state = {
     }
     return v;
   }),
+  // 歌单信息和歌单中的歌曲列表，放在这里是为了方便对歌曲收藏取消操作时好同步数据
+  listInfo: {},
+  // 将歌曲添加到歌单
+  handleSong: {
+    aId: '',
+    selected: '',
+    list: [],
+  },
+  // 发送评论的窗口
+  commentInfo: {
+    open: false,
+    content: '',
+    name: '',
+    reply: null,
+    loading: false,
+  },
   router: {
     history: ['/'],
     back: [],
@@ -64,7 +81,6 @@ const state = {
   // 系统设置
   setting: {
     path: '',
-    platform: '163', // 默认平台
     mode: 'default', // 模式
     volume: 100, // 音量
     orderType: 'suiji',
@@ -89,8 +105,8 @@ const state = {
       QUIT_SIMPLE: '27',
       TO_SIMPLE: ''
     },
-
     ...Storage.get('soso_music_setting', true, '{}'),
+    platform: '163', // 默认平台
   },
 }
 

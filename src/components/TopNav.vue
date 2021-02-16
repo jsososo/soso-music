@@ -70,7 +70,7 @@
     top: 0;
     left: 0;
     opacity: 0.8;
-    padding: 25px 0 10px 20px;
+    padding: 18px 0 10px 20px;
     transition: 0.4s;
 
     * {

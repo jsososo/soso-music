@@ -60,6 +60,7 @@
 </script>
 
 <style lang="scss">
+  @import "../assets/style/value";
   .mode-simple {
     .page-left-nav {
       height: 100px !important;
@@ -130,20 +131,24 @@
 
       &:hover {
         .iconfont {
-          font-size: 30px;
-        }
-        .icon-text {
-          font-size: 20px;
+          background-position-x: 280px;
         }
       }
 
       .iconfont {
+        background-image: linear-gradient(to right, #fff9, #fff9 20%, #fff 40%, #fff 60%, #fffc);
+        background-origin: border-box;
+        background-size: 300px;
+        background-position-x: 0;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+
         display: inline-block;
         vertical-align: top;
         font-size: 24px;
         font-weight: 100;
         opacity: 0.8;
-        transition: 0.3s;
+        transition: 0.5s;
         width: 40px;
         text-align: center;
       }

@@ -1,12 +1,13 @@
 {
   "name": "soso-music",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "electron:build": "node server/copy.js & vue-cli-service electron:build",
+    "electron:build-win32": "node server/copy.js & vue-cli-service electron:build --win --ia32",
     "electron:serve": "node server/copy.js & vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"

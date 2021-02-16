@@ -11,7 +11,7 @@
 
 <script>
   import { useRoute } from 'vue-router';
-  import { watch, ref, reactive } from 'vue';
+  import { watch, ref } from 'vue';
   import {mixInject} from "../utils/store/state";
   import { queryPlayListDetail } from "../utils/store/action";
   import PlaylistInfo from "../components/PlaylistInfo";
@@ -23,11 +23,11 @@
       PlaylistInfo,
     },
     setup() {
-      const state = mixInject(['setting', 'allList', 'playingList'])
+      const state = mixInject(['setting', 'allList', 'playingList', 'listInfo'])
       const route = useRoute();
-      const { setting, allList } = state;
+      const { setting, allList, playingList, listInfo } = state;
 
-      const [platform, id, listInfo] = [ref(''), ref(''), reactive({})];
+      const [platform, id] = [ref(''), ref('')];
       const updateRouter = async ([aId, trueList]) => {
         if (!aId) {
           return;
@@ -49,9 +49,9 @@
           }
         }
       }
-      updateRouter([route.query.aId, state.playingList.trueList])
+      updateRouter([route.query.aId, playingList.trueList])
 
-      watch(() => [route.query.aId, state.playingList.trueList], updateRouter);
+      watch(() => [route.query.aId, playingList.trueList], updateRouter);
 
       return {
         ...state,

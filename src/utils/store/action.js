@@ -7,6 +7,7 @@ import Download from "../download";
 import Id3 from "browser-id3-writer";
 import timer from "../timer";
 import Storage from "../Storage";
+import {ElMessage} from "element-plus";
 
 // 更新歌曲信息，有链接的走这边，会顺带更新播放列表
 export const updateSongInfo = (songInfo) => {
@@ -357,6 +358,8 @@ export const getUserList = async ({ id, platform } = {}) => {
 
     user[_p].playlist = listIds;
 
+    user[_p].favId = listIds[0];
+
     data.forEach(({ creator: { id }, aId }) => {
       (`${id}` === `${uId}`) ?
         (user[_p].myList[aId] = 1) :
@@ -374,7 +377,7 @@ export const get163LoginStatus = async () => {
   if (!account) {
     return false;
   }
-  const { user, setting } = window.$state;
+  const { user, setting, favSongMap } = window.$state;
   user['163'] = {
     ...account,
     ...profile,
@@ -385,6 +388,17 @@ export const get163LoginStatus = async () => {
   };
   setting.store_163 = setting.store_163 || user.id;
   getUserList({ platform: '163' })
+  try {
+    const res = await request({
+      api: '163_LIKELIST',
+      data: { ud: user['163'].id }
+    })
+    const map = {};
+    (res.ids || []).forEach(id => map[`163_${id}`] = 1);
+    favSongMap[163] = map;
+  } catch (err) {
+    console.log('163 likelist err', err.message)
+  }
   return true;
 }
 
@@ -403,7 +417,7 @@ export const getQQLoginStatus = async (c) => {
     }
     cookie = Storage.get('q_cookie');
   }
-  const { setting, user } = window.$state;
+  const { setting, user, favSongMap } = window.$state;
 
   if (typeof cookie === 'string') {
     cookie.split(';').forEach((v) => {
@@ -443,14 +457,19 @@ export const getQQLoginStatus = async (c) => {
     avatar: creator.headpic,
   }
   getUserList({ platform: 'qq' })
-
+  try {
+    const res = await request('QQ_SONG_LIST_MAP')
+    const map = {};
+    Object.keys(res.data.mid).forEach((mid) => map[`qq_${mid}`] = 1)
+    favSongMap.qq = map;
+  } catch (err) {
+    console.log('qq favmap err', err.message);
+  }
   return true;
 }
 
-export const getDaily = async (platform) => {
-  const res = await request({ api: 'DAILY_PLAYLIST', data: { ownCookie: 1 } }, platform);
-  console.log(res);
-}
+// 获取日推
+export const getDaily = async (platform) => request({ api: 'DAILY_PLAYLIST', data: { ownCookie: 1 } }, platform)
 
 // 第一次登录的时候调用
 export const initLogin = () => {
@@ -598,6 +617,7 @@ export const downReq = async (info) => {
   downloadInfo.count -= 1;
 }
 
+// 触发下载
 export const download = async (aId, info) => {
   window.event && window.event.stopPropagation();
   const { allSongs, downloadList } = window.$state;
@@ -622,6 +642,67 @@ export const download = async (aId, info) => {
   downReq(dInfo);
 }
 
+// 添加/删除 歌曲至歌单
+export const addSong2Playlist = async ({ aId, pId, type, toast = true }) => {
+  const { allSongs, allList, user, listInfo } = window.$state;
+  const s = allSongs[aId];
+  if (!s) {
+    return;
+  }
+  await request({
+    api: 'SONG_PLAYLIST',
+    data: {
+      id: s.songid || s.id,
+      mid: s.mid,
+      pId,
+      type,
+      platform: s.platform,
+    }
+  })
+  let l
+  switch (s.platform) {
+    case 'qq':
+      l = Object.values(allList).find(({ dirid, userId }) => userId === user.qq.id && dirid === pId);
+      break;
+    case '163':
+      l = allList[`${s.platform}_${pId}`];
+      break;
+  }
+  if (l) {
+    type ?
+      l.list.unshift(aId) :
+      (l.list = l.list.filter((v) => v !== aId))
+
+    listInfo.aId === l.aId && (listInfo.list = l.list);
+  }
+
+  toast && ElMessage.success('操作成功');
+}
+
+// 喜欢/不喜欢 音乐
+export const likeMusic = async (aId) => {
+  window.event.stopPropagation();
+  const { allSongs, favSongMap, user, allList } = window.$state;
+  const { platform } = allSongs[aId] || {};
+  if (!user[platform] || !user[platform].id) {
+    return ElMessage.warning('先登录');
+  }
+  const type = !favSongMap[platform][aId] / 1
+
+  let pId;
+  switch (platform) {
+    case 'qq':
+      pId = 'qq';
+      break;
+    case '163':
+      pId = allList[user[platform].favId].id;
+      break;
+  }
+  await addSong2Playlist({ aId, pId, type, toast: false });
+  favSongMap[platform][aId] = type;
+  ElMessage.success(type ? '爱上！' : '爱过～')
+}
+
 export const mixSongHandle = {
   download,
   addToPlaying(list) {
@@ -629,8 +710,12 @@ export const mixSongHandle = {
     updatePlayingList(list);
   },
   removeFromPlayinig(list) {
-    console.log(list);
     window.event.stopPropagation();
     updatePlayingList(window.$state.playingList.raw.filter((id) => id.indexOf(list) === -1), true)
+  },
+  likeMusic,
+  delSongFromList(aId, pId) {
+    window.event.stopPropagation();
+    addSong2Playlist({ aId, pId, type: 0 })
   }
 }
