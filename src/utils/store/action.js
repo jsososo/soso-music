@@ -40,22 +40,38 @@ export const getSingleUrl = async (aId, type = 'play') => {
   const bId = s.bId || aId;
   const [_p, id] = bId.split('_');
 
-  let url = s.url, br = s.br || 128000, songEndType = 'mp3';
+  let url = s.url, br = 128000, songEndType = 'mp3';
+
+  const brMap = new Proxy({
+    128: 'url',
+    320: '320'
+  }, {
+    get(v, k) {
+      return v[k] ? v[k] : 'flac';
+    }
+  })
+
   const queryBr = setting[type === 'play' ? 'LISTEN_SIZE' : 'DOWN_SIZE'];
-  try {
-    const { data } = await request({
-      api: 'SINGLE_URL',
-      data: {
-        id,
-        mediaId: s.mediaId,
-        br: queryBr,
-        _p,
-      }
-    });
-    url = data.url || url;
-    br = data.br || br;
-  } catch (err) {
-    console.log('获取url失败了 =.=', id, aId, _p);
+
+  if (s[brMap[queryBr]] && (url.indexOf('.m4a') === -1)) {
+    url = s[brMap[queryBr]];
+    br = {128: 128000, 320: 320000, flac: 960000}[queryBr] || 128000;
+  } else if (!s.bPlatform) {
+    try {
+      const { data } = await request({
+        api: 'SINGLE_URL',
+        data: {
+          id,
+          mediaId: s.mediaId,
+          br: queryBr,
+          _p,
+        }
+      });
+      url = data.url || url;
+      br = data.br || br;
+    } catch (err) {
+      console.log('获取url失败了 =.=', id, aId, _p);
+    }
   }
 
   (br > 320000) && (songEndType = 'flac');
@@ -76,6 +92,64 @@ export const getSingleUrl = async (aId, type = 'play') => {
   }
 }
 
+// 因为调用migu 音乐太费时了，所以改成队列的方式
+const findMusic = {
+  quene: [],
+  num: 0,
+  push(aId) {
+    const { quene } = this;
+    if (aId) {
+      quene.unshift(aId);
+    }
+    if (this.num < 2 && quene.length) {
+      const { allSongs, miguFind } = window.$state;
+      this.num += 1;
+      const aId = quene.shift();
+      const song = allSongs[aId] || { name: '', ar: [] };
+      song.noUrl = true;
+      const key = `${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.map((a) => a.name).join(' ')}`;
+
+      const endCb = (data) => {
+        miguFind[key] = {};
+        if (data) {
+          song.noUrl = false;
+          const { bId, url, platform, flac } = data;
+          miguFind[key] = data;
+          song.bId = bId;
+          song.url = url;
+          song.bPlatform = platform;
+          song.flac = flac;
+          song.br = flac ? 960000 : 128000;
+          song.pUrl = flac || url;
+        }
+        this.num -= 1;
+        this.push();
+      }
+
+      if (miguFind[key]) {
+        return endCb((miguFind[key]))
+      }
+
+      request({
+        api: 'SONG_FIND',
+        method: 'post',
+        data: {
+          list: [{
+            key,
+            id: aId,
+            duration: song.duration,
+          }],
+          _p: song.platform,
+        }
+      }).then(({ data }) => {
+        endCb(data[aId]);
+      }).catch(() => {
+        endCb();
+      })
+    }
+  },
+
+}
 
 // 批量获取 url
 export const getBatchUrl = (list) => {
@@ -104,9 +178,10 @@ export const getBatchUrl = (list) => {
           id: qArr.join(','),
           _p: platform
         }
+      }).catch(() => {
+        return { data: {}}
       }).then(({ data }) => {
         // 把查到的链接放入 allSongs，没有链接的放入 fArr
-        const fArr = [];
         const uArr = [];
         qArr.forEach((id) => {
           const aId = `${platform}_${id}`;
@@ -119,36 +194,11 @@ export const getBatchUrl = (list) => {
               br: 128000,
             });
           } else {
-            fArr.push(id);
+            findMusic.push(aId);
           }
         })
 
         updateSongInfo(uArr);
-        return fArr;
-      }).then(() => {
-        // fArr.length
-        // console.log(fArr)
-        // const list = [fArr];
-      //   fArr.forEach((id) => {
-      //     const aId = `${platform}_${id}`
-      //     const song = allSongs[aId] || { name: '', ar: [] };
-      //     list.push({
-      //       key: `${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.map((a) => a.name).join(' ')}`,
-      //       id: aId,
-      //       duration: song.duration,
-      //     })
-      //     allSongs[aId].noUrl = true;
-      //   })
-      //   return request({
-      //     api: 'SONG_FIND',
-      //     method: 'post',
-      //     data: {
-      //       list,
-      //       _p: platform,
-      //     }
-      //   })
-      // }).then(res => {
-      //   console.log(res);
       })
     }
   })
@@ -498,6 +548,7 @@ export const getLyric = async (aId) => {
   updateSongInfo({ aId, lyric: lyricObj, rawLyric: lyric, rawTrans: trans })
 }
 
+// 获取下载的歌名
 const getDownName = (aId, endType) => {
   const { allSongs, setting } = window.$state;
   const s = (typeof aId === 'string') ? allSongs[aId] : aId;
@@ -517,6 +568,7 @@ const getDownName = (aId, endType) => {
   return `${filename}.${endType}`;
 }
 
+// 下载歌词
 const downLyric = async (info) => {
   const { allSongs, setting } = window.$state;
   let { aId, rawLyric, rawTrans } = info;
@@ -692,7 +744,7 @@ export const likeMusic = async (aId) => {
   let pId;
   switch (platform) {
     case 'qq':
-      pId = 'qq';
+      pId = 201;
       break;
     case '163':
       pId = allList[user[platform].favId].id;
@@ -703,6 +755,7 @@ export const likeMusic = async (aId) => {
   ElMessage.success(type ? '爱上！' : '爱过～')
 }
 
+// 一些通用的歌曲操作处理
 export const mixSongHandle = {
   download,
   addToPlaying(list) {

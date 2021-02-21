@@ -57,6 +57,7 @@
     />
 
     <audio
+      v-if="playNow.pUrl"
       id="m-player"
       ref="pDom"
       class="m-player"
@@ -66,6 +67,7 @@
       @canplaythrough="canPlayThrough"
       @timeupdate="({ target }) => playerStatus.currentTime = target.currentTime"
       @ended="playEnd"
+      @error="playerError"
     />
 
     <div class="control-btn opt-btn" v-if="playNow.url">
@@ -132,77 +134,41 @@
     </div>
 
     <!-- 音量、播放顺序、列表等控制 -->
-    <!--    <div class="other-control inline-block">-->
-    <!--      &lt;!&ndash; 音量控制 &ndash;&gt;-->
-    <!--      <div class="volume-control"  @mouseleave="showVolume = false">-->
-    <!--        <div v-if="showVolume" class="volume-slider-container" @mouseleave="showVolume = false" @mouseover="showVolume = true">-->
-    <!--          <div class="volume-slider" >-->
-    <!--            <el-slider-->
-    <!--              v-model="volume"-->
-    <!--              @input="changeVolume"-->
-    <!--              :vertical="true"-->
-    <!--              height="80px"-->
-    <!--              :max="100"/>-->
-    <!--          </div>-->
-    <!--        </div>-->
-    <!--        <i class="iconfont icon-volume" @mouseover="showVolume = true" />-->
-    <!--      </div>-->
-    <!--      &lt;!&ndash; 播放顺序 &ndash;&gt;-->
-    <!--      <div class="order-control"  @mouseleave="showOrder = false">-->
-    <!--        <div v-if="showOrder" class="order-list-container" @mouseleave="showOrder = false" @mouseover="showOrder = true">-->
-    <!--          <div class="order-list">-->
-    <!--            <div v-for="key in orderList" v-if="orderType !== key" :key="`order-${key}`" @click="changeOrderType(key)">-->
-    <!--              <i :class="`iconfont icon-${key}`" />-->
-    <!--            </div>-->
-    <!--          </div>-->
-    <!--        </div>-->
-    <!--        <div class="now-order-type" @mouseover="showOrder = true" >-->
-    <!--          <i :class="`iconfont icon-${orderType}`" />-->
-    <!--        </div>-->
-    <!--      </div>-->
+<!--        <div class="other-control inline-block">-->
 
-    <!--      &lt;!&ndash; 添加到歌单 &ndash;&gt;-->
-    <!--      <el-tooltip class="item" effect="dark" content="添加到歌单" placement="top">-->
-    <!--        <div class="inline-block ml_5 pd_5" v-if="playNow.platform !== 'migu'">-->
-    <!--            <span @click="playlistTracks(playNow.aId, 'add', 'ADD_SONG_2_LIST')">-->
-    <!--              <i class="iconfont icon-add ft_16 pointer" />-->
-    <!--            </span>-->
-    <!--        </div>-->
-    <!--      </el-tooltip>-->
+<!--          <input id="cp-share-input" :value="changeUrlQuery({ shareId: playNow.id, from: playNow.platform, shareCid: playNow.cid }, 'http://music.jsososo.com/#/', false)">-->
 
-    <!--      <input id="cp-share-input" :value="changeUrlQuery({ shareId: playNow.id, from: playNow.platform, shareCid: playNow.cid }, 'http://music.jsososo.com/#/', false)">-->
-
-    <!--      &lt;!&ndash; 更多 &ndash;&gt;-->
-    <!--      <div class="more-control"  @mouseleave="showMore = false">-->
-    <!--        <div v-if="showMore" class="more-list-container" @mouseleave="showMore = false" @mouseover="showMore = true">-->
-    <!--          <div class="more-list">-->
-    <!--            <div v-for="more in moreList" @click="handleClickMore(more.key)" :key="`more-key-${more.key}`">-->
-    <!--              <i :class="`iconfont icon-${more.key}`" />-->
-    <!--              <span style="padding-left: 5px;">{{more.text}}</span>-->
-    <!--            </div>-->
-    <!--          </div>-->
-    <!--        </div>-->
-    <!--        <div class="ml_10" @mouseover="showMore = true" >-->
-    <!--          <i class="iconfont icon-more" />-->
-    <!--        </div>-->
-    <!--        <div class="rate-slider" v-if="showRateSlider" @mouseleave="showRateSlider = false">-->
-    <!--          <el-slider-->
-    <!--            @input="(v) => playerDom.playbackRate = v"-->
-    <!--            v-model="rate"-->
-    <!--            :max="3"-->
-    <!--            :min="0.3"-->
-    <!--            :step="0.1"-->
-    <!--          />-->
-    <!--        </div>-->
-    <!--      </div>-->
-    <!--      -->
-    <!--    </div>-->
+<!--          &lt;!&ndash; 更多 &ndash;&gt;-->
+<!--          <div class="more-control"  @mouseleave="showMore = false">-->
+<!--            <div v-if="showMore" class="more-list-container" @mouseleave="showMore = false" @mouseover="showMore = true">-->
+<!--              <div class="more-list">-->
+<!--                <div v-for="more in moreList" @click="handleClickMore(more.key)" :key="`more-key-${more.key}`">-->
+<!--                  <i :class="`iconfont icon-${more.key}`" />-->
+<!--                  <span style="padding-left: 5px;">{{more.text}}</span>-->
+<!--                </div>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--            <div class="ml_10" @mouseover="showMore = true" >-->
+<!--              <i class="iconfont icon-more" />-->
+<!--            </div>-->
+<!--            <div class="rate-slider" v-if="showRateSlider" @mouseleave="showRateSlider = false">-->
+<!--              <el-slider-->
+<!--                @input="(v) => playerDom.playbackRate = v"-->
+<!--                v-model="rate"-->
+<!--                :max="3"-->
+<!--                :min="0.3"-->
+<!--                :step="0.1"-->
+<!--              />-->
+<!--            </div>-->
+<!--          </div>-->
+<!--          -->
+<!--        </div>-->
   </div>
 </template>
 
 <script>
   import {mixInject} from "../utils/store/state";
-  import {cutSong, mixSongHandle, likeMusic} from "../utils/store/action";
+  import {cutSong, mixSongHandle, likeMusic, getSingleUrl} from "../utils/store/action";
   import {changeUrlQuery, transUrl, timeToStr} from '../utils/stringHelper';
   import {ref, computed} from 'vue';
   import HandleSong from "./HandleSong";
@@ -225,6 +191,8 @@
 
       state.playerStatus.pDom = pDom;
 
+      let errorId = '';
+
       return {
         ...state,
 
@@ -236,6 +204,7 @@
 
         // 加载完成
         canPlayThrough: ({target}) => {
+          errorId = '';
           state.playerStatus.loading = false;
           state.playerStatus.duration = target.duration;
           state.playerStatus.playing && pDom.value.play();
@@ -249,6 +218,15 @@
         },
 
         ...mixSongHandle,
+
+        async playerError() {
+          if (errorId && errorId === state.playNow.aId) {
+            cutSong('next');
+          } else if (state.playNow.aId) {
+            const { url } = await getSingleUrl(state.playNow.aId);
+            state.playNow.pUrl = url;
+          }
+        },
 
         cutSong,
 

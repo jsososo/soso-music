@@ -1,6 +1,6 @@
 {
   "name": "soso-music",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -9,6 +9,7 @@
     "electron:build": "node server/copy.js & vue-cli-service electron:build",
     "electron:build-win32": "node server/copy.js & vue-cli-service electron:build --win --ia32",
     "electron:serve": "node server/copy.js & vue-cli-service electron:serve",
+    "compile:ts": "node server/compile_ts.js",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"
   },
@@ -16,8 +17,10 @@
   "dependencies": {
     "axios": "^0.21.1",
     "browser-id3-writer": "^4.4.0",
+    "cheerio": "^1.0.0-rc.5",
     "copy-webpack-plugin": "5.0.0",
     "core-js": "^3.6.5",
+    "electron-json-storage": "^4.3.0",
     "element-plus": "^v1.0.1-beta.20",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0-beta.13"

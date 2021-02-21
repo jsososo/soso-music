@@ -35,7 +35,7 @@
             <span class="link-span" @click="jumpOutside('https://github.com/jsososo/MixMusicApi')">jsososo/MixMusicApi</span>
           </div>
           <div>
-            当前版本为测试版，主要缺失功能为：对无法获取链接的歌曲替换，会在下一个版本安排，同时，qq音乐的部分功能在未登录时无法使用，可以先登录
+            当前版本为测试版
           </div>
         </div>
 
@@ -84,7 +84,7 @@
       const type = ref('about');
 
       return {
-        version: '0.1.0',
+        version: '0.2.0',
         versioinType: 'beta',
         type,
         tablist: [
@@ -106,6 +106,12 @@
         ],
         history: [
           {
+            version: '0.2.0',
+            versionType: 'beta',
+            explain: '🍄 无音源歌曲替换',
+            created: '21-02-21',
+          },
+          {
             version: '0.1.0',
             versionType: 'beta',
             explain: '🎡 歌曲操作、评论、日推等',
@@ -125,7 +131,6 @@
           }
         ],
         todoList: [
-          '无音源替换',
           '播放历史',
           '排行榜',
           '极简模式',

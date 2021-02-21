@@ -7,3 +7,6 @@
 [submodule "server/mixApi"]
 	path = server/mixApi
 	url = git@github.com:jsososo/MixMusicApi.git
+[submodule "server/miguApi"]
+	path = server/miguApi
+	url = https://github.com/jsososo/MiguMusicApi.git

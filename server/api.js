@@ -9,25 +9,45 @@ const MixRequest = require('./util/mixRequest');
 const dataHandle = require('./mixApi/util/dataHandle');
 const transRouter = require('./route/trans');
 const allApi = require('./routes');
+const MiguRequest = require('./miguApi/util/request');
+const cheerio = require('cheerio');
+const MiguUtil = require('./miguApi/util/util')
+const MiguSongSaver = require('./miguApi/util/SongSaver').default;
+const findFunc = require('./route/find');
+const JSONStorage = require('electron-json-storage');
 
 const app = express();
 /**/
 global.cache = new Cache();
 global.userCookie = {};
 
+global.findMigu = {};
+global.findId = {};
+JSONStorage.getMany(['find_migu', 'find_id'], (err, data) => {
+  try {
+    if (data) {
+      global.findMigu = JSON.parse(data.find_migu || '{}');
+      global.findId = JSON.parse(data.find_id || '{}');
+    }
+  } catch (err) {
+    console.error(err);
+  }
+})
+
+const songSaver = new MiguSongSaver();
 // CORS & Preflight request
-// app.use((req, res, next) => {
-//   if (req.path !== '/' && !req.path.includes('.')) {
-//     res.set({
-//       'Access-Control-Allow-Credentials': true,
-//       'Access-Control-Allow-Origin': req.headers.origin || '*',
-//       'Access-Control-Allow-Headers': 'X-Requested-With,Content-Type',
-//       'Access-Control-Allow-Methods': 'PUT,POST,GET,DELETE,OPTIONS',
-//       'Content-Type': 'application/json; charset=utf-8',
-//     })
-//   }
-//   req.method === 'OPTIONS' ? res.status(204).end() : next()
-// })
+app.use((req, res, next) => {
+  if (req.path !== '/' && !req.path.includes('.')) {
+    res.set({
+      'Access-Control-Allow-Credentials': true,
+      'Access-Control-Allow-Origin': req.headers.origin || '*',
+      'Access-Control-Allow-Headers': 'X-Requested-With,Content-Type',
+      'Access-Control-Allow-Methods': 'PUT,POST,GET,DELETE,OPTIONS',
+      'Content-Type': 'application/json; charset=utf-8',
+    })
+  }
+  req.method === 'OPTIONS' ? res.status(204).end() : next()
+})
 
 let port;
 
@@ -50,14 +70,6 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 // static
 app.use(express.static(path.join(__dirname, 'public')))
-
-app.use(function(req, res, next) {
-  res.header('Access-Control-Allow-Origin', req.headers.origin);
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  res.header('Access-Control-Allow-Credentials','true');
-  next();
-})
 
 // router
 const special = {
@@ -149,7 +161,11 @@ Object.keys(allApi).forEach((k) => {
           };
           req.query.platform = req.query['_p'].toLowerCase();
           const R = new MixRequest({ req, res, port });
-          const func = (req, res, next) => handler[path]({
+          let h = handler[path];
+          if (`${route}${path}` === 'song/find') {
+            h = findFunc['/']
+          }
+          const func = (req, res, next) => h({
             req,
             res,
             next,
@@ -157,12 +173,36 @@ Object.keys(allApi).forEach((k) => {
             platform: req.query.platform,
             request: R.request,
             R,
+            port,
           });
           router.post('/', func);
           router.get('/', func);
           router(req, res, next);
         })
       });
+      break;
+    case 'miguApi':
+      Object.keys(handler).forEach((path) => {
+        app.use(`/miguApi/${route}${path}`, (req, res, next) => {
+          const router = express.Router();
+          req.query = {
+            ...req.query,
+            ...req.body,
+          };
+          const func = (req, res, next) => handler[path]({
+            req,
+            res,
+            next,
+            request: new MiguRequest.request({ req, res, next }),
+            cheerio,
+            songSaver,
+            ...MiguUtil,
+          });
+          router.post('/', func);
+          router.get('/', func);
+          router(req, res, next);
+        });
+      })
       break;
   }
 })
@@ -177,100 +217,6 @@ app.use('/cookie', (req, res, next) => {
   router.post('/set', require('./route/cookie')['/set']);
   router(req, res, next);
 })
-// 网易云接口
-// fs.readdirSync(path.join(__dirname, '163Api/module'))
-//   .forEach((file) => {
-//     if (!file.endsWith('.js')) return
-//     let route =
-//       file in special
-//         ? special[file]
-//         : '/' + file.replace(/\.js$/i, '').replace(/_/g, '/')
-//
-//     let question = require(`./163Api/module/${file}`);
-//
-//     app.use(`/163api${route}`, (req, res) => {
-//       if (typeof req.query.cookie === 'string') {
-//         req.query.cookie = cookieToJson(req.query.cookie)
-//       }
-//       let query = Object.assign(
-//         {},
-//         { cookie: req.cookies },
-//         req.query,
-//         req.body,
-//         req.files,
-//       )
-//
-//       question(query, request)
-//         .then((answer) => {
-//           console.log('[OK]', decodeURIComponent(req.originalUrl))
-//           res.append('Set-Cookie', answer.cookie)
-//           res.status(answer.status).send(answer.body)
-//         })
-//         .catch((answer) => {
-//           console.log('[ERR]', decodeURIComponent(req.originalUrl), {
-//             status: answer.status,
-//             body: answer.body,
-//           })
-//           if (answer.body.code == '301') answer.body.msg = '需要登录'
-//           res.append('Set-Cookie', answer.cookie)
-//           res.status(answer.status).send(answer.body)
-//         })
-//     })
-//   })
-
-// qq 音乐接口
-// fs.readdirSync(path.join(__dirname, 'qqApi/routes'))
-//   .forEach((file) => {
-//     const filename = file.replace(/\.js$/, '');
-//     app.use(`/qqApi/${filename}`, (req, res, next) => {
-//       global.response = res;
-//       global.req = req;
-//       req.query = {
-//         ...req.query,
-//         ...req.body,
-//       };
-//       // qq 登录
-//       let uin = (req.cookies.uin || '');
-//       // login_type 2 微信登录
-//       if (Number(req.cookies.login_type) === 2) {
-//         uin = req.cookies.wxuin;
-//       }
-//       req.cookies.uin = uin.replace(/\D/g, '');
-//       const callback = require(`./qqApi/routes/${filename}`);
-//       callback(req, res, next);
-//     });
-//   })
-
-
-// mixApi 接口
-// fs.readdirSync(path.join(__dirname, 'mixApi/routes')).reverse().forEach(file => {
-//   const filename = file.replace(/(\.js|\.ts)$/, '');
-//   if (filename === 'index') {
-//     return;
-//   }
-//   app.use(`/mixApi/${filename}`, (req, res, next) => {
-//     const router = express.Router();
-//     req.query = {
-//       ...req.query,
-//       ...req.body,
-//     };
-//     req.query.platform = req.query['_p'].toLowerCase();
-//     const RouterMap = require(`./mixApi/routes/${filename}`);
-//     Object.keys(RouterMap).forEach((path) => {
-//       const func = (req, res, next) => RouterMap[path]({
-//         req,
-//         res,
-//         next,
-//         dataHandle: new dataHandle(req.query.platform),
-//         platform: req.query.platform,
-//         request: new MixRequest({ req, res }).request,
-//       });
-//       router.post(path, func);
-//       router.get(path, func);
-//     });
-//     router(req, res, next);
-//   });
-// });
 
 
 const server = (p) => {
@@ -280,5 +226,6 @@ const server = (p) => {
   app.server = app.listen(p);
 }
 
+// server(4001)
 module.exports = server;
 

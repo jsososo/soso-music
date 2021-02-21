@@ -245,5 +245,15 @@ module.exports = {
 	'qqApi_test': require('./qqApi/routes/test.js'),
 	'qqApi_top': require('./qqApi/routes/top.js'),
 	'qqApi_user': require('./qqApi/routes/user.js'),
-	'qqApi_vkey': require('./qqApi/routes/vkey.js')
+	'qqApi_vkey': require('./qqApi/routes/vkey.js'),
+	'miguApi_album': require('./miguApi/routes/album.js'),
+	'miguApi_index': require('./miguApi/routes/index.js'),
+	'miguApi_lyric': require('./miguApi/routes/lyric.js'),
+	'miguApi_new': require('./miguApi/routes/new.js'),
+	'miguApi_playlist': require('./miguApi/routes/playlist.js'),
+	'miguApi_recommend': require('./miguApi/routes/recommend.js'),
+	'miguApi_search': require('./miguApi/routes/search.js'),
+	'miguApi_singer': require('./miguApi/routes/singer.js'),
+	'miguApi_song': require('./miguApi/routes/song.js'),
+	'miguApi_test': require('./miguApi/routes/test.js')
 }

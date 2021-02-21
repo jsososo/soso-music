@@ -108,6 +108,7 @@ const state = {
     ...Storage.get('soso_music_setting', true, '{}'),
     platform: '163', // 默认平台
   },
+  miguFind: {...Storage.get('soso_music_migu_find', true, '{}')}
 }
 
 const result = {};

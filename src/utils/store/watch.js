@@ -45,6 +45,9 @@ export const allWatch = (state) => {
   // 触发了路由前进
   watch(() => state.router.isReBack, (v) => v && (state.router.back.length) && router.push(state.router.back[0]));
 
+  // 查找到的 咪咕音乐信息
+  watch(state.miguFind, (v) => Storage.set('soso_music_migu_find', toRaw(v), true));
+
   // 设置
   watch(() => Object.values(setting), () => Storage.set('soso_music_setting', toRaw(setting), true))
 

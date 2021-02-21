@@ -17,6 +17,7 @@ class MixRequest {
     return {
       qq: `http://localhost:${port}/qqApi`,
       163: `http://localhost:${port}/163Api`,
+      migu: `http://localhost:${port}/miguApi`,
     }
   }
 
