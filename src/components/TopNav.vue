@@ -19,7 +19,9 @@
 <!--      <div class="top-nav-btn iconfont icon-windmill" />-->
       <a href="#/setting" class="top-nav-btn iconfont icon-setting"  />
 <!--      <div class="top-nav-btn iconfont icon-feedback" />-->
-      <a href="#/about" class="top-nav-btn iconfont icon-version" />
+      <a href="#/about" class="top-nav-btn icon-version-container">
+        <i class="iconfont icon-version ft_20" />
+      </a>
     </div>
   </div>
 </template>
@@ -170,8 +172,10 @@
       }
       .icon-version {
         transform: rotateY(0);
-
-        &:hover {
+        transition: 0.3s;
+      }
+      .icon-version-container:hover {
+        .icon-version {
           transform: rotateY(180deg);
         }
       }

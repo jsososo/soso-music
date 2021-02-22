@@ -12,7 +12,7 @@
         <div class="input-line so-input">
           <div class="input-label">密码</div>
           <div class="input-content">
-            <input type="password" v-model="inputPassword" />
+            <input type="password" @keydown="passwordKeyDown" v-model="inputPassword" />
           </div>
         </div>
         <div :class="`so-btn login-btn ${isLogin && 'actived'}`" @click="login163">
@@ -41,7 +41,9 @@
           </div>
         </info-box>
         <page-right-container>
-          <playlist :list="u.playlist || []" />
+          <book-mark v-model="selectedTab" :tabs="tabs" />
+          <playlist v-if="selectedTab === 'playlist'" :list="u.playlist || []" />
+          <song-list v-if="selectedTab === 'rank' || selectedTab === 'week'" show-index :songs="songs" :count-map="countMap" />
         </page-right-container>
       </div>
     </div>
@@ -50,17 +52,19 @@
 
 <script>
   import {mixInject} from "../utils/store/state";
-  import { computed, ref, watch, nextTick } from "vue";
+  import { computed, ref, watch, nextTick, reactive } from "vue";
   import PageTitle from "../components/PageTitle";
   import request from "../utils/request";
   import { ElMessage } from 'element-plus';
-  import {get163LoginStatus, getQQLoginStatus, getUserList} from "../utils/store/action";
+  import {get163LoginStatus, getQQLoginStatus, getUserList, handleSongs} from "../utils/store/action";
   import InfoBox from "../components/InfoBox";
   import Playlist from "../components/list/playlist";
+  import SongList from '../components/list/song';
   import docCookie from '../utils/cookie';
   import PageRightContainer from "../components/PageRightContainer";
   import Storage from "../utils/Storage";
-  // import BookMark from "../components/BookMark";
+  import BookMark from "../components/BookMark";
+  import {replaceObj} from "../utils/util";
 
   export default {
     name: "User",
@@ -69,7 +73,8 @@
       InfoBox,
       Playlist,
       PageRightContainer,
-      // BookMark,
+      BookMark,
+      SongList,
     },
     setup() {
       const state = mixInject(['user', 'downloadInfo', 'setting'])
@@ -104,10 +109,60 @@
       }
       watch([isLoginQQ, webView], loadWebView)
       loadWebView();
-      watch(() => setting.platform, () => u.value.logined && getUserList())
+      watch(() => setting.platform, () => {
+        u.value.logined && getUserList();
+        if (!tabs.value[selectedTab]) {
+          selectedTab.value = tabs.value[0].val;
+        }
+      })
 
       u.value.logined && getUserList();
 
+      // 书签tab
+      const tabs = computed(() => {
+        const list = [
+          { icon: 'playlist', val: 'playlist', text: '歌单', color: 'red' },
+          { icon: 'week', val: 'week', text: '最近', color: 'green', noqq: true },
+          { icon: 'history', val: 'rank', text: '历史', color: 'blue', noqq: true },
+        ]
+
+        return new Proxy(list.filter((v) => !v[`no${setting.platform}`]), {
+          get(target, key) {
+            return target[key] ?
+              target[key] :
+              target.find(({ val }) => val === key)
+          }
+        });
+      })
+
+      const selectedTab = ref(tabs.value[0].val);
+
+      // 最近听歌的次数/比例
+      const countMap = {};
+      const songs = reactive([]);
+
+      watch(selectedTab, async (v) => {
+        const type = {
+          rank: 0,
+          week: 1,
+        }[v];
+        if (type !== undefined) {
+          const { data = []} = await request({
+            api: 'SONG_RECORD',
+            data: { uid: u.value.id, _p: setting.platform, type }
+          }).catch(() => ({}))
+          const s = [];
+          data.forEach(({ playCount, score, song }) => {
+            s.push(song);
+            countMap[song.aId] = {
+              count: playCount,
+              score,
+            }
+          })
+          replaceObj(songs, handleSongs(s));
+          console.log(songs, countMap);
+        }
+      })
       return {
         ...state,
         u,
@@ -115,6 +170,10 @@
         inputPassword,
         isLogin,
         webView,
+        tabs,
+        selectedTab,
+        songs,
+        countMap,
 
         async login163() {
           if (isLogin.value) {
@@ -157,13 +216,11 @@
               break;
           }
           user[platform] = {};
-
         },
 
-        // tabs: [
-        //   { icon: 'song', val: 'song', color: 'red', text: '歌曲' },
-        // ],
-        // type: 'song',
+        passwordKeyDown({ key }) {
+          key.toUpperCase() === 'ENTER' && this.login163();
+        }
       }
     },
   }

@@ -28,6 +28,7 @@
       </div>
     </div>
     <player />
+    <canvas id="music-data-canvas" />
   </div>
 </template>
 
@@ -207,6 +208,15 @@ export default {
 
     a {
       color: #fffc;
+    }
+
+    #music-data-canvas {
+      position: absolute;
+      z-index: -1;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
     }
 
     .hide-scroll {
@@ -438,6 +448,78 @@ export default {
         .input-content:before {
           transform: translateX(0);
         }
+      }
+    }
+
+    .common-small-box {
+      position: relative;
+      display: inline-block;
+      box-sizing: border-box;
+      text-align: center;
+      width: 200px;
+      margin: 20px 0;
+      transition: 0.3s;
+      opacity: 0.7;
+      box-shadow: 0 0 0 transparent;
+
+      &:hover {
+        opacity: 0.9;
+
+        .box-img-container {
+          border-radius: 5px;
+          box-shadow: 0 0 30px #333333;
+
+          img {
+            width: 170px;
+            height: 170px;
+            top: -10px;
+            left: -10px;
+          }
+
+          .box-name {
+            background: #000a;
+            color: #fff;
+          }
+        }
+      }
+
+      .box-img-container {
+        display: inline-block;
+        width: 150px;
+        height: 150px;
+        position: relative;
+        overflow: hidden;
+        border-radius: 10px;
+        transition: 0.4s;
+
+        img {
+          width: 150px;
+          height: 150px;
+          left: 0;
+          top: 0;
+          position: absolute;
+          transition: 0.3s linear;
+        }
+      }
+      .box-name {
+        position: absolute;
+        right: 5px;
+        top: 6px;
+        max-width: 120px;
+        min-width: 80px;
+        padding: 5px;
+        background: #0009;
+        border-radius: 5px;
+        font-size: 14px;
+        overflow: hidden;
+        box-sizing: border-box;
+        text-align: center;
+        color: #fffc;
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        transition: 0.3s;
       }
     }
   }

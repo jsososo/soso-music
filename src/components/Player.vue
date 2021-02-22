@@ -172,6 +172,8 @@
   import {changeUrlQuery, transUrl, timeToStr} from '../utils/stringHelper';
   import {ref, computed} from 'vue';
   import HandleSong from "./HandleSong";
+  import { ipcRenderer } from 'electron';
+  import DrawMusic from "../utils/drawMusic";
 
   export default {
     name: "Player",
@@ -189,9 +191,22 @@
 
       const pDom = ref();
 
-      state.playerStatus.pDom = pDom;
+      const { playerStatus, playNow } = state;
+      playerStatus.pDom = pDom;
 
       let errorId = '';
+
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.setActionHandler('play', () => playerStatus.playing = true);
+        navigator.mediaSession.setActionHandler('pause', () => playerStatus.playing = false);
+        navigator.mediaSession.setActionHandler('previoustrack', () => cutSong('prev'));
+        navigator.mediaSession.setActionHandler('nexttrack', () => cutSong('next'));
+      }
+
+      ipcRenderer.on('PLAY_MUSIC', () => playerStatus.playing = !playerStatus.playing);
+      ipcRenderer.on('PLAY_PREV', () => cutSong('prev'));
+      ipcRenderer.on('PLAY_NEXT', () => cutSong('next'));
+      ipcRenderer.on('LIKE_MUSIC', () => likeMusic(playNow.aId));
 
       return {
         ...state,
@@ -204,6 +219,16 @@
 
         // 加载完成
         canPlayThrough: ({target}) => {
+
+          if (!window.drawMusic && (window.AudioContext || window.webkitAudioContext)) {
+            window.drawMusic = new DrawMusic();
+            const draw = () => {
+              window.drawMusic && window.drawMusic.draw();
+              window.requestAnimationFrame(draw);
+            }
+            window.requestAnimationFrame(draw);
+          }
+
           errorId = '';
           state.playerStatus.loading = false;
           state.playerStatus.duration = target.duration;
@@ -240,6 +265,9 @@
 
       }
     },
+    mounted() {
+
+    }
   }
 </script>
 

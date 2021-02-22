@@ -50,6 +50,10 @@ const routes = [
   {
     path: '/comment',
     component: () => import('./views/Comment'),
+  },
+  {
+    path: '/top',
+    component: () => import('./views/Top'),
   }
 ]
 

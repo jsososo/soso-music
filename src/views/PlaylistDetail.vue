@@ -43,6 +43,7 @@
             replaceObj(listInfo, { list: (allList[`${setting.platform}_daily`] || {}).list || [], aId: `${setting.platform}_daily` });
             break;
           default: {
+            replaceObj(listInfo, allList[aId] || {});
             const data = await queryPlayListDetail(aId);
             replaceObj(listInfo, data);
             break;

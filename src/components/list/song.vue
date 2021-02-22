@@ -49,12 +49,12 @@
             />
             <handle-song :a-id="s" class-name="operation operation-icon-2" />
             <i
-              v-if="!!allSongs[s].url && playingList.map[s]"
+              v-if="!!allSongs[s].url && playingList[s]"
               @click="removeFromPlayinig([s])"
               class="operation-icon operation-icon-3 iconfont icon-list-reomve"
             />
             <i
-              v-if="!!allSongs[s].url && !playingList.map[s]"
+              v-if="!!allSongs[s].url && !playingList[s]"
               @click="addToPlaying([s])"
               class="operation-icon operation-icon-3 iconfont icon-list-add"
             />
@@ -237,7 +237,7 @@
       position: absolute;
       bottom: 15px;
       font-weight: bold;
-      right: 30px;
+      right: 10px;
       color: #fff8;
     }
 

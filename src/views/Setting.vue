@@ -11,6 +11,37 @@
             <el-button v-if="serverPort !== setting.SERVER_PORT" size="small" class="ml_15" @click="savePort">重启</el-button>
           </div>
         </div>
+
+        <div class="input-line">
+          <div class="input-label">看见音乐：</div>
+          <div class="input-content">
+            <el-switch v-model="setting.DRAW_MUSIC" />
+          </div>
+        </div>
+        <block v-if="setting.DRAW_MUSIC">
+          <div class="input-line">
+            <div class="input-label">频谱设置：</div>
+            <div class="input-content">
+              <el-radio-group size="small" v-model="setting.DRAW_MUSIC_TYPE">
+                <el-radio-button label="1">低频 => 高频</el-radio-button>
+                <el-radio-button label="2">高频 => 低频 => 高频</el-radio-button>
+              </el-radio-group>
+            </div>
+          </div>
+          <div class="input-line">
+            <div class="input-label">音频样式：</div>
+            <div class="input-content">
+              <el-radio-group size="small" v-model="setting.DRAW_MUSIC_STYLE">
+                <el-radio-button label="rect">柱状图</el-radio-button>
+                <el-radio-button label="line">曲线</el-radio-button>
+                <el-radio-button label="particle">泡泡</el-radio-button>
+                <el-radio-button label="circle">圈圈</el-radio-button>
+                <el-radio-button label="circle2">海螺</el-radio-button>
+                <el-radio-button label="voice">音柱</el-radio-button>
+              </el-radio-group>
+            </div>
+          </div>
+        </block>
 <!--        <div class="input-line">-->
 <!--          <div class="input-label">播放格式：</div>-->
 <!--          <div class="input-content">-->
@@ -25,6 +56,7 @@
 <!--          </div>-->
 <!--        </div>-->
       </div>
+
       <div v-if="setting.tab === 'download'">
         <div class="input-line">
           <div class="input-label">下载路径：</div>

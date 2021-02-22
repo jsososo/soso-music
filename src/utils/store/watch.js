@@ -18,15 +18,25 @@ export const allWatch = (state) => {
     setting,
     downloadList,
     downloadInfo,
+    favSongMap,
+    user,
   } = state;
 
   const route = useRoute();
   const router = useRouter();
 
+  watch(() => [playNow.aId, playerStatus.playing, playNow.liked, user.qq, user['163']], () => {
+    ipcRenderer.send('UPDATE_PLAYING_STATUS', {
+      name: playNow.name,
+      liked: playNow.liked || (playNow.platform && favSongMap[playNow.platform][playNow.aId]),
+      logined: !!(user[playNow.platform] || {}).logined,
+      status: playerStatus.playing,
+    })
+  })
+
   // 监听路由变化，前进后退存储
   watch(() => route.fullPath, (v) => {
     const { isBack, isReBack, history, back } = state.router;
-    console.log(isBack, state.router.back);
     if (isBack && history.length > 1) {
       state.router.isBack = false;
       return back.unshift(history.pop());
@@ -63,15 +73,42 @@ export const allWatch = (state) => {
     await search(searchInfo);
   })
 
-  watch(() => playNow.pUrl, (v) => {
-    console.log('pUrl', v);
-  })
-
   // 更新正在播放的音乐
-  watch(() => playNow.aId, async (aId) => {
+  watch(() => playNow.aId, async (aId, oldAId) => {
     const s = allSongs[aId];
-    const { id, songid, platform } = s;
-    !playingList.map[aId] && updatePlayingList([aId]);
+    const { id, songid, platform, al } = s;
+    const oldS = allSongs[oldAId];
+    playNow.liked = favSongMap[platform][aId];
+
+    if (oldS && oldS.platform === '163') {
+      request({
+        api: 'SCROBBLE',
+        data: {
+          id,
+          sourceid: al.id || 'daily',
+          time: Math.round(playerStatus.currentTime),
+        }
+      })
+    }
+
+    if ('mediaSession' in navigator && window.MediaMetadata) {
+      const { name, ar = [], al = {} } = s;
+      navigator.mediaSession.metadata = new window.MediaMetadata({
+        title: name,
+        artist: ar.map((v) => v.name).join('/'),
+        album: al.name,
+        artwork: [
+          {src: al.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg', sizes: '96x96'},
+          {src: al.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg', sizes: '128x128'},
+          {src: al.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg', sizes: '192x192'},
+          {src: al.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg', sizes: '256x256'},
+          {src: al.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg', sizes: '384x384'},
+          {src: al.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg', sizes: '512x512'},
+        ]
+      });
+    }
+
+    !playingList[aId] && updatePlayingList([aId]);
     Object.keys(playNow).forEach((k) => delete playNow[k]);
     Object.keys(s).forEach(k => playNow[k] = s[k]);
     !s.lyric && getLyric(aId);
@@ -90,18 +127,10 @@ export const allWatch = (state) => {
 
   // 更新正在播放的列表
   watch(() => playingList.raw, (raw) => {
-    const map = {};
-    const trueList = [];
-
-    (raw.indexOf(playNow.aId) < 0) && raw.push(playNow.aId);
+    !playingList[playNow.aId] && raw.push(playNow.aId);
 
     // 筛选出有音乐的列表
-    raw.forEach((aId) => {
-      map[aId] = true;
-      allSongs[aId].url && trueList.push(aId);
-    })
-    playingList.map = map;
-    playingList.trueList = trueList;
+    playingList.trueList = raw.filter((aId) => allSongs[aId].url);
   })
 
   // 监听正在播放的列表，用来更新随机列表
@@ -151,6 +180,7 @@ export const allWatch = (state) => {
       ElMessage.error(`启动失败，建议：${errMsg}`)
   })
 
+  // 选择文件夹地址
   ipcRenderer.on('REPLY_SELECT_DIR', (e, { path, type }) => {
     const { setting } = window.$state;
     switch (type) {

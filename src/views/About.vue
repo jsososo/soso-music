@@ -32,6 +32,8 @@
             <br />
             <span class="link-span" @click="jumpOutside('https://github.com/jsososo/QQMusicApi')">jsososo/QQMusicApi</span>
             <br />
+            <span class="link-span" @click="jumpOutside('https://github.com/jsososo/MiguMusicApi')">jsososo/MiguMusicApi</span>
+            <br />
             <span class="link-span" @click="jumpOutside('https://github.com/jsososo/MixMusicApi')">jsososo/MixMusicApi</span>
           </div>
           <div>
@@ -84,7 +86,7 @@
       const type = ref('about');
 
       return {
-        version: '0.2.0',
+        version: '0.3.0',
         versioinType: 'beta',
         type,
         tablist: [
@@ -132,9 +134,7 @@
         ],
         todoList: [
           '播放历史',
-          '排行榜',
           '极简模式',
-          '音频可视化',
           '电台',
           '。。。',
         ],

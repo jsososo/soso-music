@@ -33,14 +33,18 @@ const state = {
     migu: {},
   },
   // 播放列表
-  playingList: {
+  playingList: new Proxy({
     random: [],
     raw: [],
-    map: {},
     trueList: [],
     history: [],
     index: 0,
-  },
+  }, {
+    get(target, key) {
+      return target[key] ? target[key] :
+        target.raw.find((aId) => aId === key)
+    },
+  }),
   // 正在播放的音乐
   playNow: {},
   playerStatus: {
@@ -96,6 +100,9 @@ const state = {
     SERVER_PORT: '3090',
     store_qq: '',
     store_163: '',
+    DRAW_MUSIC: true,
+    DRAW_MUSIC_TYPE: '1',
+    DRAW_MUSIC_STYLE: 'rect',
     codeMap: {
       PLAY_NEXT: '39',
       PLAY_PREV: '37',

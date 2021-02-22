@@ -70,13 +70,13 @@
               />
             </el-tooltip>
             <handle-song :a-id="s" class-name="operation-icon operation-icon-2 ft_14" />
-            <el-tooltip v-if="playingList.map[s]" class="item" effect="dark" content="移出播放列表" placement="top">
+            <el-tooltip v-if="playingList[s]" class="item" effect="dark" content="移出播放列表" placement="top">
               <i
                 @click="removeFromPlayinig([s])"
                 class="operation-icon operation-icon-3 iconfont icon-list-reomve"
               />
             </el-tooltip>
-            <el-tooltip v-if="allSongs[s].url && !playingList.map[s]" class="item" effect="dark" content="加入播放列表"
+            <el-tooltip v-if="allSongs[s].url && !playingList[s]" class="item" effect="dark" content="加入播放列表"
                         placement="top">
               <i
                 @click="addToPlaying([s])"
@@ -286,38 +286,6 @@
         ...mixSongHandle,
       }
     },
-    methods: {
-
-      // downShow() {
-      //   const { allSongs, list } = this;
-      //   const songList = list.filter((id) => !!allSongs[id].url);
-      //   if (!songList.length) {
-      //     return this.$message.info('没有歌呢');
-      //   }
-      //
-      //   this.$confirm(`批量下载${songList.length}首歌曲？`, '提示', {
-      //     confirmButtonText: '确定',
-      //     cancelButtonText: '取消',
-      //     type: 'warning'
-      //   }).then(() => {
-      //     this.$message.info('为了防止服务器误封高频ip，批量下载一秒增加一个任务');
-      //     songList.forEach((id, i) => {
-      //       setTimeout(() => download(id), i * 1000);
-      //     })
-      //   });
-      //
-      // },
-
-      // likeMusic,
-      // playlistTracks(tracks, pid, op, type, platform) {
-      //   window.event.stopPropagation();
-      //   this.$store.dispatch('setOperation', {data: {tracks, pid, op}, type, platform});
-      // },
-      // download,
-      // collectPlaylist,
-
-      // ...handlePlayingList,
-    }
   }
 </script>
 
@@ -547,6 +515,7 @@
 
           .song-artist {
             transform: translate(55px);
+            width: calc(50% - 100px);
           }
 
           .song-order {
@@ -637,7 +606,7 @@
           vertical-align: top;
           padding-top: 20px;
           transition: 0.3s;
-          width: calc(50% - 100px);
+          width: calc(90% - 100px);
           overflow: hidden;
           white-space: nowrap;
           text-overflow: ellipsis;

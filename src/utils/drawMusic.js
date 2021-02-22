@@ -1,9 +1,9 @@
-import Storage from "./Storage";
-
 export default class DrawMusic {
   constructor() {
     const canvas = document.getElementById('music-data-canvas');
     this.ctx = canvas.getContext('2d');
+    this.canvas = canvas;
+    this.setting = window.$state.setting;
 
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     const ctx = new AudioContext();
@@ -28,7 +28,7 @@ export default class DrawMusic {
     this.source = source;
     const bufferLength = analyser.frequencyBinCount;
     this.musicDataArray = new Uint8Array(bufferLength);
-    this.drawType = Storage.get('drawMusicStyle');
+    this.drawType = this.setting.DRAW_MUSIC_TYPE;
     this.quadraticCurve = this.quadraticCurve.bind(this);
   }
 
@@ -45,7 +45,7 @@ export default class DrawMusic {
   // 贝塞尔曲线
   quadraticCurve({ x = [], y = [], strokeStyle, lineWidth }) {
     const { ctx } = this;
-    let px = 0, py = 0, phx, phy, hx, hy;
+    let px = 0, py = 0, hx, hy;
     const hxArr = [];
     const hyArr = [];
     ctx.beginPath();
@@ -67,8 +67,6 @@ export default class DrawMusic {
       }
       px = v;
       py = y[i];
-      phx = hx;
-      phy = hy;
       if (hx === hx) {
         hxArr.push(hx);
         hyArr.push(hy);
@@ -79,7 +77,7 @@ export default class DrawMusic {
       x: hxArr,
       y: hyArr,
     }
-  };
+  }
 
   // 画各种直线
   drawLines(lines, { strokeStyle: commonStrokeStyle, lineWidth: commonLineWidth } = {}) {
@@ -92,7 +90,7 @@ export default class DrawMusic {
       ctx.lineTo(x1, y1);
       ctx.stroke();
     });
-  };
+  }
 
   // 柱状音频图
   drawMusicRect() {
@@ -120,7 +118,7 @@ export default class DrawMusic {
     const { ctx, pageHeight } = this;
     let linearGradient;
     this.nowData.forEach((v, i) => {
-      const { x, y, w, h } = this.getDrawData(i, ['x', 'y', 'w', 'h'])
+      const { x, w, h } = this.getDrawData(i, ['x', 'y', 'w', 'h'])
       linearGradient = ctx.createLinearGradient(
         x,
         pageHeight,
@@ -155,16 +153,16 @@ export default class DrawMusic {
     const { quadraticCurve } = this;
     const [arr0, arr1, arr2, xArr] = [[], [], [], []];
     this.nowData.forEach((v, i) => {
-      const { x, y, y1, y2 } = this.getDrawData(i, ['x', 'y1', 'y2']);
+      const { x, y, y1, y2 } = this.getDrawData(i, ['x', 'y', 'y1', 'y2']);
       arr0.push(y);
       arr1.push(y1);
       arr2.push(y2);
       xArr.push(x);
     })
 
-    quadraticCurve({ x: xArr, y: arr0, lineWidth: 8, strokeStyle: '#409EFF33'  });
+    quadraticCurve({ x: xArr, y: arr0, lineWidth: 5, strokeStyle: '#409EFF33'  });
     quadraticCurve({ x: xArr, y: arr1, lineWidth: 3, strokeStyle: '#5cB87a33' });
-    quadraticCurve({ x: xArr, y: arr2, lineWidth: 5, strokeStyle: '#E6A23C33' });
+    quadraticCurve({ x: xArr, y: arr2, lineWidth: 3, strokeStyle: '#E6A23C33' });
   }
 
   // 圆圈音频图
@@ -209,7 +207,7 @@ export default class DrawMusic {
     const { nowData, fftSize, pageWidth, pageHeight, ctx } = this;
     let arr = [], gradient;
     nowData.forEach((v, i) => {
-      let { r, a: angle, h } = this.getDrawData(i, ['r', 'a', 'h'])
+      let { r, a: angle } = this.getDrawData(i, ['r', 'a', 'h'])
       r *= 0.8 * (1 - i / (fftSize / 2)) * (1 - i / ((fftSize / 2)));
       angle *= 4;
       if (angle > 4 * Math.PI || angle < 0)
@@ -276,13 +274,14 @@ export default class DrawMusic {
         case 'h':
           result[k] = v / 256 * pageHeight / 2;
           break;
-        case 'a':
+        case 'a': {
           let a = Math.PI / (num / 4 * 3);
           result[k] = {
             1: a * i,
             2: a * (i - num / 8),
           }[drawMusicType];
           break;
+        }
         case 'r':
           result[k] = pageHeight / 4;
           break;
@@ -291,19 +290,22 @@ export default class DrawMusic {
     return result;
   }
 
-  draw(useActx) {
+  draw(useActx = true) {
+    const { setting } = this;
     this.pageWidth = window.innerWidth;
     this.pageHeight = window.innerHeight;
+    this.canvas.width = this.pageWidth;
+    this.canvas.height = this.pageHeight;
     const { ctx, pageWidth, pageHeight } = this;
-    if (!useActx || Storage.get('showDrawMusic') === '0') {
+    if (!useActx || !setting.DRAW_MUSIC) {
       ctx.clearRect(0, 0, pageWidth, pageHeight);
       return;
     }
     const { musicDataArray, playerAnalyser } = this;
     playerAnalyser.getByteFrequencyData(musicDataArray);
 
-    const drawMusicType = Storage.get('drawMusicType');
-    const drawMusicStyle = Storage.get('drawMusicStyle');
+    const drawMusicType = setting.DRAW_MUSIC_TYPE;
+    const drawMusicStyle = setting.DRAW_MUSIC_STYLE;
     this.drawMusicType = drawMusicType;
 
     if (this.drawMusicStyle !== drawMusicStyle) {
@@ -339,8 +341,8 @@ class Particle {
     this.data = {
       x: pageWidth * i / (fftSize / 2),
       y: pageHeight,
-      r: Math.random() * 5 + (value / 256 * 7),
-      t: value / 256 * 100, // 透明度
+      r: Math.random() * 4 + (value / 256 * 5),
+      t: value / 256 * 90, // 透明度
       vx: Math.random() * 5 - 3, // 横向速度
       tx: Math.random() > 0.5, // 向左还是向右
       vy: Math.random() * 2 + 2, // 垂直速度
@@ -354,7 +356,7 @@ class Particle {
 
   move() {
     const o = this.data;
-    if (o.t < 1 || o.r < 2) {
+    if (o.t < 1 || o.r < 1) {
       this.disappear = true;
       return;
     }

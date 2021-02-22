@@ -11,14 +11,14 @@ import {ElMessage} from "element-plus";
 
 // 更新歌曲信息，有链接的走这边，会顺带更新播放列表
 export const updateSongInfo = (songInfo) => {
-  const { allSongs, playingList, playNow } = window.$state;
+  const {allSongs, playingList, playNow} = window.$state;
   const arr = Array.isArray(songInfo) ? songInfo : [songInfo];
 
   let needUpdateList = false;
   arr.forEach(info => {
-    const { aId, url } = info;
-    allSongs[aId] = { ...(allSongs[aId] || {}), ...info }
-    needUpdateList = needUpdateList || (playingList.map[aId] && url);
+    const {aId, url} = info;
+    allSongs[aId] = {...(allSongs[aId] || {}), ...info}
+    needUpdateList = needUpdateList || (playingList[aId] && url);
 
     // 更新一下 playNow
     (aId === playNow.aId) && (Object.keys(info).forEach(k => playNow[k] = info[k]))
@@ -30,7 +30,7 @@ export const updateSongInfo = (songInfo) => {
 
 // 获取单个歌曲的链接
 export const getSingleUrl = async (aId, type = 'play') => {
-  const { allSongs, setting } = window.$state;
+  const {allSongs, setting} = window.$state;
 
   const s = allSongs[aId];
   if (!s.url) {
@@ -58,7 +58,7 @@ export const getSingleUrl = async (aId, type = 'play') => {
     br = {128: 128000, 320: 320000, flac: 960000}[queryBr] || 128000;
   } else if (!s.bPlatform) {
     try {
-      const { data } = await request({
+      const {data} = await request({
         api: 'SINGLE_URL',
         data: {
           id,
@@ -97,15 +97,15 @@ const findMusic = {
   quene: [],
   num: 0,
   push(aId) {
-    const { quene } = this;
+    const {quene} = this;
     if (aId) {
       quene.unshift(aId);
     }
     if (this.num < 2 && quene.length) {
-      const { allSongs, miguFind } = window.$state;
+      const {allSongs, miguFind} = window.$state;
       this.num += 1;
       const aId = quene.shift();
-      const song = allSongs[aId] || { name: '', ar: [] };
+      const song = allSongs[aId] || {name: '', ar: []};
       song.noUrl = true;
       const key = `${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.map((a) => a.name).join(' ')}`;
 
@@ -113,7 +113,7 @@ const findMusic = {
         miguFind[key] = {};
         if (data) {
           song.noUrl = false;
-          const { bId, url, platform, flac } = data;
+          const {bId, url, platform, flac} = data;
           miguFind[key] = data;
           song.bId = bId;
           song.url = url;
@@ -141,7 +141,7 @@ const findMusic = {
           }],
           _p: song.platform,
         }
-      }).then(({ data }) => {
+      }).then(({data}) => {
         endCb(data[aId]);
       }).catch(() => {
         endCb();
@@ -153,12 +153,12 @@ const findMusic = {
 
 // 批量获取 url
 export const getBatchUrl = (list) => {
-  const { allSongs } = window.$state;
+  const {allSongs} = window.$state;
   const map = {};
 
   // 把传进来的歌曲分类分好
   list.forEach((aId) => {
-    const { platform } = allSongs[aId];
+    const {platform} = allSongs[aId];
     map[platform] = map[platform] || [];
     map[platform].push(aId);
   })
@@ -169,7 +169,7 @@ export const getBatchUrl = (list) => {
     arr.reverse();
 
     // 这个接口一次查询99首
-    while(arr.length) {
+    while (arr.length) {
       const qArr = arr.splice(-99).map((id) => id.replace(`${platform}_`, ''));
       request({
         api: 'BATCH_URL',
@@ -179,23 +179,20 @@ export const getBatchUrl = (list) => {
           _p: platform
         }
       }).catch(() => {
-        return { data: {}}
-      }).then(({ data }) => {
+        return {data: {}}
+      }).then(({data}) => {
         // 把查到的链接放入 allSongs，没有链接的放入 fArr
         const uArr = [];
         qArr.forEach((id) => {
           const aId = `${platform}_${id}`;
           const url = data[id];
-          if (url) {
-            uArr.push({
+          url ? uArr.push({
               aId,
               url,
               pUrl: url,
               br: 128000,
-            });
-          } else {
+            }) :
             findMusic.push(aId);
-          }
         })
 
         updateSongInfo(uArr);
@@ -206,23 +203,24 @@ export const getBatchUrl = (list) => {
 
 // 歌曲的批量处理
 export const handleSongs = (list) => {
-  const { allSongs } = window.$state;
+  const {allSongs} = window.$state;
   const getUrlArr = [];
   list.forEach((s) => {
-    allSongs[s.aId] = { ...(allSongs[s.aId] || {}), ...s };
+    s.url = s.url || (allSongs[s.aId] || {}).url;
+    allSongs[s.aId] = {...(allSongs[s.aId] || {}), ...s};
     !allSongs[s.aId].url && !allSongs[s.aId].noUrl && (getUrlArr.push(s.aId));
   })
 
   getBatchUrl(getUrlArr);
-  return list.map(({ aId }) => aId);
+  return list.map(({aId}) => aId);
 }
 
 // 批量处理歌单
 export const handlePlayLists = (list) => {
-  const { allList } = window.$state;
+  const {allList} = window.$state;
   return list.map((p) => {
     p.aId = p.aId || p.listId;
-    allList[p.aId] = { ...(allList[p.aId] || {}), ...p };
+    allList[p.aId] = {...(allList[p.aId] || {}), ...p};
     allList[p.aId].list = (allList[p.aId].list || []).map((s) => typeof s === 'string' ? s : s.aId);
     return p.aId;
   })
@@ -231,34 +229,34 @@ export const handlePlayLists = (list) => {
 // 查询歌单详情
 export const queryPlayListDetail = async (aId) => {
   const [_p, id] = aId.split('_');
-  const { data } = await request({
+  const {data} = await request({
     api: 'PLAYLIST',
-    data: { id, _p }
-  }).catch(() => ({ aId }))
+    data: {id, _p}
+  }).catch(() => ({aId}))
   data && handlePlayLists([data]);
   if (data.list && (typeof data.list[0] === 'object')) {
     handleSongs(data.list);
-    data.list = data.list.map(({ aId }) => aId);
+    data.list = data.list.map(({aId}) => aId);
   }
   return data;
 }
 
 // 搜索
-export const search = async ({ keyword: key, type, pageNo, pageSize }) => {
+export const search = async ({keyword: key, type, pageNo, pageSize}) => {
   const _p = window.$state.setting.platform;
-  const { data: { list, total }} = await request({
+  const {data: {list, total}} = await request({
     api: 'SEARCH',
-    data: { key, type, _p, pageSize, pageNo },
+    data: {key, type, _p, pageSize, pageNo},
   })
-  const { searchInfo } = window.$state;
+  const {searchInfo} = window.$state;
   switch (Number(type)) {
     case 0:
       handleSongs(list);
-      searchInfo.result[type] = list.map(({ aId }) => aId);
+      searchInfo.result[type] = list.map(({aId}) => aId);
       break;
     case 1:
       handlePlayLists(list);
-      searchInfo.result[type] = list.map(({ aId }) => aId);
+      searchInfo.result[type] = list.map(({aId}) => aId);
       break;
     default:
       searchInfo.result[type] = list;
@@ -269,7 +267,7 @@ export const search = async ({ keyword: key, type, pageNo, pageSize }) => {
 
 // 更新播放队列
 export const updatePlayingList = (list, force) => {
-  const { playingList, playNow } = window.$state;
+  const {playingList, playNow} = window.$state;
 
   if (force) {
     playingList.raw = list;
@@ -282,7 +280,7 @@ export const updatePlayingList = (list, force) => {
 
 // 更新当前播放歌曲 & 且更新播放队列
 export const updatePlaying = (aId, list, force = true) => {
-  const { playNow } = window.$state;
+  const {playNow} = window.$state;
   playNow.aId = aId;
   updatePlayingList(list, force);
 }
@@ -291,8 +289,8 @@ export const updatePlaying = (aId, list, force = true) => {
 export const playPrev = () => {
   const {playingList, allSongs, playNow, setting} = window.$state;
   const {history, index, trueList, random} = playingList;
-  const { orderType } = setting;
-  const { aId } = playNow;
+  const {orderType} = setting;
+  const {aId} = playNow;
   if (index > 0) {
     playingList.index -= 1;
     if (!history[playingList.index] || !allSongs[history[playingList.index]]) {
@@ -317,15 +315,15 @@ export const playPrev = () => {
 
 // 下一首
 export const playNext = () => {
-  const { playingList, allSongs, playNow, setting, playerStatus } = window.$state;
-  const { orderType } = setting;
-  const { history, index, trueList, random } = playingList;
-  const { aId } = playNow;
+  const {playingList, allSongs, playNow, setting, playerStatus} = window.$state;
+  const {orderType} = setting;
+  const {history, index, trueList, random} = playingList;
+  const {aId} = playNow;
   playingList.index += 1;
   if (index < history.length - 1) {
     return playNow.aId = history[playingList.index];
   }
-  if (aId && playingList.history[playingList.history.length-1] !== aId) {
+  if (aId && playingList.history[playingList.history.length - 1] !== aId) {
     playingList.history.push(aId);
   }
 
@@ -382,8 +380,8 @@ export const getUrl = async (id, br, _p) => {
 }
 
 // 获取用户歌单
-export const getUserList = async ({ id, platform } = {}) => {
-  const { user, setting } = window.$state;
+export const getUserList = async ({id, platform} = {}) => {
+  const {user, setting} = window.$state;
   const _p = platform || setting.platform;
   const uId = id || user[_p].id;
 
@@ -391,7 +389,7 @@ export const getUserList = async ({ id, platform } = {}) => {
     return false
   }
 
-  const { data } = await request({
+  const {data} = await request({
     api: 'USER_PLAYLIST',
     data: {
       ownCookie: 1,
@@ -410,7 +408,7 @@ export const getUserList = async ({ id, platform } = {}) => {
 
     user[_p].favId = listIds[0];
 
-    data.forEach(({ creator: { id }, aId }) => {
+    data.forEach(({creator: {id}, aId}) => {
       (`${id}` === `${uId}`) ?
         (user[_p].myList[aId] = 1) :
         (user[_p].subList[aId] = 1)
@@ -423,11 +421,11 @@ export const getUserList = async ({ id, platform } = {}) => {
 
 // 网易云登录校验
 export const get163LoginStatus = async () => {
-  const { account, profile } = await request('LOGIN_STATUS').catch(() => ({}));
+  const {account, profile} = await request('LOGIN_STATUS').catch(() => ({}));
   if (!account) {
     return false;
   }
-  const { user, setting, favSongMap } = window.$state;
+  const {user, setting, favSongMap} = window.$state;
   user['163'] = {
     ...account,
     ...profile,
@@ -437,11 +435,11 @@ export const get163LoginStatus = async () => {
     logined: true,
   };
   setting.store_163 = setting.store_163 || user.id;
-  getUserList({ platform: '163' })
+  getUserList({platform: '163'})
   try {
     const res = await request({
       api: '163_LIKELIST',
-      data: { ud: user['163'].id }
+      data: {ud: user['163'].id}
     })
     const map = {};
     (res.ids || []).forEach(id => map[`163_${id}`] = 1);
@@ -467,7 +465,7 @@ export const getQQLoginStatus = async (c) => {
     }
     cookie = Storage.get('q_cookie');
   }
-  const { setting, user, favSongMap } = window.$state;
+  const {setting, user, favSongMap} = window.$state;
 
   if (typeof cookie === 'string') {
     cookie.split(';').forEach((v) => {
@@ -482,7 +480,7 @@ export const getQQLoginStatus = async (c) => {
   ((cookieObj.login_type / 1) === 2) && (cookieObj.uin = cookieObj.wxuin);
   cookieObj.uin = (cookieObj.uin || '').replace(/\D/g, '');
 
-  const { uin } = cookieObj;
+  const {uin} = cookieObj;
 
   if (!uin) {
     Storage.set('q_cookie_time', 0);
@@ -499,14 +497,14 @@ export const getQQLoginStatus = async (c) => {
   user.qq.id = uin;
   user.qq.logined = true;
   setting.store_qq = setting.store_qq || uin;
-  c && await request({ api: 'SET_COOKIE', method: 'post', data: { cookieObj }})
-  const { data: { creator }} = await request({ api: 'QQ_USER_DETAIL', data: { id: user.qq.id }});
+  c && await request({api: 'SET_COOKIE', method: 'post', data: {cookieObj}})
+  const {data: {creator}} = await request({api: 'QQ_USER_DETAIL', data: {id: user.qq.id}});
   user.qq = {
     ...user.qq,
     ...creator,
     avatar: creator.headpic,
   }
-  getUserList({ platform: 'qq' })
+  getUserList({platform: 'qq'})
   try {
     const res = await request('QQ_SONG_LIST_MAP')
     const map = {};
@@ -519,7 +517,7 @@ export const getQQLoginStatus = async (c) => {
 }
 
 // 获取日推
-export const getDaily = async (platform) => request({ api: 'DAILY_PLAYLIST', data: { ownCookie: 1 } }, platform)
+export const getDaily = async (platform) => request({api: 'DAILY_PLAYLIST', data: {ownCookie: 1}}, platform)
 
 // 第一次登录的时候调用
 export const initLogin = () => {
@@ -532,9 +530,9 @@ export const initLogin = () => {
 
 // 获取歌词
 export const getLyric = async (aId) => {
-  const { allSongs } = window.$state;
+  const {allSongs} = window.$state;
   const s = allSongs[aId];
-  const { data: { lyric, trans }} = await request({ api: 'LYRIC', data: { id: s.id, _p: s.platform }})
+  const {data: {lyric, trans}} = await request({api: 'LYRIC', data: {id: s.id, _p: s.platform}})
   let lyricObj = {};
   lyric && handleLyric(lyric, 'str', lyricObj);
   trans && handleLyric(trans, 'trans', lyricObj);
@@ -545,14 +543,14 @@ export const getLyric = async (aId) => {
       },
     });
 
-  updateSongInfo({ aId, lyric: lyricObj, rawLyric: lyric, rawTrans: trans })
+  updateSongInfo({aId, lyric: lyricObj, rawLyric: lyric, rawTrans: trans})
 }
 
 // 获取下载的歌名
 const getDownName = (aId, endType) => {
-  const { allSongs, setting } = window.$state;
+  const {allSongs, setting} = window.$state;
   const s = (typeof aId === 'string') ? allSongs[aId] : aId;
-  const arName = (s.ar || []).map(({ name }) => name).join('/');
+  const arName = (s.ar || []).map(({name}) => name).join('/');
   let filename;
   switch (setting.DOWN_NAME / 1) {
     case 2:
@@ -570,8 +568,8 @@ const getDownName = (aId, endType) => {
 
 // 下载歌词
 const downLyric = async (info) => {
-  const { allSongs, setting } = window.$state;
-  let { aId, rawLyric, rawTrans } = info;
+  const {allSongs, setting} = window.$state;
+  let {aId, rawLyric, rawTrans} = info;
   if (!rawLyric) {
     await getLyric(aId);
     info = {...info, ...allSongs[aId]}
@@ -607,12 +605,12 @@ const downLyric = async (info) => {
 
 // 下载歌曲，并把同时下载的数量控制在3
 export const downReq = async (info) => {
-  const { downloadList, setting, downloadInfo } = window.$state;
+  const {downloadList, setting, downloadInfo} = window.$state;
   if (!info || downloadInfo.count >= 3) {
     return;
   }
   downloadInfo.count += 1;
-  const { dUrl, filename, name, ar, al, songEndType } = info;
+  const {dUrl, filename, name, ar, al, songEndType} = info;
   let picData;
   const getDInfo = () => downloadList.find((v) => v.dId === info.dId);
   info.waiting = false;
@@ -620,7 +618,7 @@ export const downReq = async (info) => {
   let {data} = await axios({
     url: transUrl(dUrl),
     responseType: 'arraybuffer',
-    onDownloadProgress: ({ loaded, total }) => getDInfo().progress = (loaded / total * 100).toFixed(2) / 1,
+    onDownloadProgress: ({loaded, total}) => getDInfo().progress = (loaded / total * 100).toFixed(2) / 1,
   }).catch((err) => {
     getDInfo().errMsg = err.message;
     return {};
@@ -650,7 +648,7 @@ export const downReq = async (info) => {
     .setFrame('TALB', al.name)
     .setFrame('TRCK', data.trackNo || '');
   info.publishTime && writer.setFrame('TYER', timer(info.publishTime).str('YYYY'));
-  picData && writer.setFrame('APIC', { type: 3, data: picData, description: al.name });
+  picData && writer.setFrame('APIC', {type: 3, data: picData, description: al.name});
   (songEndType !== 'm4a') && writer.addTag();
 
   const downLink = document.createElement('a')
@@ -672,9 +670,9 @@ export const downReq = async (info) => {
 // 触发下载
 export const download = async (aId, info) => {
   window.event && window.event.stopPropagation();
-  const { allSongs, downloadList } = window.$state;
+  const {allSongs, downloadList} = window.$state;
   const s = info || allSongs[aId];
-  const { br, songEndType, url } = await getSingleUrl(aId, 'download');
+  const {br, songEndType, url} = await getSingleUrl(aId, 'download');
 
   const dInfo = {
     ...s,
@@ -695,8 +693,8 @@ export const download = async (aId, info) => {
 }
 
 // 添加/删除 歌曲至歌单
-export const addSong2Playlist = async ({ aId, pId, type, toast = true }) => {
-  const { allSongs, allList, user, listInfo } = window.$state;
+export const addSong2Playlist = async ({aId, pId, type, toast = true}) => {
+  const {allSongs, allList, user, listInfo, favSongMap, playNow} = window.$state;
   const s = allSongs[aId];
   if (!s) {
     return;
@@ -714,10 +712,18 @@ export const addSong2Playlist = async ({ aId, pId, type, toast = true }) => {
   let l
   switch (s.platform) {
     case 'qq':
-      l = Object.values(allList).find(({ dirid, userId }) => userId === user.qq.id && dirid === pId);
+      l = Object.values(allList).find(({dirid, userId}) => userId === user.qq.id && dirid === pId);
+      if (pId === 201) {
+        favSongMap.qq[s.aId] = !!type;
+        (s.aId === playNow.aId) && (playNow.liked = !!type)
+      }
       break;
     case '163':
       l = allList[`${s.platform}_${pId}`];
+      if (`${s.platform}_${pId}` === user['163'].favId) {
+        favSongMap['163'][s.aId] = !!type;
+        (s.aId === playNow.aId) && (playNow.liked = !!type)
+      }
       break;
   }
   if (l) {
@@ -733,9 +739,9 @@ export const addSong2Playlist = async ({ aId, pId, type, toast = true }) => {
 
 // 喜欢/不喜欢 音乐
 export const likeMusic = async (aId) => {
-  window.event.stopPropagation();
-  const { allSongs, favSongMap, user, allList } = window.$state;
-  const { platform } = allSongs[aId] || {};
+  window.event && window.event.stopPropagation();
+  const {allSongs, favSongMap, user, allList, playNow} = window.$state;
+  const {platform} = allSongs[aId] || {};
   if (!user[platform] || !user[platform].id) {
     return ElMessage.warning('先登录');
   }
@@ -750,7 +756,8 @@ export const likeMusic = async (aId) => {
       pId = allList[user[platform].favId].id;
       break;
   }
-  await addSong2Playlist({ aId, pId, type, toast: false });
+  (aId === playNow.aId) && (playNow.liked = !!type);
+  await addSong2Playlist({aId, pId, type, toast: false});
   favSongMap[platform][aId] = type;
   ElMessage.success(type ? '爱上！' : '爱过～')
 }
@@ -769,6 +776,6 @@ export const mixSongHandle = {
   likeMusic,
   delSongFromList(aId, pId) {
     window.event.stopPropagation();
-    addSong2Playlist({ aId, pId, type: 0 })
+    addSong2Playlist({aId, pId, type: 0})
   }
 }
