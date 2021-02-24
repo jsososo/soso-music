@@ -54,6 +54,14 @@ const routes = [
   {
     path: '/top',
     component: () => import('./views/Top'),
+  },
+  {
+    path: '/feedback',
+    component: () => import('./views/Feedback'),
+  },
+  {
+    path: '/back',
+    component: () => import('./views/Back'),
   }
 ]
 

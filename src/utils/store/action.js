@@ -9,6 +9,8 @@ import timer from "../timer";
 import Storage from "../Storage";
 import {ElMessage} from "element-plus";
 
+export const mixDomain = 'http://music.jsososo.com/apiMix';
+
 // 更新歌曲信息，有链接的走这边，会顺带更新播放列表
 export const updateSongInfo = (songInfo) => {
   const {allSongs, playingList, playNow} = window.$state;
@@ -44,7 +46,9 @@ export const getSingleUrl = async (aId, type = 'play') => {
 
   const brMap = new Proxy({
     128: 'url',
-    320: '320'
+    320: '320',
+    128000: 'url',
+    320000: '320',
   }, {
     get(v, k) {
       return v[k] ? v[k] : 'flac';
@@ -53,25 +57,28 @@ export const getSingleUrl = async (aId, type = 'play') => {
 
   const queryBr = setting[type === 'play' ? 'LISTEN_SIZE' : 'DOWN_SIZE'];
 
-  if (s[brMap[queryBr]] && (url.indexOf('.m4a') === -1)) {
-    url = s[brMap[queryBr]];
-    br = {128: 128000, 320: 320000, flac: 960000}[queryBr] || 128000;
-  } else if (!s.bPlatform) {
-    try {
-      const {data} = await request({
-        api: 'SINGLE_URL',
-        data: {
-          id,
-          mediaId: s.mediaId,
-          br: queryBr,
-          _p,
-        }
-      });
+  try {
+    const {data} = await request({
+      api: 'SINGLE_URL',
+      data: {
+        id,
+        mediaId: s.mediaId,
+        br: queryBr,
+        _p,
+      }
+    });
+    if (data.url) {
       url = data.url || url;
       br = data.br || br;
-    } catch (err) {
-      console.log('获取url失败了 =.=', id, aId, _p);
+      s[brMap[br]] = url;
     }
+  } catch (err) {
+    console.log('获取url失败了 =.=', id, aId, _p);
+  }
+
+  if (s[brMap[br]] && (url.indexOf('.m4a') === -1)) {
+    url = s[brMap[br]];
+    br = {128: 128000, 320: 320000, flac: 960000}[br] || 128000;
   }
 
   (br > 320000) && (songEndType = 'flac');
@@ -419,6 +426,61 @@ export const getUserList = async ({id, platform} = {}) => {
 
 }
 
+// 登录混合账号
+const getMixUser = async (id, nick, p) => {
+  const domain = mixDomain;
+  const { user } = window.$state;
+  const { data } = await request({
+    api: 'MIX_USER',
+    domain,
+    data: { id }
+  }, '163')
+
+  const idKey = `${p}Id`;
+
+  const create = async () => {
+    const { data } = await request({
+      api: 'MIX_USER_CREATE',
+      domain,
+      data: {
+        [idKey]: id,
+        nick,
+      }
+    })
+    user.soso = {
+      ...data,
+      logined: true,
+    }
+  }
+  if (data) { // 绑定过
+    if (!user.soso.logined) {   // 绑定过，未登录
+      user.soso = {
+        ...data,
+        logined: true,
+      }
+    }
+  } else {  // 没绑定过账号
+    if (!user.soso.id) {  // 没绑定过 没账号，注册
+      create();
+    } else if (!user.soso[idKey]) { // 没绑定过，有账号，账号也没绑定
+      const { data } = await request({
+        api: 'MIX_USER_BIND',
+        domain,
+        data: {
+          id: user.soso.id,
+          [idKey]: id,
+        }
+      })
+      user.soso = {
+        ...data,
+        logined: true,
+      }
+    } else if (user.soso[idKey] !== id) { // 没绑定过，账号绑定过，但不是这个账号
+      create();
+    }
+  }
+}
+
 // 网易云登录校验
 export const get163LoginStatus = async () => {
   const {account, profile} = await request('LOGIN_STATUS').catch(() => ({}));
@@ -447,6 +509,7 @@ export const get163LoginStatus = async () => {
   } catch (err) {
     console.log('163 likelist err', err.message)
   }
+  getMixUser(`163_${user['163'].id}`, profile.nickname, 'net');
   return true;
 }
 
@@ -476,6 +539,7 @@ export const getQQLoginStatus = async (c) => {
     return false
   }
 
+  cookieObj.login_type = cookieObj.login_type || '1';
   // 微信
   ((cookieObj.login_type / 1) === 2) && (cookieObj.uin = cookieObj.wxuin);
   cookieObj.uin = (cookieObj.uin || '').replace(/\D/g, '');
@@ -513,6 +577,7 @@ export const getQQLoginStatus = async (c) => {
   } catch (err) {
     console.log('qq favmap err', err.message);
   }
+  getMixUser(`qq_${uin}`, user.qq.nick, 'qq');
   return true;
 }
 

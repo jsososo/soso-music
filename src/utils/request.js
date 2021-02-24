@@ -24,9 +24,11 @@ const request = (param, platform) => {
     url += '?_t=' + data._t;
   }
   const { setting } = window.$state;
+  let domain = param.domain || `http://localhost:${setting.SERVER_PORT}`
+
   return axios({
     method,
-    url: `http://localhost:${setting.SERVER_PORT}${url}`,
+    url: `${domain}${url}`,
     data,
     headers: {
       'Host-Check': btoa(timer().str('YYYYMMDD')),

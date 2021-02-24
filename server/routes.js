@@ -218,6 +218,7 @@ module.exports = {
 	'163Api_yunbei_tasks_todo': require('./163Api/module/yunbei_tasks_todo.js'),
 	'163Api_yunbei_today': require('./163Api/module/yunbei_today.js'),
 	'mixApi_album': require('./mixApi/routes/album.js'),
+	'mixApi_app': require('./mixApi/routes/app.js'),
 	'mixApi_comment': require('./mixApi/routes/comment.js'),
 	'mixApi_index': require('./mixApi/routes/index.js'),
 	'mixApi_lyric': require('./mixApi/routes/lyric.js'),

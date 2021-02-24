@@ -6,7 +6,10 @@ const state = {
   user: {
     163: {},
     qq: {},
-    soso: {},
+    soso: {
+      ...Storage.get('soso_user', true, '{}'),
+      logined: false,
+    },
   },
   // 下载信息
   downloadInfo: {
@@ -103,6 +106,12 @@ const state = {
     DRAW_MUSIC: true,
     DRAW_MUSIC_TYPE: '1',
     DRAW_MUSIC_STYLE: 'rect',
+    appId: (() => {
+      const getRandom = (num) => Number(`${num}`.split('').sort(() => Math.random() - 0.5).join('')).toString(36);
+      const randomT = getRandom(new Date().valueOf());
+      const randomN = getRandom(Math.round(Math.random() * 99999));
+      return randomN + randomT;
+    })(),
     codeMap: {
       PLAY_NEXT: '39',
       PLAY_PREV: '37',
@@ -114,6 +123,8 @@ const state = {
     },
     ...Storage.get('soso_music_setting', true, '{}'),
     platform: '163', // 默认平台
+    version: '1.0.0',
+    versionType: '',
   },
   miguFind: {...Storage.get('soso_music_migu_find', true, '{}')}
 }

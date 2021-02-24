@@ -22,13 +22,14 @@
     components: {
       PlaylistInfo,
     },
-    setup() {
+    setup()
+    {
       const state = mixInject(['setting', 'allList', 'playingList', 'listInfo'])
       const route = useRoute();
       const { setting, allList, playingList, listInfo } = state;
 
       const [platform, id] = [ref(''), ref('')];
-      const updateRouter = async ([aId, trueList]) => {
+      const updateRouter = async ([aId, trueList], oldVal) => {
         if (!aId) {
           return;
         }
@@ -43,9 +44,11 @@
             replaceObj(listInfo, { list: (allList[`${setting.platform}_daily`] || {}).list || [], aId: `${setting.platform}_daily` });
             break;
           default: {
-            replaceObj(listInfo, allList[aId] || {});
-            const data = await queryPlayListDetail(aId);
-            replaceObj(listInfo, data);
+            if (!oldVal || oldVal[0] !== aId) {
+              replaceObj(listInfo, allList[aId] || {});
+              const data = await queryPlayListDetail(aId);
+              replaceObj(listInfo, data);
+            }
             break;
           }
         }
@@ -61,7 +64,8 @@
         platform,
         id,
       }
-    },
+    }
+,
   }
 </script>
 

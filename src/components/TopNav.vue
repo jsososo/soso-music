@@ -18,7 +18,7 @@
       <a href="#/user" v-else class="top-nav-btn user-btn"><img :src="u.avatar" /></a>
 <!--      <div class="top-nav-btn iconfont icon-windmill" />-->
       <a href="#/setting" class="top-nav-btn iconfont icon-setting"  />
-<!--      <div class="top-nav-btn iconfont icon-feedback" />-->
+      <a href="#/feedback" class="top-nav-btn iconfont icon-feedback" />
       <a href="#/about" class="top-nav-btn icon-version-container">
         <i class="iconfont icon-version ft_20" />
       </a>
@@ -201,6 +201,25 @@
           img {
             border-radius: 4px;
           }
+        }
+      }
+      .icon-feedback {
+        @keyframes rotate {
+          from, 50%, to {
+            transform: rotate(0);
+          }
+
+          25% {
+            transform: rotate(12deg);
+          }
+          75% {
+            transform: rotate(-12deg);
+          }
+
+        }
+
+        &:hover {
+          animation: rotate 0.4s linear;
         }
       }
       .icon-windmill {

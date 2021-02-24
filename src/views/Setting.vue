@@ -104,16 +104,45 @@
           </div>
         </div>
 
-<!--        <div class="input-line">-->
-<!--          <div class="input-label">过滤重复下载：</div>-->
-<!--          <div class="input-content">-->
-<!--            <el-switch v-model="setting.DOWN_FILTER" />-->
-<!--            <div class="explain">-->
-<!--              <span v-if="setting.DOWN_FILTER">自动过滤重复下载过的歌曲</span>-->
-<!--              <span v-else >重复下载歌曲</span>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </div>-->
+      </div>
+
+      <div v-if="setting.tab === 'user'">
+        <div class="input-line">
+          <div class="input-label">混合账号昵称：</div>
+          <div class="input-content">
+            <input type="text" style="width: 200px" v-model="mixNick" />
+            <el-button v-if="mixNick && mixNick !== user.soso.nick" size="small" class="ml_15" @click="saveUser({ nick: mixNick }, 'MIX_USER_UPDATE')">更新</el-button>
+          </div>
+        </div>
+        <div class="input-line">
+          <div class="input-label">混合账号邮箱：</div>
+          <div class="input-content">
+            <input type="text" style="width: 200px" v-model="mixEmail" />
+            <el-button v-if="mixEmail && mixEmail !== user.soso.email" size="small" class="ml_15" @click="saveUser({ email: mixEmail }, 'MIX_USER_UPDATE')">更新</el-button>
+          </div>
+        </div>
+        <div class="input-line">
+          <div class="input-label">绑定网易云：</div>
+          <div class="input-content">
+            <input v-if="user.soso.netId" type="text" style="width: 200px" disabled v-model="user.soso.netId" />
+            <span v-else>未绑定</span>
+            <block v-if="user['163'].logined && user.soso.netId !== `163_${user['163'].id}`">
+              <input disabled style="width: 200px" :value="`qq_${user['163'].id}`" type="text" class="ml_20" />
+              <el-button size="small" class="ml_10" @click="saveUser({ netId: `163_${user['163'].id}` }, 'MIX_USER_BIND')">绑定这个</el-button>
+            </block>
+          </div>
+        </div>
+        <div class="input-line">
+          <div class="input-label">绑定QQ：</div>
+          <div class="input-content">
+            <input v-if="user.soso.qqId" type="text" style="width: 200px" disabled v-model="user.soso.qqId" />
+            <span v-else>未绑定</span>
+            <block v-if="user.qq.logined && user.soso.qqId !== `qq_${user.qq.id}`">
+              <input disabled style="width: 200px" :value="`qq_${user.qq.id}`" type="text" class="ml_20" />
+              <el-button size="small" class="ml_10" @click="saveUser({ qqId: `qq_${user.qq.id}` }, 'MIX_USER_BIND')">绑定这个</el-button>
+            </block>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -126,6 +155,8 @@
   import {mixInject} from "../utils/store/state";
   import { ElMessage } from 'element-plus';
   import { ipcRenderer } from 'electron';
+  import request from "../utils/request";
+  import { mixDomain as domain } from "../utils/store/action";
 
   export default {
     name: "Setting",
@@ -134,11 +165,14 @@
       Tab,
     },
     setup() {
-      const state = mixInject(['setting']);
+      const state = mixInject(['setting', 'user']);
 
-      const { setting } = state;
+      const { setting, user } = state;
 
       const serverPort = ref(setting.SERVER_PORT);
+
+      const mixNick = ref(user.soso.nick || '');
+      const mixEmail = ref(user.soso.email || '');
 
       return {
         ...state,
@@ -154,9 +188,17 @@
             color: 'red',
             icon: 'download',
             text: '下载',
+          },
+          {
+            val: 'user',
+            color: 'green',
+            icon: 'user',
+            text: '账号',
           }
         ],
         serverPort,
+        mixNick,
+        mixEmail,
         savePort() {
           const port = Number(serverPort.value)
           if (isNaN(port) || port < 1000 || port > 9999) {
@@ -167,6 +209,19 @@
 
         selectDir() {
           ipcRenderer.send('SHOW_SELECT_DIR', 'download');
+        },
+
+        async saveUser(params, api) {
+          params.id = user.soso.id;
+          const { data } = await request({
+            api,
+            domain,
+            data: params,
+          })
+          user.soso = {
+            ...data,
+            logined: true,
+          }
         }
       }
     }

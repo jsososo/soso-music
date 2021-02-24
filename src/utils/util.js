@@ -204,7 +204,12 @@ export const handlePlayingList = {
   }
 }
 
-export const clearObj = (obj) => Object.keys(obj).forEach(k => delete obj[k]);
+export const clearObj = (obj) => {
+  if (Array.isArray(obj)) {
+    obj.length = 0;
+  }
+  Object.keys(obj).forEach(k => delete obj[k])
+};
 
 export const replaceObj = (o1, o2) => {
   clearObj(o1);

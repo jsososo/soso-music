@@ -6,7 +6,7 @@
       <div class="version-txt">
         <span>v</span>
         <span class="version-num">{{version}}</span>
-        <span class="vertion-type">{{versioinType}}</span>
+        <span class="vertion-type" v-if="versioinType">{{versioinType}}</span>
       </div>
 
       <div class="pt_20 about-content">
@@ -42,6 +42,7 @@
         </div>
 
         <div v-else-if="type === 'history'">
+          <div>测试版可以在 <span class="link-span" @click="jumpOutside('https://github.com/jsososo/soso-music/releases')">github</span> 获取</div>
           <div v-for="(item, index) in history" :key="`history-${item.version}-${index}`" class="history-item">
             <div class="mb_5">
               <span>{{item.created}}</span>
@@ -50,6 +51,10 @@
             </div>
             <div class="version-explain">
               {{item.explain}}
+              <div v-if="!item.versionType">
+                <span class="link-span" @click="jumpOutside(`http://app.jsososo.com/soso%20music%20Setup%20${item.version}.exe`)">windows 下载地址</span>
+                <span class="link-span ml_10" @click="jumpOutside(`http://app.jsososo.com/soso%20music-${item.version}.dmg`)">mac 下载地址</span>
+              </div>
             </div>
           </div>
         </div>
@@ -73,8 +78,13 @@
 <script>
   import PageTitle from "../components/PageTitle";
   import Tab from "../components/Tab";
-  import { ref } from 'vue';
+  import { ref, reactive } from 'vue';
   import { shell } from 'electron';
+  import request from "../utils/request";
+  import { mixDomain as domain } from "../utils/store/action";
+  import {replaceObj} from "../utils/util";
+  import {mixInject} from "../utils/store/state";
+  import { useRoute } from 'vue-router';
 
   export default {
     name: "About",
@@ -83,11 +93,25 @@
       Tab,
     },
     setup() {
+      const { setting } = mixInject('setting');
       const type = ref('about');
 
+      const history = reactive([]);
+
+      if (useRoute().query.type) {
+        type.value = useRoute().query.type;
+      }
+
+      request({
+        api: 'MIX_VERSION',
+        domain,
+      }).then(({ data }) => {
+        replaceObj(history, data);
+      })
+
       return {
-        version: '0.3.0',
-        versioinType: 'beta',
+        version: setting.version,
+        versioinType: setting.versionType,
         type,
         tablist: [
           {
@@ -106,32 +130,7 @@
             color: 'blue',
           }
         ],
-        history: [
-          {
-            version: '0.2.0',
-            versionType: 'beta',
-            explain: '🍄 无音源歌曲替换',
-            created: '21-02-21',
-          },
-          {
-            version: '0.1.0',
-            versionType: 'beta',
-            explain: '🎡 歌曲操作、评论、日推等',
-            created: '21-02-16',
-          },
-          {
-            version: '0.0.2',
-            versionType: 'alpha',
-            explain: '🍪 歌手、专辑、歌单页',
-            created: '21-02-09',
-          },
-          {
-            version: '0.0.1',
-            versionType: 'alpha',
-            explain: '🍎 超级先行版！',
-            created: '21-01-26',
-          }
-        ],
+        history,
         todoList: [
           '播放历史',
           '极简模式',

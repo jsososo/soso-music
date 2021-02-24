@@ -49,6 +49,12 @@ export const allWatch = (state) => {
     state.router.back = [];
   })
 
+  // 监听 soso music 账号登录
+  watch(() => state.user.soso, (v) => {
+    console.log(v, state.user);
+    Storage.set('soso_user', v, true);
+  })
+
   // 触发了路由后退
   watch(() => state.router.isBack, (v) => v && (state.router.history.length > 1) && router.back());
 

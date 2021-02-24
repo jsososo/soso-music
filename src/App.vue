@@ -42,9 +42,9 @@ import { computed } from 'vue';
 import InfoBox from "./components/InfoBox";
 
 import request from "./utils/request";
-import {handlePlayLists, queryPlayListDetail, updatePlaying, cutSong, initLogin} from "./utils/store/action";
+import {handlePlayLists, queryPlayListDetail, updatePlaying, cutSong, initLogin, mixDomain as domain} from "./utils/store/action";
 import { ipcRenderer } from 'electron'
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElNotification } from 'element-plus';
 import { changeUrlQuery, numToStr } from "./utils/stringHelper";
 import Storage from "./utils/Storage";
 
@@ -94,6 +94,20 @@ export default {
       '/comment': true,
     }[route.path])
 
+    request({
+      domain,
+      api: 'MIX_VERSION_CHECK',
+      data: { version: state.setting.version },
+    }).then(({ data }) => {
+      if (data) {
+        ElNotification({
+          title: `最新版本：${data.version}`,
+          message: data.explain.split('\n').map(v => `<div class="fc_666 ft_12">${v}</div>`).join('') +
+            `<dvi><a style="color: #409EFF" href="#/about?type=history">去看看</a></dvi>`,
+          dangerouslyUseHTMLString: true,
+        })
+      }
+    })
     // 查询推荐歌单
     request('RECOMMEND_PLAYLIST', state.setting.platform)
       // 处理歌单信心，获取第一个推荐歌单

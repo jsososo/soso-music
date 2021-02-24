@@ -1,6 +1,18 @@
 const apiList = {
   'GET_SERVER_COOKIE': '/cookie/get',
 
+  'MIX_USER': '/app/user',
+  'MIX_USER_CREATE': '/app/user/create',
+  'MIX_USER_BIND': '/app/user/bind',
+  'MIX_USER_UPDATE': '/app/user/update',
+  'MIX_FEEDBACK': '/app/feedback',
+  'MIX_FEEDBACK_ADD': '/app/feedback/add',
+  'MIX_FEEDBACK_DEL': '/app/feedback/del',
+  'MIX_VERSION': '/app/version',
+  'MIX_VERSION_ADD': '/app/version/add',
+  'MIX_VERSION_DEL': '/app/version/del',
+  'MIX_VERSION_CHECK': '/app/version/check',
+
   'SEARCH': '/mixApi/search',
   'LYRIC': '/mixApi/lyric',
   'ALBUM': '/mixApi/album',
