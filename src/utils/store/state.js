@@ -1,5 +1,6 @@
 import { reactive, provide, inject } from 'vue';
 import Storage from "../Storage";
+import PlayHistory from "../PlayHistory";
 
 const state = {
   // 用户信息
@@ -106,6 +107,8 @@ const state = {
     DRAW_MUSIC: true,
     DRAW_MUSIC_TYPE: '1',
     DRAW_MUSIC_STYLE: 'rect',
+    HISTORY_TAB: 'list',
+    SYSTEM_PLATFORM: '',
     appId: (() => {
       const getRandom = (num) => Number(`${num}`.split('').sort(() => Math.random() - 0.5).join('')).toString(36);
       const randomT = getRandom(new Date().valueOf());
@@ -123,10 +126,11 @@ const state = {
     },
     ...Storage.get('soso_music_setting', true, '{}'),
     platform: '163', // 默认平台
-    version: '1.0.0',
-    versionType: '',
+    version: '1.0.1',
+    versionType: 'beta',
   },
-  miguFind: {...Storage.get('soso_music_migu_find', true, '{}')}
+  miguFind: {...Storage.get('soso_music_migu_find', true, '{}')},
+  playHistory: new PlayHistory(),
 }
 
 const result = {};

@@ -1,9 +1,15 @@
 import {ipcMain, dialog, Menu, Tray} from 'electron';
 import api from '../../server/api';
 import path from 'path';
+import storage from 'electron-json-storage';
 
 // 所有的 ipcMain 和 ipcRenderer 的事件沟通
 export default (app) => {
+  const quit = () => {
+    app.exit(0);
+    process.exit(0);
+  }
+
   ipcMain.on('UPDATE_SERVER_POINT', (e, v) => {
     try {
       global.port = v;
@@ -13,6 +19,8 @@ export default (app) => {
       e.reply('REPLY_SERVER_PPINT', {result: false, errMsg: err.message});
     }
   })
+
+  app.win.webContents.send('SET_SYSTEM_PLATFORM', process.platform);
 
   // 选择地址
   ipcMain.on('SHOW_SELECT_DIR', async (e, type) => {
@@ -51,6 +59,19 @@ export default (app) => {
     tray.setContextMenu(Menu.buildFromTemplate(trayMenu));
   })
 
+  ipcMain.on('GET_HISTORY_DATA', (e) => {
+    storage.get('history_data', ( err, data) => {
+      e.reply('REPLY_HISTORY_DATA', data || {});
+    })
+  })
+
+  ipcMain.on('APP_MINIMIZE', () => app.win.minimize());
+
+  ipcMain.on('APP_HIDE', () => app.win.hide());
+
+  // 保存播放历史数据
+  ipcMain.on('UPDATE_HISTORY_DATA', (e, v) => storage.set('history_data', v))
+
   // 静默下载
   app.win.webContents.session.on('will-download', (event, item) => {
     // Set the save path, making Electron not to prompt a save dialog.
@@ -58,10 +79,6 @@ export default (app) => {
     item.setSavePath(filePath);
   })
 
-  const quit = () => {
-    app.exit(0);
-    process.exit(0);
-  }
   const proxyMenu = (template) => {
     const arr = (Array.isArray(template) ? template : template.submenu || [])
     arr.forEach((item, index) => {

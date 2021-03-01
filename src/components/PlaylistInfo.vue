@@ -1,5 +1,6 @@
 <template>
   <page-right-container className="list-detail-container">
+    <slot />
     <div class="scroll-content" ref="containerDom" @scroll="getShowIndex">
       <div v-if="!listInfo && loading && list.length === 0" class="text-center fc_fff ft_20"
            style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">拼命查找了！
@@ -109,8 +110,10 @@
             <!--            />-->
             <!--          </el-tooltip>-->
           </div>
+
+          <div class="right-info" v-if="rightInfo && rightInfo[i]">{{rightInfo[i]}}</div>
         </div>
-        <div :style="`min-height:0;height:${list.hideBigHeight}px;`"></div>
+        <div :style="`min-height:0;height:${list.hideBigHeight}px;`" />
         <!--      <div class="focus-btn" v-if="list.indexOf(playNow.aId) > -1" @click="scrollToPlayNow">-->
         <!--        <i class="iconfont icon-focus" />-->
         <!--      </div>-->
@@ -139,6 +142,7 @@
       platform: String,
       loading: Boolean,
       listInfo: Object,
+      rightInfo: Object,
     },
     components: {
       PageRightContainer,
@@ -547,6 +551,10 @@
               opacity: 0.8;
             }
           }
+
+          .right-info {
+            transform: translateY(10px);
+          }
         }
 
         .song-order {
@@ -627,6 +635,19 @@
               opacity: 0;
             }
           }
+        }
+
+        .right-info {
+          position: absolute;
+          right: 10px;
+          text-align: right;
+          font-size: 40px;
+          font-weight: bold;
+          color: #fff3;
+          vertical-align: 30px;
+          bottom: 0;
+          transform: translateY(20px);
+          transition: 0.3s;
         }
       }
     }

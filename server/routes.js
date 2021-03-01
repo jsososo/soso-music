@@ -40,7 +40,6 @@ module.exports = {
 	'163Api_comment_event': require('./163Api/module/comment_event.js'),
 	'163Api_comment_floor': require('./163Api/module/comment_floor.js'),
 	'163Api_comment_hot': require('./163Api/module/comment_hot.js'),
-	'163Api_comment_hotwall_list': require('./163Api/module/comment_hotwall_list.js'),
 	'163Api_comment_hug_list': require('./163Api/module/comment_hug_list.js'),
 	'163Api_comment_like': require('./163Api/module/comment_like.js'),
 	'163Api_comment_music': require('./163Api/module/comment_music.js'),

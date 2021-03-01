@@ -25,6 +25,7 @@ export const allWatch = (state) => {
   const route = useRoute();
   const router = useRouter();
 
+  // 监听 播放歌曲，喜欢状态，登录状态等，用来控制 menu & trayMenu 的相关显示
   watch(() => [playNow.aId, playerStatus.playing, playNow.liked, user.qq, user['163']], () => {
     ipcRenderer.send('UPDATE_PLAYING_STATUS', {
       name: playNow.name,
@@ -49,11 +50,8 @@ export const allWatch = (state) => {
     state.router.back = [];
   })
 
-  // 监听 soso music 账号登录
-  watch(() => state.user.soso, (v) => {
-    console.log(v, state.user);
-    Storage.set('soso_user', v, true);
-  })
+  // 监听 soso music 账号信息变更
+  watch(() => state.user.soso, (v) => Storage.set('soso_user', v, true))
 
   // 触发了路由后退
   watch(() => state.router.isBack, (v) => v && (state.router.history.length > 1) && router.back());
@@ -86,6 +84,7 @@ export const allWatch = (state) => {
     const oldS = allSongs[oldAId];
     playNow.liked = favSongMap[platform][aId];
 
+    // 网易云的歌曲，有一个打卡
     if (oldS && oldS.platform === '163') {
       request({
         api: 'SCROBBLE',
@@ -97,6 +96,10 @@ export const allWatch = (state) => {
       })
     }
 
+    // 一首歌结束时进度过半，就加入播放历史
+    (playerStatus.percentage > 0.5) && state.playHistory.push(oldAId);
+
+    // mediaSession，可以让系统支持切歌播放等
     if ('mediaSession' in navigator && window.MediaMetadata) {
       const { name, ar = [], al = {} } = s;
       navigator.mediaSession.metadata = new window.MediaMetadata({
@@ -195,6 +198,11 @@ export const allWatch = (state) => {
         break;
     }
   })
+
+  // 返回了听歌历史数据
+  ipcRenderer.on('REPLY_HISTORY_DATA', (e, v) => state.playHistory.initHistory(v))
+
+  ipcRenderer.on('SET_SYSTEM_PLATFORM', (e, v) => state.setting.SYSTEM_PLATFORM = v);
 
   return state;
 }

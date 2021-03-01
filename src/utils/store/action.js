@@ -215,6 +215,7 @@ export const handleSongs = (list) => {
   list.forEach((s) => {
     s.url = s.url || (allSongs[s.aId] || {}).url;
     allSongs[s.aId] = {...(allSongs[s.aId] || {}), ...s};
+    allSongs[s.aId].pUrl = allSongs[s.aId].pUrl || allSongs[s.aId].url
     !allSongs[s.aId].url && !allSongs[s.aId].noUrl && (getUrlArr.push(s.aId));
   })
 

@@ -124,6 +124,13 @@
     </div>
 
     <div class="control-btn opt-btn right-control">
+      <el-tooltip class="item" effect="dark" content="播放历史" placement="top">
+        <div @click="changeUrlQuery({}, '#/history')" class="inline-block ml_5 pd_5">
+          <span>
+            <i class="iconfont icon-history ft_16 pointer" />
+          </span>
+        </div>
+      </el-tooltip>
       <el-tooltip class="item" effect="dark" content="正在播放" placement="top">
         <div @click="changeUrlQuery({ aId: 'playing' }, '#/playlist/detail')" class="inline-block ml_5 pd_5">
           <span>

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :class="`app-platform-${setting.SYSTEM_PLATFORM}`">
     <div class="bg-img" />
     <div class="play-bg-img bg-img" v-if="playNow.al" :style="`background-image: url('${playNow.al.picUrl}')`" />
     <div class="page-container">
@@ -13,6 +13,15 @@
             err-pic="https://y.gtimg.cn/mediastyle/global/img/album_300.png"
             :list="infoBoxList"
           >
+            <div class="platform-icons" >
+              <el-tooltip class="item" effect="dark" content="信息" placement="top">
+                <i :class="`iconfont icon-${playNow.platform} color-${playNow.platform} ${playNow.bPlatform ? 'op_3' : 'op_7'}`" />
+              </el-tooltip>
+              <el-tooltip v-if="playNow.bPlatform" class="item" effect="dark" content="音源" placement="top">
+                <i :class="`iconfont op_7 icon-${playNow.bPlatform} color-${playNow.bPlatform}`" />
+              </el-tooltip>
+
+            </div>
             <div class="index-icon-content">
               <a href="#/" class="mg_10 iconfont icon-lyric">
                 <i class="fake-icon iconfont icon-lyric" />
@@ -85,6 +94,8 @@ export default {
 
     ipcRenderer.send('SET_DOWNLOAD_DIR', state.setting.DOWN_DIR);
 
+    ipcRenderer.send('GET_HISTORY_DATA');
+
     // 左侧显示播放信息的页面
     const showPlayingInfo = computed(() => !!{
       '/': true,
@@ -92,6 +103,7 @@ export default {
       '/playlist': true,
       '/recommend': true,
       '/comment': true,
+      '/history': true,
     }[route.path])
 
     request({
@@ -283,6 +295,9 @@ export default {
     .color-163 {
       color: $red;
     }
+    .color-migu {
+      color: $yellow;
+    }
 
     .bg-img {
       background: url("./assets/img/bg-1.png") no-repeat;
@@ -315,6 +330,15 @@ export default {
 
         .inner_tab_content {
           height: $innerTabHeight;
+        }
+        .platform-icons {
+          position: absolute;
+          top: 205px;
+          left: 5px;
+
+          .iconfont {
+            padding: 5px;
+          }
         }
         .index-icon-content {
           font-weight: 900;

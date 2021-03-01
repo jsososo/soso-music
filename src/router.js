@@ -62,6 +62,10 @@ const routes = [
   {
     path: '/back',
     component: () => import('./views/Back'),
+  },
+  {
+    path: '/history',
+    component: () => import('./views/History'),
   }
 ]
 

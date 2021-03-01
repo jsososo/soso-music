@@ -80,6 +80,9 @@
       // 获取歌手信息
       const updateSinger = async () => {
         const { id, mid, platform } = route.query;
+        if (!id && !mid) {
+          return;
+        }
         const { data } = await request({
           api: 'SINGER_INFO',
           data: { id: mid || id, platform },

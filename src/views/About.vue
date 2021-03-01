@@ -21,6 +21,10 @@
             </div>
           </div>
           <div>
+            目前无版权/会员歌曲会通过查询咪咕音乐的形式爬取，为了防止高频的接口调用，采用队列查询，因此第一次完整的查询完全部歌曲会耗费一点时间，
+            但是之后歌曲信息会被保存至本地，下次无需再查找
+          </div>
+          <div>
             前端改造自：
             <br />
             <span class="link-span" @click="jumpOutside('https://github.com/jsososo/NeteaseMusic')">jsososo/NeteaseMusic</span>
@@ -36,7 +40,7 @@
             <br />
             <span class="link-span" @click="jumpOutside('https://github.com/jsososo/MixMusicApi')">jsososo/MixMusicApi</span>
           </div>
-          <div>
+          <div v-if="versioinType === 'alpha' || versionType === 'beta'">
             当前版本为测试版
           </div>
         </div>
@@ -180,7 +184,7 @@
 
     .about-content {
       line-height: 1.75em;
-      width: calc(100% - 280px);
+      width: calc(100% - 380px);
 
       div {
         margin-bottom: 20px;

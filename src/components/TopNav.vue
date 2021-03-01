@@ -1,5 +1,5 @@
 <template>
-  <div class="page-top-nav">
+  <div :class="`page-top-nav app-platform-${setting.SYSTEM_PLATFORM}`">
 
     <span class="router-icon">
       <i :class="`el-icon-arrow-left ${canBack && 'actived'}`" @click="canBack && (router.isBack = true)" />
@@ -17,11 +17,34 @@
       <a href="#/user" v-if="!u.logined" class="top-nav-btn iconfont icon-user user-btn" />
       <a href="#/user" v-else class="top-nav-btn user-btn"><img :src="u.avatar" /></a>
 <!--      <div class="top-nav-btn iconfont icon-windmill" />-->
-      <a href="#/setting" class="top-nav-btn iconfont icon-setting"  />
-      <a href="#/feedback" class="top-nav-btn iconfont icon-feedback" />
-      <a href="#/about" class="top-nav-btn icon-version-container">
-        <i class="iconfont icon-version ft_20" />
-      </a>
+      <template v-if="setting.SYSTEM_PLATFORM === 'darwin'">
+        <a href="#/setting" class="top-nav-btn iconfont icon-setting"  />
+        <a href="#/feedback" class="top-nav-btn iconfont icon-feedback" />
+        <a href="#/about" class="top-nav-btn icon-version-container">
+          <i class="iconfont icon-version ft_20" />
+        </a>
+      </template>
+      <template v-else>
+        <span class="top-nav-btn sys-icon iconfont icon-mini" @click="appCommand('APP_MINIMIZE')" />
+        <el-popover
+          trigger="hover"
+          width="100"
+          :append-to-body="false"
+        >
+          <div>
+            <!--      <div class="top-nav-btn iconfont icon-windmill" />-->
+            <a href="#/setting" class="top-nav-btn iconfont icon-setting"  />
+            <a href="#/feedback" class="top-nav-btn iconfont icon-feedback" />
+            <a href="#/about" class="top-nav-btn icon-version-container">
+              <i class="iconfont icon-version ft_20" />
+            </a>
+          </div>
+          <template #reference>
+            <span class="top-nav-btn sys-icon iconfont icon-more-line" />
+          </template>
+        </el-popover>
+        <span class="top-nav-btn sys-icon iconfont icon-close" @click="appCommand('APP_HIDE')" />
+      </template>
     </div>
   </div>
 </template>
@@ -31,6 +54,7 @@
   import {mixInject} from "../utils/store/state";
   import { ref, computed } from 'vue';
   import {useRoute} from "vue-router";
+  import { ipcRenderer } from 'electron';
 
   export default {
     name: "TopNav",
@@ -57,12 +81,17 @@
             state.searchInfo.keyword = keyword.value;
           }
         },
+        appCommand(opts) {
+          ipcRenderer.send(opts)
+        }
       }
     },
   }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
+  @import "../assets/style/value";
+
   .page-top-nav {
     -webkit-app-region: drag;
     width: 100%;
@@ -204,7 +233,7 @@
         }
       }
       .icon-feedback {
-        @keyframes rotate {
+        @keyframes rotateFeedback {
           from, 50%, to {
             transform: rotate(0);
           }
@@ -219,7 +248,7 @@
         }
 
         &:hover {
-          animation: rotate 0.4s linear;
+          animation: rotateFeedback 0.4s linear;
         }
       }
       .icon-windmill {
@@ -227,6 +256,37 @@
 
         &:hover {
           transform: rotate(-90deg);
+        }
+      }
+
+      .el-popover {
+        padding: 2px;
+        min-width: 40px !important;
+        width: 40px !important;
+        text-align: center;
+        .top-nav-btn {
+          margin-left: 0;
+          color: #666 !important;
+          font-size: 18px;
+          padding: 3px 8px;
+        }
+      }
+
+      .sys-icon {
+        transform: scale(0.9);
+        margin-left: 0;
+        transition: 0.3s;
+        background: transparent;
+
+        &.icon-close:hover {
+          background: $red;
+        }
+
+        &.icon-mini:hover {
+          background: $green;
+        }
+        &.icon-more-line:hover {
+          background: $blue;
         }
       }
     }
