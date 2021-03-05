@@ -282,7 +282,7 @@
   @import "../assets/style/value";
 
   .main-player-container {
-    position: absolute;
+    position: fixed;
     bottom: 0;
     left: 0;
     z-index: 2;

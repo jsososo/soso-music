@@ -1,5 +1,5 @@
 <template>
-  <div class="comment-container hide-scroll" @scroll="onScroll" ref="listDom">
+  <div class="comment-container hide-scroll" @scroll="onScroll">
     <div v-for="({ title, arr }) in comments" :key="`list-${title}`">
       <div class="comment-type-block" v-if="arr.length">
         <div class="comment-type-title">{{title}}</div>
@@ -43,7 +43,7 @@
 </template>
 
 <script>
-  import { computed, ref } from 'vue';
+  import { computed } from 'vue';
   import { numToStr } from "../utils/stringHelper";
   import timer from '../utils/timer';
   import SendComment from "./SendComment";
@@ -76,8 +76,6 @@
           arr: props.list || [],
         }
       ])
-
-      const listDom = ref();
 
       return {
         ...state,
@@ -114,8 +112,8 @@
           }).catch(() => ElMessage.error('删除失败！'));
         },
         timeStr: (v) => timer(v).str('YY-MM-DD HH:mm:ss'),
-        onScroll() {
-          const dom = listDom.value;
+        onScroll(e) {
+          const { target } = e;
           const { list, page } = props;
 
           if (!page && list.length >= page.total) {
@@ -124,11 +122,10 @@
           if (page.pageNo * 20 > list.length) {
             return;
           }
-          let h = 0;
-          dom.children.forEach(({ offsetHeight }) => h += offsetHeight);
-          (dom.scrollTop + dom.offsetHeight > (h - 100)) && props.getList && props.getList(page.pageNo + 1);
+          (target.scrollTop + target.offsetHeight > (target.children[0].offsetHeight - 100)) &&
+            props.getList &&
+            props.getList(page.pageNo + 1);
         },
-        listDom,
         reply(v) {
           const { commentInfo } = state;
           commentInfo.open = true;

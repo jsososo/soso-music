@@ -14,13 +14,12 @@ export default (app) => {
     try {
       global.port = v;
       api(v);
+      app.win.webContents.send('SET_SYSTEM_PLATFORM', process.platform);
       e.reply('REPLY_SERVER_PPINT', {result: true});
     } catch (err) {
       e.reply('REPLY_SERVER_PPINT', {result: false, errMsg: err.message});
     }
   })
-
-  app.win.webContents.send('SET_SYSTEM_PLATFORM', process.platform);
 
   // 选择地址
   ipcMain.on('SHOW_SELECT_DIR', async (e, type) => {

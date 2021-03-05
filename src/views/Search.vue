@@ -2,7 +2,7 @@
   <div class="search-content">
     <page-title title="SEARCH" />
     <tab v-model="searchInfo.type" :tabs="typeList" />
-    <div class="search-list inner_tab_content hide-scroll" v-if="searchInfo">
+    <div class="search-list inner_tab_content hide-scroll" @scroll="onScroll" v-if="searchInfo">
       <SongList v-if="searchInfo.type/1 === 0" show-index :songs="searchInfo.result[0] || []" />
       <AlbumList v-if="searchInfo.type/1 === 2" :albums="searchInfo.result[2] || []" />
       <SingerList v-if="searchInfo.type/1 === 3" :singers="searchInfo.result[3] || []" />
@@ -75,6 +75,14 @@
         ...state,
         route,
         typeList,
+        onScroll(e) {
+          const { result, type, total } = searchInfo;
+          if (e.target.offsetHeight + e.target.scrollTop + 50 >= e.target.children[0].offsetHeight) {
+            if ((result[type] || []).length < total) {
+              searchInfo.pageNo += 1;
+            }
+          }
+        }
       };
     }
   }

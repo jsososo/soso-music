@@ -13,11 +13,11 @@
       <i class="iconfont icon-qq color-qq" @click="updatePlatform('qq')" />
     </div>
 
-    <div class="right-container">
+    <div class="top-nav-right-container">
       <a href="#/user" v-if="!u.logined" class="top-nav-btn iconfont icon-user user-btn" />
       <a href="#/user" v-else class="top-nav-btn user-btn"><img :src="u.avatar" /></a>
-<!--      <div class="top-nav-btn iconfont icon-windmill" />-->
       <template v-if="setting.SYSTEM_PLATFORM === 'darwin'">
+        <a href="#/simple" class="top-nav-btn iconfont icon-windmill" />
         <a href="#/setting" class="top-nav-btn iconfont icon-setting"  />
         <a href="#/feedback" class="top-nav-btn iconfont icon-feedback" />
         <a href="#/about" class="top-nav-btn icon-version-container">
@@ -27,12 +27,11 @@
       <template v-else>
         <span class="top-nav-btn sys-icon iconfont icon-mini" @click="appCommand('APP_MINIMIZE')" />
         <el-popover
+          popper-class="top-nav-popover top-nav-right-container"
           trigger="hover"
-          width="100"
-          :append-to-body="false"
         >
           <div>
-            <!--      <div class="top-nav-btn iconfont icon-windmill" />-->
+            <a href="#/simple" class="top-nav-btn iconfont icon-windmill" />
             <a href="#/setting" class="top-nav-btn iconfont icon-setting"  />
             <a href="#/feedback" class="top-nav-btn iconfont icon-feedback" />
             <a href="#/about" class="top-nav-btn icon-version-container">
@@ -94,12 +93,12 @@
 
   .page-top-nav {
     -webkit-app-region: drag;
-    width: 100%;
+    width: calc(100% - 65px);
     height: 30px;
     line-height: 30px;
-    position: absolute;
+    position: fixed;
     top: 0;
-    left: 0;
+    left: 65px;
     opacity: 0.8;
     padding: 18px 0 10px 20px;
     transition: 0.4s;
@@ -173,122 +172,125 @@
       }
     }
 
-    .right-container {
-      float: right;
-      padding-right: 50px;
+  }
+  .top-nav-right-container {
+    float: right;
+    padding-right: 50px;
 
-      .top-nav-btn {
-        display: inline-block;
-        padding: 5px 10px;
-        transition: 0.3s;
-        font-size: 20px;
-        cursor: pointer;
-        margin-left: 5px;
-        opacity: 0.6;
-        vertical-align: top;
+    .top-nav-btn {
+      display: inline-block;
+      padding: 5px 10px;
+      transition: 0.3s;
+      font-size: 20px;
+      cursor: pointer;
+      margin-left: 5px;
+      opacity: 0.6;
+      vertical-align: top;
 
-        &:hover {
-          opacity: 0.8;
-        }
+      &:hover {
+        opacity: 0.8;
       }
+    }
 
-      .icon-setting {
-        transform: rotate(0);
+    .icon-setting {
+      transform: rotate(0);
 
-        &:hover {
-          transform: rotate(90deg);
-        }
+      &:hover {
+        transform: rotate(90deg);
       }
+    }
+    .icon-version {
+      transform: rotateY(0);
+      transition: 0.3s;
+    }
+    .icon-version-container:hover {
       .icon-version {
-        transform: rotateY(0);
+        transform: rotateY(180deg);
+      }
+    }
+    .user-btn {
+      overflow: hidden;
+      img {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        transition: 0.3s;
+        margin-top: 2px;
+      }
+      &:before {
+        border: 1px solid #fff9;
+        border-radius: 50%;
         transition: 0.3s;
       }
-      .icon-version-container:hover {
-        .icon-version {
-          transform: rotateY(180deg);
-        }
-      }
-      .user-btn {
-        overflow: hidden;
-        img {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          transition: 0.3s;
-          margin-top: 2px;
-        }
+      &:hover {
+        transform: scale(1.2);
         &:before {
-          border: 1px solid #fff9;
-          border-radius: 50%;
-          transition: 0.3s;
+          border-radius: 4px;
         }
-        &:hover {
-          transform: scale(1.2);
-          &:before {
-            border-radius: 4px;
-          }
-          img {
-            border-radius: 4px;
-          }
+        img {
+          border-radius: 4px;
         }
       }
-      .icon-feedback {
-        @keyframes rotateFeedback {
-          from, 50%, to {
-            transform: rotate(0);
-          }
-
-          25% {
-            transform: rotate(12deg);
-          }
-          75% {
-            transform: rotate(-12deg);
-          }
-
+    }
+    .icon-feedback {
+      @keyframes rotateFeedback {
+        from, 50%, to {
+          transform: rotate(0);
         }
 
-        &:hover {
-          animation: rotateFeedback 0.4s linear;
+        25% {
+          transform: rotate(12deg);
         }
-      }
-      .icon-windmill {
-        transform: rotate(0);
+        75% {
+          transform: rotate(-12deg);
+        }
 
-        &:hover {
-          transform: rotate(-90deg);
-        }
       }
 
-      .el-popover {
-        padding: 2px;
-        min-width: 40px !important;
-        width: 40px !important;
-        text-align: center;
-        .top-nav-btn {
-          margin-left: 0;
-          color: #666 !important;
-          font-size: 18px;
-          padding: 3px 8px;
-        }
+      &:hover {
+        animation: rotateFeedback 0.4s linear;
+      }
+    }
+    .icon-windmill {
+      transform: rotate(0);
+
+      &:hover {
+        transform: rotate(-90deg);
+      }
+    }
+
+    .sys-icon {
+      transform: scale(0.9);
+      margin-left: 0;
+      transition: 0.3s;
+      background: transparent;
+
+      &.icon-close:hover {
+        background: $red;
       }
 
-      .sys-icon {
-        transform: scale(0.9);
-        margin-left: 0;
-        transition: 0.3s;
-        background: transparent;
-
-        &.icon-close:hover {
-          background: $red;
-        }
-
-        &.icon-mini:hover {
-          background: $green;
-        }
-        &.icon-more-line:hover {
-          background: $blue;
-        }
+      &.icon-mini:hover {
+        background: $green;
       }
+      &.icon-more-line:hover {
+        background: $blue;
+      }
+    }
+  }
+
+
+  .top-nav-popover {
+    min-width: 40px !important;
+    width: 92px !important;
+    text-align: center;
+    padding: 5px 0 !important;
+    .top-nav-btn {
+      width: 30px;
+      text-align: center;
+      margin-left: 0;
+      color: #333 !important;
+      font-size: 18px;
+      padding: 3px 8px;
     }
   }
 </style>

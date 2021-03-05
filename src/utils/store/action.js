@@ -251,26 +251,30 @@ export const queryPlayListDetail = async (aId) => {
 
 // 搜索
 export const search = async ({keyword: key, type, pageNo, pageSize}) => {
-  const _p = window.$state.setting.platform;
+  const { setting, searchInfo } = window.$state;
+  const _p = setting.platform;
+  searchInfo.isQuerying = true;
   const {data: {list, total}} = await request({
     api: 'SEARCH',
     data: {key, type, _p, pageSize, pageNo},
   })
-  const {searchInfo} = window.$state;
+  let newList = [];
   switch (Number(type)) {
     case 0:
       handleSongs(list);
-      searchInfo.result[type] = list.map(({aId}) => aId);
+      newList = list.map(({aId}) => aId);
       break;
     case 1:
       handlePlayLists(list);
-      searchInfo.result[type] = list.map(({aId}) => aId);
+      newList = list.map(({aId}) => aId);
       break;
     default:
-      searchInfo.result[type] = list;
+      newList = list;
       break
   }
+  searchInfo.result[type] = [...(searchInfo.pageNo === 1 ? [] : searchInfo.result[type]), ...newList]
   searchInfo.total = total;
+  searchInfo.isQuerying = false;
 }
 
 // 更新播放队列

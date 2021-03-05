@@ -1,5 +1,5 @@
 <template>
-  <div :class="`app-platform-${setting.SYSTEM_PLATFORM}`">
+  <div :class="`app-platform-${setting.SYSTEM_PLATFORM} ${hidePlayer && 'hide-player'} ${hideNav && 'hide-nav'}`">
     <div class="bg-img" />
     <div class="play-bg-img bg-img" v-if="playNow.al" :style="`background-image: url('${playNow.al.picUrl}')`" />
     <div class="page-container">
@@ -106,6 +106,14 @@ export default {
       '/history': true,
     }[route.path])
 
+    const hidePlayer = computed(() => !!{
+      '/simple': true,
+    }[route.path])
+
+    const hideNav = computed(() => !!{
+      '/simple': true,
+    }[route.path])
+
     request({
       domain,
       api: 'MIX_VERSION_CHECK',
@@ -137,7 +145,8 @@ export default {
       if (['textarea', 'input'].indexOf(target.tagName.toLowerCase()) > -1) {
         return;
       }
-      let { codeMap, volume } = state.setting;
+      const { codeMap, setting } = state;
+      let { volume } = setting;
       const codes = [];
       ctrlKey && codes.push('ctrl');
       altKey && codes.push('alt');
@@ -147,7 +156,7 @@ export default {
       if ([16, 17, 18, 91].indexOf(keyCode) === -1) {
         codes.push(keyCode);
       }
-      switch (codes.join('-')) {
+      switch (codes.join('-').toLowerCase()) {
         case codeMap.VOLUME_DOWN:
           state.setting.volume = Math.max(volume - 5, 0);
           ElMessage.info(`音量调至${state.setting.volume}`);
@@ -165,11 +174,11 @@ export default {
         case codeMap.PLAY:
           state.playerStatus.playing = !state.playerStatus.playing;
           return false;
-        case (codeMap.TO_SIMPLE || 'ctrl-83'):
+        case (codeMap.GO_SIMPLE):
           window.location = '#/simple';
           return false;
-        case (codeMap.QUIT_SIMPLE || '27'):
-          if (this.mode === 'simple') {
+        case (codeMap.QUIT_SIMPLE):
+          if (route.path === '/simple') {
             window.location = '#/';
           }
           return false;
@@ -178,7 +187,6 @@ export default {
       }
       return true;
     };
-    window.onkeypress = window.onkeydown;
     // window.onkeyup = ({ keyCode }) => keys = keys.filter((c) => c !== keyCode);
 
     setInterval(() => {
@@ -191,6 +199,8 @@ export default {
       ...state,
       showPlayingInfo,
       infoBoxList,
+      hideNav,
+      hidePlayer,
       numToStr,
     };
   }
@@ -234,6 +244,32 @@ export default {
 
     a {
       color: #fffc;
+    }
+
+    .main-player-container, .page-top-nav {
+      transition: 0.3s;
+    }
+    .page-left-nav {
+      transition: 0.3s;
+    }
+
+    .hide-player {
+      height: 100vh;
+      overflow: hidden;
+      .main-player-container {
+        opacity: 0;
+        overflow: hidden;
+        bottom: -120px;
+      }
+    }
+
+    .hide-nav {
+      .page-top-nav {
+        top: -100px;
+      }
+      .page-left-nav {
+        height: 80px !important;
+      }
     }
 
     #music-data-canvas {

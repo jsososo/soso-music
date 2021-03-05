@@ -36,15 +36,8 @@ const request = (param, platform) => {
     timeout: 30000,
   }).then((res) => {
     res.data = res.data || {};
-    if (!res.data.code && !res.data.result && res.data.data) {
-      res.data = res.data.data;
-    }
-    if (res.data.code === 200 || res.data.result === 100) {
-      return res.data;
-    } else {
-      res.data.message = res.data.message || res.data.errMsg || res.data.msg;
-      throw res.data;
-    }
+
+    resolve(res.data)
   }, (err) => {
     if (err.msg || err.message) {
       // window.VUE_APP.$message.error(err.msg || err.message);

@@ -73,7 +73,9 @@ export const allWatch = (state) => {
     oldVal
   ) => {
     (newVal[0] === oldVal[0]) && (searchInfo.pageNo = 1)
-
+    if (searchInfo.pageNo > 1 && searchInfo.isQuerying) {
+      return;
+    }
     await search(searchInfo);
   })
 
@@ -202,7 +204,10 @@ export const allWatch = (state) => {
   // 返回了听歌历史数据
   ipcRenderer.on('REPLY_HISTORY_DATA', (e, v) => state.playHistory.initHistory(v))
 
-  ipcRenderer.on('SET_SYSTEM_PLATFORM', (e, v) => state.setting.SYSTEM_PLATFORM = v);
+  ipcRenderer.on('SET_SYSTEM_PLATFORM', (e, v) => {
+    console.log(v);
+    state.setting.SYSTEM_PLATFORM = v
+  });
 
   return state;
 }

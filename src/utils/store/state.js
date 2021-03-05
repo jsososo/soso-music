@@ -109,25 +109,27 @@ const state = {
     DRAW_MUSIC_STYLE: 'rect',
     HISTORY_TAB: 'list',
     SYSTEM_PLATFORM: '',
+    SHOW_SIMPLE_TRANS: false,
+    SHOW_SIMPLE_COVER: true,
     appId: (() => {
       const getRandom = (num) => Number(`${num}`.split('').sort(() => Math.random() - 0.5).join('')).toString(36);
       const randomT = getRandom(new Date().valueOf());
       const randomN = getRandom(Math.round(Math.random() * 99999));
       return randomN + randomT;
     })(),
-    codeMap: {
-      PLAY_NEXT: '39',
-      PLAY_PREV: '37',
-      VOLUME_UP: '38',
-      VOLUME_DOWN: '40',
-      PLAY: '32',
-      QUIT_SIMPLE: '27',
-      TO_SIMPLE: ''
-    },
     ...Storage.get('soso_music_setting', true, '{}'),
     platform: '163', // 默认平台
-    version: '1.0.1',
+    version: '1.0.2',
     versionType: 'beta',
+  },
+  codeMap: {
+    PLAY_NEXT: '39',
+    PLAY_PREV: '37',
+    VOLUME_UP: '38',
+    VOLUME_DOWN: '40',
+    PLAY: '32',
+    QUIT_SIMPLE: '27',
+    GO_SIMPLE: 'ctrl-83',
   },
   miguFind: {...Storage.get('soso_music_migu_find', true, '{}')},
   playHistory: new PlayHistory(),
