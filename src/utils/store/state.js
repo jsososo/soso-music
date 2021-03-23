@@ -56,13 +56,18 @@ const state = {
     loading: true,
   },
   // 下载列表
-  downloadList: Storage.get('soso_music_download', true, '[]').map((v) => {
+  downloadList: new Proxy(Storage.get('soso_music_download', true, '[]').map((v) => {
     if (!v.finished) {
       v.finished = true;
       v.waiting = false;
       v.errMsg = '下载中断';
     }
     return v;
+  }), {
+    get(target, p) {
+      return target[p] ? target[p] :
+        target.find(({dId}) => dId === p);
+    }
   }),
   // 歌单信息和歌单中的歌曲列表，放在这里是为了方便对歌曲收藏取消操作时好同步数据
   listInfo: {},

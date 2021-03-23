@@ -12,6 +12,7 @@
         <div :class="`bottom-border-content background-${item.color}`" />
       </div>
     </div>
+    <slot />
   </div>
 </template>
 

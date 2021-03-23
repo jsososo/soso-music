@@ -1,7 +1,17 @@
 <template>
   <div class="downlaod-page">
     <page-title title="DOWNLOAD" />
-    <tab v-model="type" :tabs="tabs" />
+    <tab v-model="type" :tabs="tabs">
+      <el-popconfirm
+        v-if="list.length"
+        :title="`删除/中止 下面${list.length}条记录？`"
+        @confirm="clearAll(list)"
+      >
+        <template #reference>
+          <div class="clear-list-btn">清除下列记录({{list.length}})</div>
+        </template>
+      </el-popconfirm>
+    </tab>
     <div class="download-list">
       <div
         v-for="(item, index) in list"
@@ -19,8 +29,14 @@
         </div>
         <div class="song-bg" v-if="!item.finished && !item.waiting" :style="`transform: translateX(${item.progress - 100}%)`" />
 
-        <el-tooltip class="item" effect="dark" content="重新下载" placement="left">
-          <div class="re-down-btn"><i class="iconfont icon-download" /></div>
+        <el-tooltip class="item" effect="dark" content="重新下载" placement="top">
+          <div class="re-down-btn" @click="download(item.aId, item)"><i class="iconfont icon-download" /></div>
+        </el-tooltip>
+        <el-tooltip v-if="item.finished" class="item" effect="dark" content="删除记录" placement="top">
+          <div class="re-down-btn" @click="delRecord(item)"><i class="iconfont icon-delete" /></div>
+        </el-tooltip>
+        <el-tooltip v-else class="item" effect="dark" content="取消下载" placement="top">
+          <div class="re-down-btn" @click="cancelDownload(item)"><i class="iconfont icon-cancel" /></div>
         </el-tooltip>
 
       </div>
@@ -33,6 +49,7 @@
   import Tab from "../components/Tab";
   import { computed, ref } from 'vue';
   import {mixInject} from "../utils/store/state";
+  import { download } from "../utils/store/action";
 
   export default {
     name: "Download",
@@ -49,7 +66,7 @@
 
       const tabs = computed(() => ([
         {
-          text: `全部（${downloadList.length}）`,
+          text: `全部（${downloadList.length || 0}）`,
           val: 'all',
           color: 'blue',
         },
@@ -87,6 +104,23 @@
         tabs,
         type,
         list,
+        download,
+        delRecord(item) {
+          const i = downloadList.indexOf(item);
+          (i >= 0) && downloadList.splice(i, 1);
+        },
+        cancelDownload(item) {
+          item.cancel && item.cancel();
+          item.finished = true;
+          item.successed = false;
+          item.errMsg = '主动中止';
+        },
+        clearAll(list) {
+          list.forEach((item) => {
+            !item.finished && this.cancelDownload(item);
+            this.delRecord(item);
+          })
+        }
       }
     }
   }
@@ -95,6 +129,19 @@
 <style scoped lang="scss">
   @import "../assets/style/value";
   .downlaod-page {
+    .clear-list-btn {
+      display: inline-block;
+      font-size: 14px;
+      margin-left: 20px;
+      cursor: pointer;
+      text-decoration: underline;
+      opacity: 0.7;
+      transition: 0.3s;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
     .download-list {
       .download-item {
         height: 50px;

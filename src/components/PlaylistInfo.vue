@@ -5,6 +5,7 @@
       <div v-if="!listInfo && loading && list.length === 0" class="text-center fc_fff ft_20"
            style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">拼命查找了！
       </div>
+      <!--   歌单信息   -->
       <div v-if="!loading" class="list-info-detail">
         <div v-if="listInfo.name">
           <img class="list-info-cover" :src="listInfo.cover">
@@ -47,13 +48,13 @@
           </div>
         </div>
       </div>
-      <div class="song-list" ref="listDom" v-if="list.list && list.list.length">
+      <div class="song-list" ref="listDom" v-if="list.filterList && list.filterList.length">
         <div :style="`height:${smallIndex*71}px;`"></div>
         <div
           v-for="(s, i) in list.list"
           :key="`${s}-${i}`"
           :class="`song-item ${playNow.aId === s ? 'played' : ''} ${!allSongs[s].url ? 'disabled' : ''}`"
-          @click="allSongs[s].url && playMusic({ aId: s, list: listInfo.list, listId })"
+          @click="allSongs[s].url && playMusic({ aId: s, list: list.filterList, listId })"
         >
           <div class="playing-bg" v-if="playNow.aId === s" :style="`width: ${playerStatus.percentage * 100}%`">
             <div class="wave-bg"></div>
@@ -207,6 +208,7 @@
         return {
           hideBigHeight: (filterList.length - bigIndex.value) * 71,
           listNum: filterList.length,
+          filterList,
           list: filterList.filter((id, i) => state.allSongs[id] && i >= smallIndex.value && i <= bigIndex.value),
         }
       })
@@ -245,11 +247,11 @@
         // 播放展示的歌曲
         playListShow(force) {
           const {allSongs, playerStatus, playNow} = state;
-          const aId = list.value.list.find((s) => allSongs[s].url);
+          const aId = list.value.filterList.find((s) => allSongs[s].url);
           if (!aId) {
             return ElMessage.error('无可播放歌曲');
           }
-          updatePlayingList(list.value.list, force);
+          updatePlayingList(list.value.filterList, force);
           force ?
             (playNow.aId = aId) :
             ElMessage.success('已添加至播放列表');
@@ -258,7 +260,7 @@
 
         downShow() {
           const {allSongs} = state;
-          const ids = list.value.list.filter((s) => allSongs[s].url);
+          const ids = list.value.filterList.filter((s) => allSongs[s].url);
           if (!ids.length) {
             return ElMessage.info('没有歌呢');
           }

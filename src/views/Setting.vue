@@ -55,6 +55,14 @@
 <!--            </div>-->
 <!--          </div>-->
 <!--        </div>-->
+
+        <div class="input-line">
+          <div class="input-label">缓存文件：</div>
+          <div class="input-content">
+            {{cacheSize}}
+            <el-button class="ml_20" @click="clearCache" size="mini">清除</el-button>
+          </div>
+        </div>
       </div>
 
       <div v-if="setting.tab === 'download'">
@@ -157,6 +165,7 @@
   import { ipcRenderer } from 'electron';
   import request from "../utils/request";
   import { mixDomain as domain } from "../utils/store/action";
+  import { numToStr } from "../utils/stringHelper";
 
   export default {
     name: "Setting",
@@ -173,6 +182,10 @@
 
       const mixNick = ref(user.soso.nick || '');
       const mixEmail = ref(user.soso.email || '');
+      const cacheSize = ref('');
+
+      ipcRenderer.send('GET_CACHE_SIZE')
+      ipcRenderer.on('REPLY_CACHE_SIZE', (e, v) => cacheSize.value = `${numToStr(v)}b`.toUpperCase());
 
       return {
         ...state,
@@ -222,7 +235,14 @@
             ...data,
             logined: true,
           }
-        }
+        },
+
+        cacheSize,
+
+        clearCache() {
+          ipcRenderer.send('CLEAR_CACHE')
+        },
+
       }
     }
   }

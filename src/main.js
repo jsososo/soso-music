@@ -4,6 +4,7 @@ import App from './App.vue';
 import ElementPlus from 'element-plus';
 import 'element-plus/lib/theme-chalk/index.css';
 import { ipcRenderer } from 'electron'
+import locale from 'element-plus/lib/locale/lang/zh-cn'
 window.ipcRenderer = ipcRenderer
 
 //全局注册自定义指令，用于判断当前图片是否能够加载成功，可以加载成功则赋值为img的src属性，否则使用默认图片
@@ -32,7 +33,7 @@ let imageIsExist = function(url) {
 
 createApp(App)
   .use(router)
-  .use(ElementPlus)
+  .use(ElementPlus, { size: 'small', locale })
   .directive('error',
     async (el, { value }) =>
       !(await imageIsExist(el.style.backgroundImage.replace(/^url\("|"\)$/g, ''))) &&

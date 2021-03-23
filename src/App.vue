@@ -158,10 +158,12 @@ export default {
       }
       switch (codes.join('-').toLowerCase()) {
         case codeMap.VOLUME_DOWN:
+          ElMessage.closeAll();
           state.setting.volume = Math.max(volume - 5, 0);
           ElMessage.info(`音量调至${state.setting.volume}`);
           return false;
         case codeMap.VOLUME_UP:
+          ElMessage.closeAll();
           state.setting.volume = Math.min(volume + 5, 100);
           ElMessage.info(`音量调至${state.setting.volume}`);
           return false;

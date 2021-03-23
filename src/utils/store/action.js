@@ -680,17 +680,17 @@ export const downReq = async (info) => {
     return;
   }
   downloadInfo.count += 1;
-  const {dUrl, filename, name, ar, al, songEndType} = info;
+  const {dUrl, filename, name, ar, al, songEndType, dId} = info;
   let picData;
-  const getDInfo = () => downloadList.find((v) => v.dId === info.dId);
   info.waiting = false;
   info.progress = 0;
   let {data} = await axios({
     url: transUrl(dUrl),
     responseType: 'arraybuffer',
-    onDownloadProgress: ({loaded, total}) => getDInfo().progress = (loaded / total * 100).toFixed(2) / 1,
+    cancelToken: new axios.CancelToken((c) => info.cancel = c),
+    onDownloadProgress: ({loaded, total}) => downloadList[dId].progress = (loaded / total * 100).toFixed(2) / 1,
   }).catch((err) => {
-    getDInfo().errMsg = err.message;
+    downloadList[dId] && (downloadList[dId].errMsg = err.message);
     return {};
   });
 
@@ -708,7 +708,7 @@ export const downReq = async (info) => {
 
   if (!data) {
     downloadInfo.count -= 1;
-    return getDInfo().finished = true;
+    return downloadList[dId].finished = true;
   }
 
   // 填写 id3 信息
@@ -731,35 +731,42 @@ export const downReq = async (info) => {
   // 移除下载链接
   document.body.removeChild(downLink)
 
-  getDInfo().finished = true;
-  getDInfo().successed = true;
+  downloadList[dId].finished = true;
+  downloadList[dId].successed = true;
   setting.DOWN_LYRIC && downLyric(info);
   downloadInfo.count -= 1;
 }
 
 // 触发下载
 export const download = async (aId, info) => {
-  window.event && window.event.stopPropagation();
-  const {allSongs, downloadList} = window.$state;
-  const s = info || allSongs[aId];
-  const {br, songEndType, url} = await getSingleUrl(aId, 'download');
+  try {
+    window.event && window.event.stopPropagation();
+    const {allSongs, downloadList} = window.$state;
+    const s = info || allSongs[aId];
+    window.DMessage && window.DMessage.close();
+    const {br, songEndType, url} = await getSingleUrl(aId, 'download');
+    const dInfo = {
+      ...s,
+      errMsg: '',
+      waiting: true,
+      filename: getDownName(s, songEndType),
+      lyric: undefined,
+      progress: 0,
+      finished: false,
+      successed: false,
+      br,
+      dUrl: url,
+      dId: `${aId}${(new Date().valueOf()).toString(36)}`
+    }
+    downloadList.unshift(dInfo);
+    window.DMessage = ElMessage.success(`加入下载队列（共${downloadList.length}条）`);
 
-  const dInfo = {
-    ...s,
-    waiting: true,
-    filename: getDownName(s, songEndType),
-    lyric: undefined,
-    progress: 0,
-    finished: false,
-    successed: false,
-    br,
-    dUrl: url,
-    dId: `${aId}${(new Date().valueOf()).toString(36)}`
+      // 如果下载列表本地存储最大 2000
+    (downloadList.length > 2000) && downloadList.pop();
+    downReq(dInfo);
+  } catch (err) {
+    window.DMessage = ElMessage.error(`加入下载失败: ${err.message}`);
   }
-  downloadList.unshift(dInfo);
-  // 如果下载列表本地存储最大 2000
-  (downloadList.length > 2000) && downloadList.pop();
-  downReq(dInfo);
 }
 
 // 添加/删除 歌曲至歌单

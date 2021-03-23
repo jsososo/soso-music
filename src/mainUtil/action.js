@@ -71,6 +71,14 @@ export default (app) => {
   // 保存播放历史数据
   ipcMain.on('UPDATE_HISTORY_DATA', (e, v) => storage.set('history_data', v))
 
+  // 缓存相关
+  ipcMain.on('GET_CACHE_SIZE', async (e) => e.reply('REPLY_CACHE_SIZE', await app.win.webContents.session.getCacheSize()));
+
+  ipcMain.on('CLEAR_CACHE', async (e) => {
+    await app.win.webContents.session.clearCache()
+    e.reply('REPLY_CACHE_SIZE', await app.win.webContents.session.getCacheSize())
+  })
+
   // 静默下载
   app.win.webContents.session.on('will-download', (event, item) => {
     // Set the save path, making Electron not to prompt a save dialog.
