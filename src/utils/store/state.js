@@ -106,7 +106,7 @@ const state = {
     DOWN_TRANS: true, // 下载歌词翻译
     DOWN_DIR: '', // 下载路径
     qCookie: '',
-    SERVER_PORT: '3090',
+    SERVER_PORT: '3090', // 服务端口
     store_qq: '',
     store_163: '',
     DRAW_MUSIC: true,
@@ -116,6 +116,7 @@ const state = {
     SYSTEM_PLATFORM: '',
     SHOW_SIMPLE_TRANS: false,
     SHOW_SIMPLE_COVER: true,
+    INIT_LIST: '1', // 下次登录时的播放列表，-1 表示未设置，逻辑按0处理，0 表示使用推荐歌单，1 表示记住上一次记录，2 表示网易云日推
     appId: (() => {
       const getRandom = (num) => Number(`${num}`.split('').sort(() => Math.random() - 0.5).join('')).toString(36);
       const randomT = getRandom(new Date().valueOf());
@@ -124,8 +125,8 @@ const state = {
     })(),
     ...Storage.get('soso_music_setting', true, '{}'),
     platform: '163', // 默认平台
-    version: '1.0.2',
-    versionType: 'beta',
+    version: '1.1.0',
+    versionType: '',
   },
   codeMap: {
     PLAY_NEXT: '39',

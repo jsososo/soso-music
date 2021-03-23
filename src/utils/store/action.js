@@ -122,12 +122,9 @@ const findMusic = {
           song.noUrl = false;
           const {bId, url, platform, flac} = data;
           miguFind[key] = data;
-          song.bId = bId;
-          song.url = url;
-          song.bPlatform = platform;
-          song.flac = flac;
-          song.br = flac ? 960000 : 128000;
-          song.pUrl = flac || url;
+          updateSongInfo({
+            aId, bId, url, platform, flac, br: flac ? 960000 : 128000, pUrl: flac || url
+          })
         }
         this.num -= 1;
         this.push();
@@ -590,13 +587,14 @@ export const getQQLoginStatus = async (c) => {
 export const getDaily = async (platform) => request({api: 'DAILY_PLAYLIST', data: {ownCookie: 1}}, platform)
 
 // 第一次登录的时候调用
-export const initLogin = () => {
+export const initLogin = () => (
   Promise.all([get163LoginStatus(), getQQLoginStatus()])
     .then(loginRes => {
       const platform = ['163', 'qq'];
-      loginRes.forEach((res, i) => res && getDaily(platform[i]));
+
+      return Promise.all(loginRes.map((res, i) => res && getDaily(platform[i])))
     })
-}
+)
 
 // 获取歌词
 export const getLyric = async (aId) => {

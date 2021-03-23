@@ -51,7 +51,15 @@ import { computed } from 'vue';
 import InfoBox from "./components/InfoBox";
 
 import request from "./utils/request";
-import {handlePlayLists, queryPlayListDetail, updatePlaying, cutSong, initLogin, mixDomain as domain} from "./utils/store/action";
+import {
+  handlePlayLists,
+  queryPlayListDetail,
+  updatePlaying,
+  cutSong,
+  initLogin,
+  mixDomain as domain,
+  handleSongs
+} from "./utils/store/action";
 import { ipcRenderer } from 'electron'
 import { ElMessage, ElNotification } from 'element-plus';
 import { changeUrlQuery, numToStr } from "./utils/stringHelper";
@@ -68,7 +76,7 @@ export default {
   setup() {
     // 初始化 store state
     const state = store();
-    const { playNow } = state;
+    const { playNow, allSongs } = state;
 
     const route = useRoute();
     const router = useRouter();
@@ -88,7 +96,31 @@ export default {
       },
     ]))
 
-    initLogin();
+    const { INIT_LIST } = state.setting;
+
+    const lastList = Storage.get('soso_music_last_list', true, '[]');
+    const lastPlay = Storage.get('soso_music_last_play');
+
+    // 初始化登录
+    initLogin()
+      .then(async ([daily]) => {
+        if (INIT_LIST === '1' && lastList.length) {
+          const list = handleSongs(lastList);
+          return updatePlaying(allSongs[lastPlay] ? lastPlay : list[0], list);
+        }
+        // 日推歌单，当设置为2，且存在数据时
+        const dailyList = (INIT_LIST === '2') && daily && daily.data && daily.data.length && handleSongs(daily.data);
+        (dailyList || []).length ? updatePlaying(dailyList[0], dailyList) :
+          // 保底
+          request('RECOMMEND_PLAYLIST', state.setting.platform)
+            // 处理歌单信息，获取第一个推荐歌单
+            .then(async ({ data = []}) => {
+              let list;
+              handlePlayLists(data);
+              data[0] && ({ list } = await queryPlayListDetail(data[0].aId));
+              list && updatePlaying(list[0], list, true);
+            })
+      });
 
     ipcRenderer.send('UPDATE_SERVER_POINT', state.setting.SERVER_PORT);
 
@@ -128,16 +160,6 @@ export default {
         })
       }
     })
-    // 查询推荐歌单
-    request('RECOMMEND_PLAYLIST', state.setting.platform)
-      // 处理歌单信心，获取第一个推荐歌单
-      .then(async ({ data = []}) => {
-        let list;
-        handlePlayLists(data);
-        data[0] && ({ list } = await queryPlayListDetail(data[0].aId));
-
-        updatePlaying(list[0], list);
-      })
 
     // 键盘事件绑定
     window.onkeydown = ({ keyCode, target, ctrlKey, altKey, shiftKey, metaKey }) => {

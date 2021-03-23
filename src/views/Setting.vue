@@ -55,7 +55,16 @@
 <!--            </div>-->
 <!--          </div>-->
 <!--        </div>-->
-
+        <div class="input-line">
+          <div class="input-label">默认列表：</div>
+          <div class="input-content">
+            <el-radio-group size="small" v-model="setting.INIT_LIST">
+              <el-radio-button label="0">推荐歌单</el-radio-button>
+              <el-radio-button label="1">上次播放</el-radio-button>
+              <el-radio-button label="2">网易云日推</el-radio-button>
+            </el-radio-group>
+          </div>
+        </div>
         <div class="input-line">
           <div class="input-label">缓存文件：</div>
           <div class="input-content">

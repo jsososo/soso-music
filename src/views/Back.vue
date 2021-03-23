@@ -62,6 +62,7 @@
           request({
             api: 'MIX_VERSION_ADD',
             domain,
+            method: 'post',
             data: {
               version: version.value,
               versionType: versionType.value,

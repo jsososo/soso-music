@@ -134,6 +134,8 @@ export const allWatch = (state) => {
     })
     playNow.hotComments = list;
     playNow.totalComments = total;
+
+    Storage.set('soso_music_last_play', playNow.aId);
   })
 
   // 更新正在播放的列表
@@ -142,6 +144,14 @@ export const allWatch = (state) => {
 
     // 筛选出有音乐的列表
     playingList.trueList = raw.filter((aId) => allSongs[aId].url);
+
+    // 存到 localStorage 下次登录可能会有用
+    Storage.set('soso_music_last_list', raw.map((aId) => ({
+      ...allSongs[aId],
+      pUrl: undefined,
+      url: undefined,
+      noUrl: undefined,
+    })), true);
   })
 
   // 监听正在播放的列表，用来更新随机列表
