@@ -53,18 +53,18 @@
         <div
           v-for="(s, i) in list.list"
           :key="`${s}-${i}`"
-          :class="`song-item ${playNow.aId === s ? 'played' : ''} ${!allSongs[s].url ? 'disabled' : ''}`"
-          @click="allSongs[s].url && playMusic({ aId: s, list: list.filterList, listId })"
+          :class="`song-item ${playNow.aId === s ? 'played' : ''} ${!(allSongs[s].url || allSongs[s].localPath) ? 'disabled' : ''}`"
+          @click="(allSongs[s].url || allSongs[s].localPath) && playMusic({ aId: s, list: list.filterList, listId })"
         >
           <div class="playing-bg" v-if="playNow.aId === s" :style="`width: ${playerStatus.percentage * 100}%`">
-            <div class="wave-bg"></div>
-            <div class="wave-bg2"></div>
+            <div class="wave-bg" />
+            <div class="wave-bg2" />
           </div>
           <span class="song-order">{{smallIndex+i+1}}</span>
-          <img class="song-cover" :src="`${allSongs[s].al && allSongs[s].al.picUrl}?param=50y50`" alt=""/>
+          <img class="song-cover" :src="`${allSongs[s].al && allSongs[s].al.picUrl}`" alt=""/>
           <span class="song-name">{{allSongs[s].name}}</span>
           <span class="song-artist">{{(allSongs[s].ar || []).map((a) => a.name).join('/')}}</span>
-          <div class="icon-container">
+          <div class="icon-container" v-if="!allSongs[s].localPath">
             <el-tooltip class="item" effect="dark" content="喜欢" placement="top">
               <i
                 :class="`operation-icon operation-icon-1 iconfont icon-${favSongMap[allSongs[s].platform][s] ? 'like' : 'unlike'}`"

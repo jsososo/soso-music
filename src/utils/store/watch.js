@@ -1,5 +1,5 @@
 import { watch, toRaw } from 'vue';
-import {getLyric, search, updatePlayingList, downReq} from './action';
+import {getLyric, search, updatePlayingList, downReq, setWinLyric, updateSongInfo} from './action';
 import Storage from "../Storage";
 import { useRoute, useRouter } from 'vue-router';
 import { ipcRenderer } from 'electron';
@@ -84,7 +84,7 @@ export const allWatch = (state) => {
     const s = allSongs[aId];
     const { id, songid, platform, al } = s;
     const oldS = allSongs[oldAId];
-    playNow.liked = favSongMap[platform][aId];
+    !playNow.localPath && (playNow.liked = favSongMap[platform][aId]);
 
     // 网易云的歌曲，有一个打卡
     if (oldS && oldS.platform === '163') {
@@ -122,18 +122,23 @@ export const allWatch = (state) => {
     !playingList[aId] && updatePlayingList([aId]);
     Object.keys(playNow).forEach((k) => delete playNow[k]);
     Object.keys(s).forEach(k => playNow[k] = s[k]);
-    !s.lyric && getLyric(aId);
+    (!s.lyric) && !s.localPath &&  getLyric(aId);
+    setWinLyric();
 
-    const { data: { list = [], total = 0 }} = await request({
-      api: 'COMMENT',
-      data: {
-        id: songid || id,
-        platform,
-        hot: 1,
-      }
-    })
-    playNow.hotComments = list;
-    playNow.totalComments = total;
+    if (!s.localPath) {
+      const { data: { list = [], total = 0 }} = await request({
+        api: 'COMMENT',
+        data: {
+          id: songid || id,
+          platform,
+          hot: 1,
+        }
+      })
+      playNow.hotComments = list;
+      playNow.totalComments = total;
+    } else {
+      ipcRenderer.send('LOAD_FILE_BUF', playNow.localPath);
+    }
 
     Storage.set('soso_music_last_play', playNow.aId);
   })
@@ -186,8 +191,25 @@ export const allWatch = (state) => {
   // 更新后端端口
   watch(() => setting.SERVER_PORT, (v) => ipcRenderer.send('UPDATE_SERVER_POINT', v));
 
-  // 计算播放进度比例
-  watch(() => playerStatus.currentTime, (v) => playerStatus.percentage = v / playerStatus.duration)
+  // 监听播放进度
+  watch(() => playerStatus.currentTime, (v) => {
+    // 计算播放进度百分比
+    playerStatus.percentage = v / playerStatus.duration;
+    // 计算出当前展示歌曲
+    const key = Math.floor(v * 1000);
+    const { winLyric = {}, lyric } = playNow;
+    const { keys = [], list = [] } = winLyric;
+    const nextIndex = keys.findIndex((v) => Number(v) > key);
+    const index = nextIndex < 0 ? (keys.length - 1) : nextIndex - 1;
+    const nextKey = Number(keys[nextIndex]);
+    if (index !== winLyric.index && keys && keys[index]) {
+      winLyric.index = index;
+      list[index%2] = lyric[keys[index]];
+      list[nextIndex%2] = lyric[nextKey];
+
+      Storage.set('soso_music_win_lyric', winLyric, true)
+    }
+  })
 
   // 监听download
   watch(downloadList, (v) =>
@@ -211,10 +233,29 @@ export const allWatch = (state) => {
     }
   })
 
+  // 是否显示桌面歌词
+  ipcRenderer.on('REPLY_SHOW_LYRIC_WINDOW', (e, val) => {
+    // console.log('show win lyric reply', val);
+    state.setting.SHOW_WIN_LYRIC = val;
+  })
+
+  ipcRenderer.on('RPL_FILE_BUF', (e, { path, buf }) => {
+    const aId = `local_${path}`;
+    const s = allSongs[aId];
+    s.file = new File([buf], aId);
+    s.url = s.pUrl = URL.createObjectURL(s.file);
+    if (aId === playNow.aId) {
+      playNow.pUrl = playNow.url = s.url;
+    }
+  })
+
+
   // 返回了听歌历史数据
   ipcRenderer.on('REPLY_HISTORY_DATA', (e, v) => state.playHistory.initHistory(v))
 
   ipcRenderer.on('SET_SYSTEM_PLATFORM', (e, v) => state.setting.SYSTEM_PLATFORM = v);
+
+  ipcRenderer.on('ADD_LOCAL_FILE', (e, v) => updateSongInfo(v))
 
   return state;
 }

@@ -8,26 +8,79 @@ import Id3 from "browser-id3-writer";
 import timer from "../timer";
 import Storage from "../Storage";
 import {ElMessage} from "element-plus";
+import ID3 from 'jsmediatags'
+import {ipcRenderer} from "electron";
 
 export const mixDomain = 'http://music.jsososo.com/apiMix';
 
 // 更新歌曲信息，有链接的走这边，会顺带更新播放列表
 export const updateSongInfo = (songInfo) => {
-  const {allSongs, playingList, playNow} = window.$state;
+  const {allSongs, playingList, playNow, localFiles} = window.$state;
   const arr = Array.isArray(songInfo) ? songInfo : [songInfo];
 
   let needUpdateList = false;
   arr.forEach(info => {
     const {aId, url} = info;
+    Object.keys(info).forEach((k) => !info[k] && (delete info[k]))
     allSongs[aId] = {...(allSongs[aId] || {}), ...info}
     needUpdateList = needUpdateList || (playingList[aId] && url);
 
+    // 本地文件
+    if (info.localPath) {
+      if (!info.url && info.buf) {
+        const fileName = info.localPath.replace(/(.*\/)*([^.]+).*$/ig,"$2");
+        info.file = new File([info.buf], fileName)
+        ID3.read(info.file, {
+          onSuccess({ tags = {}}) {
+            const { title, album, artist, picture, year, track, lyrics } = tags;
+            info.name = title || fileName;
+
+            let picUrl = '';
+
+            if (picture) {
+              const { data, type } = tags.picture;
+              const byteArray = new Uint8Array(data);
+              const blob = new Blob([byteArray], { type });
+              picUrl = URL.createObjectURL(blob);
+            }
+
+            year && (info.publishTime = new Date(`${year}/01/01`));
+
+            info.al = {
+              name: album || '',
+              picUrl,
+              platform: 'local',
+            }
+            info.ar = [{ name: artist || '', platform: 'local' }];
+            info.trackNo = track;
+            info.rawLyric = info.rawLyric || lyrics || '';
+            // 释放，避免内存爆炸
+            delete info.file;
+            delete info.buf;
+            delete info.tags;
+
+            allSongs[aId] = info;
+            localFiles.add(aId);
+          },
+          onError(e) {
+            console.log('error: ', e, info)
+          }
+        });
+        info.rawLyric && !info.lyric && (info.lyric = handleLyric(info.rawLyric, 'str', {}));
+        allSongs[aId] = info;
+      }
+    }
     // 更新一下 playNow
     (aId === playNow.aId) && (Object.keys(info).forEach(k => playNow[k] = info[k]))
   })
 
   needUpdateList && (playingList.trueList = playingList.raw.filter((aId) => allSongs[aId].url));
 
+}
+
+export const loadLocalFile = () => {
+  window.$state.localFiles.clear();
+  ipcRenderer.send('LOAD_LOCAL_FILE');
 }
 
 // 获取单个歌曲的链接
@@ -596,6 +649,28 @@ export const initLogin = () => (
     })
 )
 
+// 充值桌面歌词信息
+export const setWinLyric = () => {
+  const { lyric = {}, aId } = window.$state.playNow;
+  const keys = Object.keys(lyric).sort((a, b) => Number(a) - Number(b));
+  const winLrcList = [];
+  let i = 0;
+  while (i < 2 && lyric[keys[i]]) {
+    winLrcList.push(lyric[keys[i]]);
+    i += 1;
+  }
+  const winLyric = {
+    keys,
+    index: 0,
+    list: winLrcList,
+  };
+  Storage.set('soso_music_win_lyric', winLyric, true)
+  updateSongInfo({
+    aId,
+    winLyric,
+  })
+}
+
 // 获取歌词
 export const getLyric = async (aId) => {
   const {allSongs} = window.$state;
@@ -611,7 +686,14 @@ export const getLyric = async (aId) => {
       },
     });
 
-  updateSongInfo({aId, lyric: lyricObj, rawLyric: lyric, rawTrans: trans})
+  updateSongInfo({
+    aId,
+    lyric: lyricObj,
+    rawLyric: lyric,
+    rawTrans: trans,
+  })
+
+  setWinLyric();
 }
 
 // 获取下载的歌名

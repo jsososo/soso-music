@@ -101,33 +101,6 @@ export default {
     const lastList = Storage.get('soso_music_last_list', true, '[]');
     const lastPlay = Storage.get('soso_music_last_play');
 
-    // 初始化登录
-    initLogin()
-      .then(async ([daily]) => {
-        if (INIT_LIST === '1' && lastList.length) {
-          const list = handleSongs(lastList);
-          return updatePlaying(allSongs[lastPlay] ? lastPlay : list[0], list);
-        }
-        // 日推歌单，当设置为2，且存在数据时
-        const dailyList = (INIT_LIST === '2') && daily && daily.data && daily.data.length && handleSongs(daily.data);
-        (dailyList || []).length ? updatePlaying(dailyList[0], dailyList) :
-          // 保底
-          request('RECOMMEND_PLAYLIST', state.setting.platform)
-            // 处理歌单信息，获取第一个推荐歌单
-            .then(async ({ data = []}) => {
-              let list;
-              handlePlayLists(data);
-              data[0] && ({ list } = await queryPlayListDetail(data[0].aId));
-              list && updatePlaying(list[0], list, true);
-            })
-      });
-
-    ipcRenderer.send('UPDATE_SERVER_POINT', state.setting.SERVER_PORT);
-
-    ipcRenderer.send('SET_DOWNLOAD_DIR', state.setting.DOWN_DIR);
-
-    ipcRenderer.send('GET_HISTORY_DATA');
-
     // 左侧显示播放信息的页面
     const showPlayingInfo = computed(() => !!{
       '/': true,
@@ -146,78 +119,111 @@ export default {
       '/simple': true,
     }[route.path])
 
-    request({
-      domain,
-      api: 'MIX_VERSION_CHECK',
-      data: { version: state.setting.version },
-    }).then(({ data }) => {
-      if (data) {
-        ElNotification({
-          title: `最新版本：${data.version}`,
-          message: data.explain.split('\n').map(v => `<div class="fc_666 ft_12">${v}</div>`).join('') +
-            `<dvi><a style="color: #409EFF" href="#/about?type=history">去看看</a></dvi>`,
-          dangerouslyUseHTMLString: true,
-        })
-      }
-    })
-
-    // 键盘事件绑定
-    window.onkeydown = ({ keyCode, target, ctrlKey, altKey, shiftKey, metaKey }) => {
-      // 输入框内的操作，忽略掉
-      if (['textarea', 'input'].indexOf(target.tagName.toLowerCase()) > -1) {
-        return;
-      }
-      const { codeMap, setting } = state;
-      let { volume } = setting;
-      const codes = [];
-      ctrlKey && codes.push('ctrl');
-      altKey && codes.push('alt');
-      shiftKey && codes.push('shiftKey');
-      metaKey && codes.push('meta');
-
-      if ([16, 17, 18, 91].indexOf(keyCode) === -1) {
-        codes.push(keyCode);
-      }
-      switch (codes.join('-').toLowerCase()) {
-        case codeMap.VOLUME_DOWN:
-          ElMessage.closeAll();
-          state.setting.volume = Math.max(volume - 5, 0);
-          ElMessage.info(`音量调至${state.setting.volume}`);
-          return false;
-        case codeMap.VOLUME_UP:
-          ElMessage.closeAll();
-          state.setting.volume = Math.min(volume + 5, 100);
-          ElMessage.info(`音量调至${state.setting.volume}`);
-          return false;
-        case codeMap.PLAY_PREV:
-          cutSong('prev');
-          return false;
-        case codeMap.PLAY_NEXT:
-          cutSong('next');
-          return false;
-        case codeMap.PLAY:
-          state.playerStatus.playing = !state.playerStatus.playing;
-          return false;
-        case (codeMap.GO_SIMPLE):
-          window.location = '#/simple';
-          return false;
-        case (codeMap.QUIT_SIMPLE):
-          if (route.path === '/simple') {
-            window.location = '#/';
+    if (window.location.hash !== '#/windowLyric') {
+      // 初始化登录
+      initLogin()
+        .then(async ([daily]) => {
+          if (INIT_LIST === '1' && lastList.length) {
+            const list = handleSongs(lastList);
+            return updatePlaying(allSongs[lastPlay] ? lastPlay : list[0], list);
           }
-          return false;
-        // case 'meta-82':
-        //   return location.reload();
-      }
-      return true;
-    };
-    // window.onkeyup = ({ keyCode }) => keys = keys.filter((c) => c !== keyCode);
+          // 日推歌单，当设置为2，且存在数据时
+          const dailyList = (INIT_LIST === '2') && daily && daily.data && daily.data.length && handleSongs(daily.data);
+          (dailyList || []).length ? updatePlaying(dailyList[0], dailyList) :
+            // 保底
+            request('RECOMMEND_PLAYLIST', state.setting.platform)
+              // 处理歌单信息，获取第一个推荐歌单
+              .then(async ({ data = []}) => {
+                let list;
+                handlePlayLists(data);
+                data[0] && ({ list } = await queryPlayListDetail(data[0].aId));
+                list && updatePlaying(list[0], list, true);
+              })
+        });
 
-    setInterval(() => {
-      if (Storage.get('q_cookie_time') < new Date().valueOf() - 86400000) {
-        state.user.qq = { id: state.user.qq.id };
-      }
-    }, 60000)
+      ipcRenderer.send('UPDATE_SERVER_POINT', state.setting.SERVER_PORT);
+
+      ipcRenderer.send('SET_DOWNLOAD_DIR', state.setting.DOWN_DIR);
+
+      ipcRenderer.send('GET_HISTORY_DATA');
+
+      state.setting.SHOW_WIN_LYRIC && ipcRenderer.send('SHOW_LYRIC_WINDOW', true);
+
+      request({
+        domain,
+        api: 'MIX_VERSION_CHECK',
+        data: { version: state.setting.version },
+      }).then(({ data }) => {
+        if (data) {
+          ElNotification({
+            title: `最新版本：${data.version}`,
+            message: data.explain.split('\n').map(v => `<div class="fc_666 ft_12">${v}</div>`).join('') +
+              `<dvi><a style="color: #409EFF" href="#/about?type=history">去看看</a></dvi>`,
+            dangerouslyUseHTMLString: true,
+          })
+        }
+      }).catch((err) => {
+        console.log('获取版本失败: ', err.message)
+      })
+
+      // 键盘事件绑定
+      window.onkeydown = ({ keyCode, target, ctrlKey, altKey, shiftKey, metaKey }) => {
+        // 输入框内的操作，忽略掉
+        if (['textarea', 'input'].indexOf(target.tagName.toLowerCase()) > -1) {
+          return;
+        }
+        const { codeMap, setting } = state;
+        let { volume } = setting;
+        const codes = [];
+        ctrlKey && codes.push('ctrl');
+        altKey && codes.push('alt');
+        shiftKey && codes.push('shiftKey');
+        metaKey && codes.push('meta');
+
+        if ([16, 17, 18, 91].indexOf(keyCode) === -1) {
+          codes.push(keyCode);
+        }
+        switch (codes.join('-').toLowerCase()) {
+          case codeMap.VOLUME_DOWN:
+            ElMessage.closeAll();
+            state.setting.volume = Math.max(volume - 5, 0);
+            ElMessage.info(`音量调至${state.setting.volume}`);
+            return false;
+          case codeMap.VOLUME_UP:
+            ElMessage.closeAll();
+            state.setting.volume = Math.min(volume + 5, 100);
+            ElMessage.info(`音量调至${state.setting.volume}`);
+            return false;
+          case codeMap.PLAY_PREV:
+            cutSong('prev');
+            return false;
+          case codeMap.PLAY_NEXT:
+            cutSong('next');
+            return false;
+          case codeMap.PLAY:
+            state.playerStatus.playing = !state.playerStatus.playing;
+            return false;
+          case (codeMap.GO_SIMPLE):
+            window.location = '#/simple';
+            return false;
+          case (codeMap.QUIT_SIMPLE):
+            if (route.path === '/simple') {
+              window.location = '#/';
+            }
+            return false;
+          // case 'meta-82':
+          //   return location.reload();
+        }
+        return true;
+      };
+      // window.onkeyup = ({ keyCode }) => keys = keys.filter((c) => c !== keyCode);
+
+      setInterval(() => {
+        if (Storage.get('q_cookie_time') < new Date().valueOf() - 86400000) {
+          state.user.qq = { id: state.user.qq.id };
+        }
+      }, 60000)
+    }
 
     return {
       ...state,

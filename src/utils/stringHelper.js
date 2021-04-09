@@ -114,7 +114,7 @@ export const numToStr = (n) => {
 
 export const transUrl = (url) => {
   const { setting } = window.$state;
-  return `http://localhost:${setting.SERVER_PORT}/trans?_=${encodeURIComponent(url)}`
+  return url.match(/^blob:/) ? url : `http://localhost:${setting.SERVER_PORT}/trans?_=${encodeURIComponent(url)}`
 }
 
 export const timeToStr = (v = 0) => ((v = Math.round(v)) || true) && `${Num(v / 60, 0, -1)}:${Num(v % 60, 0) < 10 ? `0${Num(v % 60, 0)}` : Num(v % 60, 0)}`;

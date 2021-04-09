@@ -1,6 +1,6 @@
 {
   "name": "soso-music",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -21,8 +21,8 @@
     "copy-webpack-plugin": "5.0.0",
     "core-js": "^3.6.5",
     "electron-json-storage": "^4.3.0",
-    "element-plus": "^v1.0.1-beta.20",
-    "vue": "^3.0.0",
+    "element-plus": "^v1.0.2-beta.27",
+    "vue": "^3.0.5",
     "vue-router": "^4.0.0-beta.13"
   },
   "devDependencies": {
@@ -36,6 +36,9 @@
     "electron-devtools-installer": "^3.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^7.0.0-0",
+    "id3-reader": "^0.0.2",
+    "id3js": "^2.1.1",
+    "jsmediatags": "3.8.1",
     "node-sass": "^5.0.0",
     "sass-loader": "^10.1.0",
     "vue-cli-plugin-electron-builder": "~2.0.0-rc.5"
@@ -51,6 +54,10 @@
     ],
     "parserOptions": {
       "parser": "babel-eslint"
+    },
+    "rules": {
+      "no-debugger": 0,
+      "no-undefined": 0
     }
   },
   "browserslist": [

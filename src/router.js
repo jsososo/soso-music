@@ -70,6 +70,14 @@ const routes = [
   {
     path: '/simple',
     component: () => import('./views/Simple'),
+  },
+  {
+    path: '/windowLyric',
+    component: () => import('./views/WindowLyric'),
+  },
+  {
+    path: '/local',
+    component: () => import('./views/Local'),
   }
 ]
 

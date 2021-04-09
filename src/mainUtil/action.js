@@ -2,6 +2,7 @@ import {ipcMain, dialog, Menu, Tray} from 'electron';
 import api from '../../server/api';
 import path from 'path';
 import storage from 'electron-json-storage';
+import readLocal, { loadFile } from './readLocal';
 
 // 所有的 ipcMain 和 ipcRenderer 的事件沟通
 export default (app) => {
@@ -71,13 +72,27 @@ export default (app) => {
   // 保存播放历史数据
   ipcMain.on('UPDATE_HISTORY_DATA', (e, v) => storage.set('history_data', v))
 
-  // 缓存相关
+  // 获取缓存
   ipcMain.on('GET_CACHE_SIZE', async (e) => e.reply('REPLY_CACHE_SIZE', await app.win.webContents.session.getCacheSize()));
 
+  // 清除缓存
   ipcMain.on('CLEAR_CACHE', async (e) => {
     await app.win.webContents.session.clearCache()
     e.reply('REPLY_CACHE_SIZE', await app.win.webContents.session.getCacheSize())
   })
+
+  // 显示桌面歌词
+  ipcMain.on('SHOW_LYRIC_WINDOW', async (e, show) => {
+    app.winLyric[show ? 'show' : 'hide']();
+    app.win.webContents.send('REPLY_SHOW_LYRIC_WINDOW', show);
+  })
+
+  // 加载全部本地文件
+  ipcMain.on('LOAD_LOCAL_FILE', () => {
+    readLocal(['/Users/soso/Music/soso', '/Users/soso/Downloads'], app);
+  })
+
+  ipcMain.on('LOAD_FILE_BUF', (e, path) => loadFile(path, app));
 
   // 静默下载
   app.win.webContents.session.on('will-download', (event, item) => {

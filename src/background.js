@@ -1,4 +1,4 @@
-import { app, protocol, BrowserWindow } from 'electron'
+import { app, protocol, BrowserWindow, screen } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 import action from './mainUtil/action';
@@ -13,6 +13,9 @@ protocol.registerSchemesAsPrivileged([
 ])
 
 async function createWindow() {
+  const screenSize = screen.getPrimaryDisplay().workAreaSize;
+  console.log(screenSize);
+
   // Create the browser window.
   const win = new BrowserWindow({
     width: 980,
@@ -32,20 +35,54 @@ async function createWindow() {
   win.setMenu(null);
   win.on('close', function (e) {
     e.preventDefault();
-    !win.isVisible() ? (app.exit(0) && process.exit(0)) : win.hide();
+    !win.isVisible() ? (app.exit(0) && winLyric.exit(0) && process.exit(0)) : win.hide();
+  })
+
+  const winLyric = new BrowserWindow({
+    width: screenSize.width * 0.7,
+    height: 300,
+    x: screenSize.width * 0.15,
+    y: screenSize.height - 300,
+    titleBarStyle: 'customButtonsOnHover',
+    frame: false,
+    devTools: false,
+    transparent: true,
+    alwaysOnTop: true,
+    hasShadow: false,
+    clickThrough: 'pointer-events',
+    webPreferences: {
+      // Use pluginOptions.nodeIntegration, leave this alone
+      // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
+      // nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION
+      nodeIntegration: true,
+      nodeIntegrationInWorker: true,
+      webSecurity: false,
+      webviewTag: false,
+    }
+  })
+  // winLyric.setIgnoreMouseEvents(true)
+  winLyric.setMenu(null);
+  winLyric.hide();
+  winLyric.on('close', function (e) {
+    e.preventDefault();
+    winLyric.hide();
   })
 
   // win.webContents.openDevTools();
   app.win = win;
+  app.winLyric = winLyric;
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
+    winLyric.loadURL(`${process.env.WEBPACK_DEV_SERVER_URL}#/windowLyric`)
     if (!process.env.IS_TEST) win.webContents.openDevTools()
+    // if (!process.env.IS_TEST) winLyric.webContents.openDevTools()
   } else {
     createProtocol('app')
     // Load the index.html when not in development
     win.loadURL('app://./index.html')
+    winLyric.loadURL('app://./index.html#/windowLyric')
   }
 }
 

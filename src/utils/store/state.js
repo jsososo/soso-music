@@ -35,6 +35,7 @@ const state = {
     qq: {},
     163: {},
     migu: {},
+    local: {}, // 本地，用来防止报错
   },
   // 播放列表
   playingList: new Proxy({
@@ -114,8 +115,9 @@ const state = {
     DRAW_MUSIC_STYLE: 'rect',
     HISTORY_TAB: 'list',
     SYSTEM_PLATFORM: '',
-    SHOW_SIMPLE_TRANS: false,
-    SHOW_SIMPLE_COVER: true,
+    SHOW_SIMPLE_TRANS: false, // 极简模式，显示翻译
+    SHOW_SIMPLE_COVER: true, // 极简模式，显示专辑封面
+    SHOW_WIN_LYRIC: false, // 桌面歌词
     INIT_LIST: '1', // 下次登录时的播放列表，-1 表示未设置，逻辑按0处理，0 表示使用推荐歌单，1 表示记住上一次记录，2 表示网易云日推
     appId: (() => {
       const getRandom = (num) => Number(`${num}`.split('').sort(() => Math.random() - 0.5).join('')).toString(36);
@@ -125,8 +127,8 @@ const state = {
     })(),
     ...Storage.get('soso_music_setting', true, '{}'),
     platform: '163', // 默认平台
-    version: '1.1.0',
-    versionType: '',
+    version: '1.1.1',
+    versionType: 'beta',
   },
   codeMap: {
     PLAY_NEXT: '39',
@@ -139,6 +141,7 @@ const state = {
   },
   miguFind: {...Storage.get('soso_music_migu_find', true, '{}')},
   playHistory: new PlayHistory(),
+  localFiles: new Set(), // 本地歌曲列表
 }
 
 const result = {};

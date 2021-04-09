@@ -7,7 +7,7 @@ const Storage = {
       let result = localStorage.getItem(key) || d;
 
       if (toObj) {
-        result = JSON.parse(result);
+        result = typeof result === 'object' ? result : JSON.parse(result);
       }
       return result;
     } else {

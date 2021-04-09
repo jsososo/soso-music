@@ -121,6 +121,14 @@
           </span>
         </div>
       </el-tooltip>
+
+      <el-tooltip class="item" effect="dark" content="桌面歌词" placement="top">
+        <div class="inline-block pd_5">
+          <span @click="showWinLyric">
+            <i :class="`iconfont icon-lyric ft_16 pointer ${!setting.SHOW_WIN_LYRIC && 'op_5'}`" />
+          </span>
+        </div>
+      </el-tooltip>
     </div>
 
     <div class="control-btn opt-btn right-control">
@@ -258,6 +266,10 @@
             const { url } = await getSingleUrl(state.playNow.aId);
             state.playNow.pUrl = url;
           }
+        },
+
+        showWinLyric() {
+          ipcRenderer.send('SHOW_LYRIC_WINDOW', !state.setting.SHOW_WIN_LYRIC);
         },
 
         cutSong,
