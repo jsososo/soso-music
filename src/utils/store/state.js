@@ -127,7 +127,7 @@ const state = {
     })(),
     ...Storage.get('soso_music_setting', true, '{}'),
     platform: '163', // 默认平台
-    version: '1.1.1',
+    version: '1.1.2',
     versionType: 'beta',
   },
   codeMap: {

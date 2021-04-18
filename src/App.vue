@@ -141,6 +141,10 @@ export default {
               })
         });
 
+      Object.keys(state.miguFind).forEach(k => {
+        !state.miguFind[k].url && (delete state.miguFind[k])
+      })
+
       ipcRenderer.send('UPDATE_SERVER_POINT', state.setting.SERVER_PORT);
 
       ipcRenderer.send('SET_DOWNLOAD_DIR', state.setting.DOWN_DIR);

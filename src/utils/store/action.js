@@ -110,28 +110,47 @@ export const getSingleUrl = async (aId, type = 'play') => {
 
   const queryBr = setting[type === 'play' ? 'LISTEN_SIZE' : 'DOWN_SIZE'];
 
-  try {
-    const {data} = await request({
-      api: 'SINGLE_URL',
-      data: {
-        id,
-        mediaId: s.mediaId,
-        br: queryBr,
-        _p,
-      }
-    });
-    if (data.url) {
-      url = data.url || url;
-      br = data.br || br;
-      s[brMap[br]] = url;
+  const brNumMap = {128: 128000, 320: 320000, flac: 960000};
+
+  const prevBr = {
+    flac: { br: 320000, key: 320 },
+    320: { br: 128000, key: 128 },
+    128: {},
+  }
+
+  if (s.bPlatform) {
+    let brKey = queryBr;
+    let u = ''
+    while (!u && prevBr[brKey]) {
+      u = s[brKey];
+      !u && (brKey = prevBr[brKey].key);
     }
-  } catch (err) {
-    console.log('获取url失败了 =.=', id, aId, _p);
+    url = u || url;
+    br = brKey || br;
+  } else {
+    try {
+      const {data} = await request({
+        api: 'SINGLE_URL',
+        data: {
+          id,
+          mediaId: s.mediaId,
+          br: queryBr,
+          _p,
+        }
+      });
+      if (data.url) {
+        url = data.url || url;
+        br = data.br || br;
+        s[brMap[br]] = url;
+      }
+    } catch (err) {
+      console.log('获取url失败了 =.=', id, aId, _p);
+    }
   }
 
   if (s[brMap[br]] && (url.indexOf('.m4a') === -1)) {
     url = s[brMap[br]];
-    br = {128: 128000, 320: 320000, flac: 960000}[br] || 128000;
+    br = brNumMap[br] || 128000;
   }
 
   (br > 320000) && (songEndType = 'flac');
@@ -157,34 +176,55 @@ const findMusic = {
   quene: [],
   num: 0,
   push(aId) {
+    const {allSongs, miguFind} = window.$state;
     const {quene} = this;
+
+    const endCb = (data, key, queneNext = true) => {
+      miguFind[key] = {};
+      const song = allSongs[key] || {};
+      console.log(data, key, queneNext);
+      if (data) {
+        song.noUrl = false;
+        const {bId, url, platform, flac, lyric} = data;
+        const [u128, u320] = [data[128], data[320]];
+        miguFind[key] = data;
+        const lyricObj = {};
+        lyric && handleLyric(lyric, 'str', lyricObj);
+        updateSongInfo({
+          aId: key,
+          bId,
+          url,
+          lyric: lyric ? lyricObj : null,
+          rawLyric: lyric,
+          bPlatform: platform,
+          flac,
+          br: url === flac ? 960000 : (url === u320 ? 320000 : 128000),
+          pUrl: url,
+          [128]: u128,
+          [320]: u320,
+        })
+      }
+      if (queneNext) {
+        this.num -= 1;
+        this.push();
+      }
+    }
+
+    if (miguFind[aId]) {
+      return endCb(miguFind[aId], aId, false);
+    }
     if (aId) {
       quene.unshift(aId);
     }
     if (this.num < 2 && quene.length) {
-      const {allSongs, miguFind} = window.$state;
       this.num += 1;
       const aId = quene.shift();
       const song = allSongs[aId] || {name: '', ar: []};
       song.noUrl = true;
       const key = `${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.map((a) => a.name).join(' ')}`;
 
-      const endCb = (data) => {
-        miguFind[key] = {};
-        if (data) {
-          song.noUrl = false;
-          const {bId, url, platform, flac} = data;
-          miguFind[key] = data;
-          updateSongInfo({
-            aId, bId, url, platform, flac, br: flac ? 960000 : 128000, pUrl: flac || url
-          })
-        }
-        this.num -= 1;
-        this.push();
-      }
-
-      if (miguFind[key]) {
-        return endCb((miguFind[key]))
+      if (miguFind[aId] && miguFind[aId].url) {
+        return endCb(miguFind[aId], aId)
       }
 
       request({
@@ -199,7 +239,7 @@ const findMusic = {
           _p: song.platform,
         }
       }).then(({data}) => {
-        endCb(data[aId]);
+        endCb(data[aId], aId);
       }).catch(() => {
         endCb();
       })

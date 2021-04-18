@@ -12,9 +12,9 @@ module.exports = {
     const reqFunction = async ({id, key, duration}) => {
       try {
         if (platform !== 'migu') {
-          if (findMap[key]) {
+          if (findMap[key] && findMap[key].url) {
             const s = findMap[key];
-            return [id, s.cid, 'migu', s.url, s.flac];
+            return [id, s];
           }
           const { data: s = {}} = await request({
             domain: `http://localhost:${port}/miguApi`,
@@ -24,7 +24,9 @@ module.exports = {
           if (s && s.cid) {
             updateFind = true;
             findMap[key] = s;
-            return [id, s.cid, 'migu', s.url, s.flac];
+            s.platform = 'migu';
+            s.url = s[128] || s[320] || s.flac;
+            return [id, s];
           }
         }
         const _p = {
@@ -64,18 +66,17 @@ module.exports = {
         const sendResult = {};
         const data = {};
         let fp = '';
-        resArr.forEach(([id, fId, p, u, fu]) => {
-          if (p === 'migu') {
+        resArr.forEach(([id, s]) => {
+          if (s.platform === 'migu') {
             return sendResult[id] = {
-              url: u,
-              flac: fu,
-              bId: fId,
+              ...s,
+              bId: s.cid,
               platform: 'migu',
             }
           }
-          if (fId) {
-            data[id] = fId;
-            fp = p;
+          if (s.cid && !s.url) {
+            data[id] = s.cid;
+            fp = s.platform;
           }
 
         });
