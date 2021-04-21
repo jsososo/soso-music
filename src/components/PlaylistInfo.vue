@@ -134,6 +134,7 @@
   import {ElMessage, ElMessageBox} from 'element-plus';
   import PageRightContainer from "./PageRightContainer";
   import HandleSong from "./HandleSong";
+  import { throttle } from "../utils/util";
 
   export default {
     name: "PlayListInfo",
@@ -192,6 +193,7 @@
         let filterList = trueList;
 
         rex && (filterList = trueList.filter((s) => (
+          allSongs[s] &&
           `${allSongs[s].name}
           ${(allSongs[s].ar || []).map((a) => a.name)}
           ${allSongs[s].al.name}
@@ -213,7 +215,7 @@
         }
       })
 
-      const getShowIndex = () => {
+      const getShowIndex = throttle(() => {
         const dom = containerDom.value;
         if (!dom) {
           return nextTick(getShowIndex)
@@ -223,7 +225,7 @@
         const bigHeight = dom.clientHeight + dom.scrollTop + 300;
         bigIndex.value = Math.min(Math.floor(bigHeight / 71), list.value.listNum);
         searchFix.value = (containerDom.value && searchDom.value) && (containerDom.value.scrollTop > searchDom.value.offsetTop)
-      }
+      }, 70)
 
       watch(list.listNum, getShowIndex);
 

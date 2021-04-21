@@ -1,6 +1,7 @@
 // 读取本地音乐
 const fs = require('fs-extra');
 
+// 根据文件夹读取本地音频列表
 const readLocal = (paths, app) => {
   const result = {};
   const lrcArr = [];
@@ -20,37 +21,31 @@ const readLocal = (paths, app) => {
     }
   })
 
-  lrcArr.forEach((k, p) => {
+  lrcArr.forEach((k) => {
     ['mp3', 'm4a', 'flac'].forEach((end) => {
       const s = k.replace(/\.lrc$/, `.${end}`);
-      console.log(s);
       result[s] && (result[s].lrcPath = k);
     });
   })
 
+  // 先返回所有的文件路径
+  app.win.webContents.send('RPL_FILE_PATHS', { paths, result: Object.keys(result)});
 
   Object.values(result).forEach(({ path, lrcPath}, p) => {
-    console.log(path, lrcPath)
     // const name = path.match(/\//)
     const info = {
       aId: `local_${path}`,
       localPath: path,
       platform: 'local',
     }
-    fs.readFile(path, (err, buf) => {
-      info.buf = buf
-      app && app.win.webContents.send('ADD_LOCAL_FILE', info);
-      // console.log(path, err, file)
-    })
-    if (lrcPath) {
-      fs.readFile(lrcPath, (err, buf) => {
-        info.rawLyric = buf.toString();
-        app && app.win.webContents.send('ADD_LOCAL_FILE', info);
-      })
-    }
+
+    app.loadFile.push(info);
+
+    app.loadFile.pathMap[info.aId] = info;
   })
 }
 
-export const loadFile = (path, app) => fs.readFile(path, (err, buf) => app.win.webContents.send('RPL_FILE_BUF', { path, buf }));
+// 只加载 buffer
+export const loadSingleFile = (path, app) => fs.readFile(path, (err, buf) => app.win.webContents.send('RPL_FILE_BUF', { path, buf }));
 
 export default readLocal;

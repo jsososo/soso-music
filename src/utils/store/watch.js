@@ -1,10 +1,11 @@
 import { watch, toRaw } from 'vue';
-import {getLyric, search, updatePlayingList, downReq, setWinLyric, updateSongInfo} from './action';
+import {getLyric, search, updatePlayingList, downReq, setWinLyric, updateSongInfo, loadLocalFile} from './action';
 import Storage from "../Storage";
 import { useRoute, useRouter } from 'vue-router';
 import { ipcRenderer } from 'electron';
 import { ElMessage } from "element-plus";
 import request from "../request";
+import {getDirPath} from "../stringHelper";
 
 // 监听变化
 export const allWatch = (state) => {
@@ -20,6 +21,7 @@ export const allWatch = (state) => {
     downloadInfo,
     favSongMap,
     user,
+    localBlackList,
   } = state;
 
   const route = useRoute();
@@ -98,6 +100,14 @@ export const allWatch = (state) => {
       })
     }
 
+    // 如果上一首是本地歌曲，释放内存
+    if (oldS && oldS.localPath) {
+      URL.revokeObjectURL(oldS.pUrl);
+      delete oldS.file;
+      delete oldS.pUrl;
+      delete oldS.url;
+    }
+
     // 一首歌结束时进度过半，就加入播放历史
     (playerStatus.percentage > 0.5) && state.playHistory.push(oldAId);
 
@@ -148,7 +158,7 @@ export const allWatch = (state) => {
     !playingList[playNow.aId] && raw.push(playNow.aId);
 
     // 筛选出有音乐的列表
-    playingList.trueList = raw.filter((aId) => allSongs[aId].url);
+    playingList.trueList = raw.filter((aId) => allSongs[aId] && (allSongs[aId].url || allSongs[aId].localPath));
 
     // 存到 localStorage 下次登录可能会有用
     Storage.set('soso_music_last_list', raw.map((aId) => ({
@@ -216,6 +226,9 @@ export const allWatch = (state) => {
     Storage.set('soso_music_download', toRaw(v).map((s) => ({...s, ajax: undefined})), true)
   );
 
+  // 记录本地歌曲黑名单列表
+  watch(() => localBlackList.size, () => Storage.set('local_black_list', [...localBlackList], true))
+
   // 更新了后端的端口
   ipcRenderer.on('REPLY_SERVER_PPINT', (e, { result, errMsg }) => {
     result ?
@@ -229,6 +242,15 @@ export const allWatch = (state) => {
     switch (type) {
       case 'download':
         path && (setting.DOWN_DIR = path);
+        break;
+      case 'local_folder':
+        if (setting.localFolders.indexOf(path) > -1) {
+          ElMessage.warning('该文件夹已添加');
+        } else {
+          setting.localFolders.push(path);
+          setting.localFolders = [...setting.localFolders];
+          loadLocalFile([path]);
+        }
         break;
     }
   })
@@ -253,9 +275,36 @@ export const allWatch = (state) => {
   // 返回了听歌历史数据
   ipcRenderer.on('REPLY_HISTORY_DATA', (e, v) => state.playHistory.initHistory(v))
 
+  // 设置系统平台
   ipcRenderer.on('SET_SYSTEM_PLATFORM', (e, v) => state.setting.SYSTEM_PLATFORM = v);
 
-  ipcRenderer.on('ADD_LOCAL_FILE', (e, v) => updateSongInfo(v))
+  // 加载本地文件，这里做一个队列管理
+  ipcRenderer.on('ADD_LOCAL_FILE', (e, v) => updateSongInfo(v));
+
+  ipcRenderer.on('RPL_FILE_PATHS', (e, { paths, result }) => {
+    const { localFiles, _localFiles, allSongs, localBlackList } = state;
+
+    // 把原来路径下的所有文件清空
+    ([...localFiles]).forEach((v) => {
+      paths.forEach((p) => {
+        if (`local_${p}` === getDirPath(v)) {
+          state._localFiles.delete(v);
+          state.localFiles.delete(v);
+        }
+      })
+    })
+
+    // 把新的到的文件列表注入，有新的未读取没拉黑的文件就请求读取
+    result.forEach((p) => {
+      const aId = `local_${p}`;
+      _localFiles.add(aId);
+      if (allSongs[aId]) {
+        localFiles.add(aId);
+      } else if (!localBlackList.has(aId)) {
+        ipcRenderer.send('LOAD_LOCAL_SINGLE_FILE', aId)
+      }
+    })
+  })
 
   return state;
 }

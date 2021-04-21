@@ -45,7 +45,7 @@ export default class PlayHistory {
       };
       [
         'aId', 'bId', 'platform', 'bPlatform', 'al', 'ar', 'name', 'id',
-        'songid', 'publishTime', 'mvId', 'trackNo', 'duration'
+        'songid', 'publishTime', 'mvId', 'trackNo', 'duration', 'localPath'
       ]
         .forEach((k) => s[k] = allSongs[aId][k]);
       history[aId] = s;

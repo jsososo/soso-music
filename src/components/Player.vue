@@ -75,7 +75,7 @@
         <i :class="`iconfont icon-${favSongMap[playNow.platform][playNow.aId] ? 'like' : 'unlike'} ft_16 pointer`" />
       </span>
 
-      <handle-song :a-id="playNow.aId" className="pd_5" />
+      <handle-song v-if="playNow.platform !== 'local'" :a-id="playNow.aId" className="pd_5" />
 
       <!-- 音量控制 -->
       <div class="volume-control" @mouseleave="showVolume = false">
@@ -114,7 +114,7 @@
         </div>
       </div>
       <!--下载-->
-      <el-tooltip class="item" effect="dark" content="下载" placement="top">
+      <el-tooltip v-if="!playNow.localPath" class="item" effect="dark" content="下载" placement="top">
         <div class="inline-block pd_5">
           <span @click="download(playNow.aId)">
             <i class="iconfont icon-download ft_16 pointer" />
@@ -260,10 +260,11 @@
         ...mixSongHandle,
 
         async playerError() {
-          if (errorId && errorId === state.playNow.aId) {
+          const { playNow } = state;
+          if ((errorId && errorId === playNow.aId) || playNow.platform === 'local') {
             cutSong('next');
-          } else if (state.playNow.aId) {
-            const { url } = await getSingleUrl(state.playNow.aId);
+          } else if (playNow.aId) {
+            const { url } = await getSingleUrl(playNow.aId);
             state.playNow.pUrl = url;
           }
         },

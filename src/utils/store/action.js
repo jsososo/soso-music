@@ -27,6 +27,7 @@ export const updateSongInfo = (songInfo) => {
 
     // 本地文件
     if (info.localPath) {
+      console.log(info);
       if (!info.url && info.buf) {
         const fileName = info.localPath.replace(/(.*\/)*([^.]+).*$/ig,"$2");
         info.file = new File([info.buf], fileName)
@@ -61,6 +62,7 @@ export const updateSongInfo = (songInfo) => {
 
             allSongs[aId] = info;
             localFiles.add(aId);
+            info.checkedFile = true; // 表示确认过加载过文件了
           },
           onError(e) {
             console.log('error: ', e, info)
@@ -78,9 +80,8 @@ export const updateSongInfo = (songInfo) => {
 
 }
 
-export const loadLocalFile = () => {
-  window.$state.localFiles.clear();
-  ipcRenderer.send('LOAD_LOCAL_FILE');
+export const loadLocalFile = (paths) => {
+  ipcRenderer.send('LOAD_LOCAL_FILE', paths);
 }
 
 // 获取单个歌曲的链接
@@ -182,7 +183,6 @@ const findMusic = {
     const endCb = (data, key, queneNext = true) => {
       miguFind[key] = {};
       const song = allSongs[key] || {};
-      console.log(data, key, queneNext);
       if (data) {
         song.noUrl = false;
         const {bId, url, platform, flac, lyric} = data;
@@ -305,8 +305,9 @@ export const handleSongs = (list) => {
   list.forEach((s) => {
     s.url = s.url || (allSongs[s.aId] || {}).url;
     allSongs[s.aId] = {...(allSongs[s.aId] || {}), ...s};
-    allSongs[s.aId].pUrl = allSongs[s.aId].pUrl || allSongs[s.aId].url
-    !allSongs[s.aId].url && !allSongs[s.aId].noUrl && (getUrlArr.push(s.aId));
+    allSongs[s.aId].pUrl = allSongs[s.aId].pUrl || allSongs[s.aId].url;
+    allSongs[s.aId].localPath && !allSongs[s.aId].checkedFile && ipcRenderer.send('LOAD_LOCAL_SINGLE_FILE', s);
+    !allSongs[s.aId].url && !allSongs[s.aId].noUrl && !s.localPath && s.aId && (getUrlArr.push(s.aId));
   })
 
   getBatchUrl(getUrlArr);
@@ -968,6 +969,7 @@ export const mixSongHandle = {
   },
   removeFromPlayinig(list) {
     window.event.stopPropagation();
+    console.log(list);
     updatePlayingList(window.$state.playingList.raw.filter((id) => id.indexOf(list) === -1), true)
   },
   likeMusic,

@@ -26,7 +26,7 @@
               <a href="#/" class="mg_10 iconfont icon-lyric">
                 <i class="fake-icon iconfont icon-lyric" />
               </a>
-              <a href="#/comment" class="iconfont icon-comment mg_10">
+              <a v-if="playNow.platform !== 'local'" href="#/comment" class="iconfont icon-comment mg_10">
                 <i class="fake-icon iconfont icon-comment" />
                 <span v-if="playNow.totalComments" style="font-weight: normal;vertical-align: 4px" class="pl_5 ft_12">{{numToStr(playNow.totalComments)}}</span>
               </a>

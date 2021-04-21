@@ -118,3 +118,7 @@ export const transUrl = (url) => {
 }
 
 export const timeToStr = (v = 0) => ((v = Math.round(v)) || true) && `${Num(v / 60, 0, -1)}:${Num(v % 60, 0) < 10 ? `0${Num(v % 60, 0)}` : Num(v % 60, 0)}`;
+
+export const getFileName = (v) => v.replace(/^(.+)\//, '');
+
+export const getDirPath = (v) => v.replace(/\/([^/])+$/, '')

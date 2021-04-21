@@ -125,9 +125,10 @@ const state = {
       const randomN = getRandom(Math.round(Math.random() * 99999));
       return randomN + randomT;
     })(),
+    localFolders: [], // 本地文件夹，用于读取本地歌曲
     ...Storage.get('soso_music_setting', true, '{}'),
     platform: '163', // 默认平台
-    version: '1.1.2',
+    version: '1.1.3',
     versionType: 'beta',
   },
   codeMap: {
@@ -141,7 +142,9 @@ const state = {
   },
   miguFind: {...Storage.get('soso_music_migu_find', true, '{}')},
   playHistory: new PlayHistory(),
-  localFiles: new Set(), // 本地歌曲列表
+  _localFiles: new Set(), // node 读取到的本地歌曲列表
+  localFiles: new Set(), // 校验过的本地歌曲列表，应该比上面的短
+  localBlackList: new Set(Storage.get('local_black_list', true, '[]')), // 本地黑名单
 }
 
 const result = {};

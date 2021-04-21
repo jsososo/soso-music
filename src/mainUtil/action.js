@@ -2,7 +2,8 @@ import {ipcMain, dialog, Menu, Tray} from 'electron';
 import api from '../../server/api';
 import path from 'path';
 import storage from 'electron-json-storage';
-import readLocal, { loadFile } from './readLocal';
+import readLocal, { loadSingleFile } from './readLocal';
+import fs from 'fs-extra';
 
 // 所有的 ipcMain 和 ipcRenderer 的事件沟通
 export default (app) => {
@@ -87,12 +88,56 @@ export default (app) => {
     app.win.webContents.send('REPLY_SHOW_LYRIC_WINDOW', show);
   })
 
-  // 加载全部本地文件
-  ipcMain.on('LOAD_LOCAL_FILE', () => {
-    readLocal(['/Users/soso/Music/soso', '/Users/soso/Downloads'], app);
-  })
+  // 通过队列加载文件buffer
+  app.loadFile = {
+    quene: [],
+    loadingMap: {},
+    pathMap: {},
+    push(aId) {
+      const { quene, loadingMap, pathMap } = this;
+      if (!pathMap[aId]) {
+        return;
+      }
+      quene.push(aId);
+      if (Object.keys(loadingMap).length < 3) {
+        this.load();
+      }
+    },
+    load() {
+      const { quene, loadingMap, pathMap } = this;
+      if (!quene.length) {
+        return;
+      }
 
-  ipcMain.on('LOAD_FILE_BUF', (e, path) => loadFile(path, app));
+      const aId = quene.shift();
+      const info = pathMap[aId];
+      loadingMap[info.localPath] = true;
+
+      fs.readFile(info.localPath, (err, buf) => {
+        info.buf = buf;
+        app && app.win.webContents.send('ADD_LOCAL_FILE', info);
+        delete loadingMap[info.localPath];
+        delete info.buf;
+        this.load();
+      })
+
+      if (info.lrcPath) {
+        fs.readFile(info.lrcPath, (err, buf) => {
+          info.rawLyric = buf.toString();
+          app && app.win.webContents.send('ADD_LOCAL_FILE', info);
+        })
+      }
+    }
+  }
+
+  // 加载全部本地文件
+  ipcMain.on('LOAD_LOCAL_FILE', (e, paths) => readLocal(paths, app))
+
+  // 用队列的形式加载单个文件信息，一般在初次加载播放历史使用
+  ipcMain.on('LOAD_LOCAL_SINGLE_FILE', (e, aId) => app.loadFile.push(aId));
+
+  // 加载指定文件 buffer，不走上面的 loadFile 队列，一般用于生成播放链接
+  ipcMain.on('LOAD_FILE_BUF', (e, path) => loadSingleFile(path, app));
 
   // 静默下载
   app.win.webContents.session.on('will-download', (event, item) => {

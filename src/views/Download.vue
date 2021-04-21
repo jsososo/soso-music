@@ -2,15 +2,20 @@
   <div class="downlaod-page">
     <page-title title="DOWNLOAD" />
     <tab v-model="type" :tabs="tabs">
-      <el-popconfirm
-        v-if="list.length"
-        :title="`删除/中止 下面${list.length}条记录？`"
-        @confirm="clearAll(list)"
-      >
-        <template #reference>
-          <div class="clear-list-btn">清除下列记录({{list.length}})</div>
-        </template>
-      </el-popconfirm>
+      <div class="tab-btn">
+        <el-popconfirm
+          v-if="list.length"
+          :title="`删除/中止 下面${list.length}条记录？`"
+          @confirm="clearAll(list)"
+        >
+          <template #reference>
+            <div>
+              <div class="tab-btn">清除下列记录({{list.length}})</div>
+            </div>
+          </template>
+        </el-popconfirm>
+      </div>
+      <div class="tab-btn" @click="openFileManager">打开文件夹</div>
     </tab>
     <div class="download-list">
       <div
@@ -50,6 +55,7 @@
   import { computed, ref } from 'vue';
   import {mixInject} from "../utils/store/state";
   import { download } from "../utils/store/action";
+  import { shell } from 'electron';
 
   export default {
     name: "Download",
@@ -58,7 +64,7 @@
       Tab,
     },
     setup() {
-      const state = mixInject(['downloadList']);
+      const state = mixInject(['downloadList', 'setting']);
 
       const { downloadList } = state;
 
@@ -120,6 +126,9 @@
             !item.finished && this.cancelDownload(item);
             this.delRecord(item);
           })
+        },
+        openFileManager() {
+          shell.showItemInFolder(state.setting.DOWN_DIR)
         }
       }
     }
@@ -129,7 +138,7 @@
 <style scoped lang="scss">
   @import "../assets/style/value";
   .downlaod-page {
-    .clear-list-btn {
+    .tab-btn {
       display: inline-block;
       font-size: 14px;
       margin-left: 20px;

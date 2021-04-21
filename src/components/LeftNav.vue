@@ -32,6 +32,12 @@
         <div class="icon-text">下载</div>
       </a>
     </div>
+    <div class="nav-line">
+      <a href="#/local">
+        <i class="iconfont icon-local" />
+        <div class="icon-text">本地</div>
+      </a>
+    </div>
   </div>
 </template>
 
