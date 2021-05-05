@@ -1,5 +1,5 @@
 <template>
-  <div class="lyric-content-container" ref="lyricContainer">
+  <div :class="`lyric-content-container main-${setting.MAIN_CONTENT}`" ref="lyricContainer">
     <div
       :class="`lyric-list-container ${grab ? 'grabbing' : ''}`"
       @mousedown="changeGrab(true)"
@@ -42,7 +42,7 @@
   export default {
     name: "Lyric",
     setup() {
-      const state = mixInject(['playNow', 'playerStatus']);
+      const state = mixInject(['playNow', 'playerStatus', 'setting']);
       const { playNow, playerStatus } = state;
 
       const [
@@ -171,6 +171,10 @@
     width: 40%;
     opacity: 1;
     transition: 1s;
+
+    &.main-lyric {
+      left: 0;
+    }
 
     .lyric-list-container {
       cursor: grab;

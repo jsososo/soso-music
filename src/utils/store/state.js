@@ -115,6 +115,7 @@ const state = {
     DRAW_MUSIC_STYLE: 'rect',
     HISTORY_TAB: 'list',
     SYSTEM_PLATFORM: '',
+    MAIN_CONTENT: 'info', // 主内容显示
     SHOW_SIMPLE_TRANS: false, // 极简模式，显示翻译
     SHOW_SIMPLE_COVER: true, // 极简模式，显示专辑封面
     SHOW_WIN_LYRIC: false, // 桌面歌词
@@ -128,8 +129,8 @@ const state = {
     localFolders: [], // 本地文件夹，用于读取本地歌曲
     ...Storage.get('soso_music_setting', true, '{}'),
     platform: '163', // 默认平台
-    version: '1.1.3',
-    versionType: 'beta',
+    version: '1.2.0',
+    versionType: '',
   },
   codeMap: {
     PLAY_NEXT: '39',
@@ -145,6 +146,15 @@ const state = {
   _localFiles: new Set(), // node 读取到的本地歌曲列表
   localFiles: new Set(), // 校验过的本地歌曲列表，应该比上面的短
   localBlackList: new Set(Storage.get('local_black_list', true, '[]')), // 本地黑名单
+  bgInfo: {
+    brightness: 60,
+    grayscale: 0,
+    blur: 30,
+    contrast: 100,
+    saturate: 100,
+    sepia: 0,
+    ...Storage.get('bg_info', true, '{}')
+  },
 }
 
 const result = {};

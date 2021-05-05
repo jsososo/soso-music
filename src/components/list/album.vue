@@ -6,7 +6,7 @@
       class="common-small-box"
     >
       <div class="box-img-container pointer" @click="goTo(a)">
-        <img :src="`${a.picUrl}?param=200y200`" v-error="`https://y.gtimg.cn/mediastyle/global/img/album_300.png`" />
+        <img :src="`${a.picUrl}?param=200y200`" v-error />
       </div>
       <div class="box-name pointer" @click="goTo(a)">{{a.name}}</div>
     </div>

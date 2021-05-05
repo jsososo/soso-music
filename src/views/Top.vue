@@ -1,13 +1,14 @@
 <template>
   <div class="top-page hide-scroll">
-    <page-title title="TOP" />
+    <page-title title="TOP"/>
     <div class="cats-list">
       <div v-for="(top, index) in topList" :key="`top-${index}`">
         <block v-if="top">
           <div class="top-cat-title">{{top.title}}</div>
-          <div v-for="item in top.list" :key="item.id" :class="`common-small-box ${selectedId === item.id && 'selected'}`">
+          <div v-for="item in top.list" :key="item.id"
+               :class="`common-small-box ${selectedId === item.id && 'selected'}`">
             <div class="box-img-container pointer" @click="selectedId = item.id">
-              <img :src="`${item.cover}?param=200y200`" v-error="`https://y.gtimg.cn/mediastyle/global/img/album_300.png`" />
+              <img :src="`${item.cover}?param=200y200`" v-error />
             </div>
             <div class="box-name pointer" @click="selectedId = item.id">{{item.name}}</div>
           </div>
@@ -24,9 +25,9 @@
   import PageTitle from "../components/PageTitle";
   import PlaylistInfo from "../components/PlaylistInfo";
   import {mixInject} from "../utils/store/state";
-  import { watch, reactive, ref } from 'vue';
+  import {watch, reactive, ref} from 'vue';
   import request from "../utils/request";
-  import { replaceObj } from "../utils/util";
+  import {replaceObj} from "../utils/util";
   import {handleSongs} from "../utils/store/action";
 
   export default {
@@ -38,33 +39,34 @@
     setup() {
       const state = mixInject(['setting', 'allList']);
 
-      const { setting } = state;
+      const {setting} = state;
 
       const selectedId = ref('');
 
       const topList = reactive([]);
 
       const listInfo = reactive({});
-      const getTopList = async () => {
-        replaceObj(topList, {});
-        const { data = [] } = await request('TOP_CATEGORY', setting.platform).catch(() => ({}))
-        replaceObj(topList, data);
-      }
 
-      watch(() => setting.platform, getTopList)
+      watch(
+        () => setting.platform,
+        async () => {
+          replaceObj(topList, {});
+          const {data = []} = await request('TOP_CATEGORY', setting.platform).catch(() => ({}))
+          replaceObj(topList, data);
+        },
+        {immediate: true},
+      )
 
       watch(selectedId, async (id) => {
-        const { data } = await request({
+        const {data} = await request({
           api: 'TOP_SONGS',
-          data: { id, _p: setting.platform }
+          data: {id, _p: setting.platform}
         })
         data.list = handleSongs(data.list);
 
         replaceObj(listInfo, data)
 
       })
-
-      getTopList();
 
       return {
         ...state,

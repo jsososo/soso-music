@@ -24,7 +24,8 @@
         {{playNow.name}}
       </a>
       <div class="ar-container">
-        <a
+        <component
+          :is="playNow.platform === 'local' ? 'span' : 'a'"
           v-for="(a, i) in playNow.ar"
           :key="`player-ar-${a.aId}`"
           class="ar-name"
@@ -32,7 +33,7 @@
         >
           {{a.name}}
           <span v-if="i < playNow.ar.length - 1">/</span>
-        </a>
+        </component>
       </div>
       <!--        <span-->
       <!--          v-if="favSongMap[playNow.platform]"-->
@@ -129,6 +130,14 @@
           </span>
         </div>
       </el-tooltip>
+
+      <el-tooltip v-if="setting.SHOW_WIN_LYRIC" class="item" effect="dark" content="锁定歌词" placement="top">
+        <div class="inline-block pd_5">
+          <span @click="winLyricSetting.LOCK = !winLyricSetting.LOCK">
+            <i :class="`iconfont icon-${winLyricSetting.LOCK ? 'lock' : 'unlock'} ft_16 pointer`" />
+          </span>
+        </div>
+      </el-tooltip>
     </div>
 
     <div class="control-btn opt-btn right-control">
@@ -185,10 +194,11 @@
   import {mixInject} from "../utils/store/state";
   import {cutSong, mixSongHandle, likeMusic, getSingleUrl} from "../utils/store/action";
   import {changeUrlQuery, transUrl, timeToStr} from '../utils/stringHelper';
-  import {ref, computed} from 'vue';
+  import {ref, computed, reactive, watch, toRaw} from 'vue';
   import HandleSong from "./HandleSong";
   import { ipcRenderer } from 'electron';
   import DrawMusic from "../utils/drawMusic";
+  import Storage from "../utils/Storage";
 
   export default {
     name: "Player",
@@ -223,8 +233,29 @@
       ipcRenderer.on('PLAY_NEXT', () => cutSong('next'));
       ipcRenderer.on('LIKE_MUSIC', () => likeMusic(playNow.aId));
 
+      const winLyricSetting = reactive(Storage.get('win_lyric_setting', true, {
+        LOCK: false,
+        COLOR_1: '#409EFF',
+        COLOR_2: '#67C23A',
+        FONT_SIZE: 30,
+        ROWS: 2,
+        COLOR_ARROW: 'bottom',
+        TEXT_ALIGN: 'text-left',
+        TRANS: false,
+      }))
+
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'win_lyric_setting') {
+          Object.assign(winLyricSetting, Storage.get('win_lyric_setting', true));
+        }
+      })
+
+      watch(winLyricSetting, () => Storage.set('win_lyric_setting', toRaw(winLyricSetting), true), { deep: true })
+
       return {
         ...state,
+
+        winLyricSetting,
 
         showVolume: ref(false),
         showOrder: ref(false),

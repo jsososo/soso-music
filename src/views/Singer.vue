@@ -1,12 +1,12 @@
 <template>
   <div class="singer-page">
-    <info-box :pic="singerInfo.picUrl" :list="infoList" />
+    <info-box err-pic="https://y.gtimg.cn/mediastyle/global/img/singer_300.png" :pic="singerInfo.picUrl" :list="infoList"/>
     <div class="singer-desc hide-scroll">{{singerInfo.desc}}</div>
     <page-right-container>
-      <book-mark :tabs="tabs || []" v-model="type" />
-      <song-list v-if="type === 'song'" :songs="singerInfo.songs || []" />
-      <album-list v-if="type === 'album'" :albums="singerInfo.albums || []" />
-      <singer-list v-if="type === 'sim'" :singers="singerInfo.sims || []" />
+      <book-mark :tabs="tabs || []" v-model="type"/>
+      <song-list v-if="type === 'song'" :songs="singerInfo.songs || []"/>
+      <album-list v-if="type === 'album'" :albums="singerInfo.albums || []"/>
+      <singer-list v-if="type === 'sim'" :singers="singerInfo.sims || []"/>
       <div v-if="type === 'info'">
         <div v-if="!(singerInfo.intro || []).length" class="text-center mt_40 op_8">没什么好说的</div>
         <div v-else class="intro-content">
@@ -28,10 +28,10 @@
   import SingerList from '../components/list/singer';
   import AlbumList from '../components/list/album';
 
-  import { ref, reactive, computed, watch } from 'vue';
-  import { useRoute } from 'vue-router';
+  import {ref, reactive, computed, watch} from 'vue';
+  import {useRoute} from 'vue-router';
   import request from "../utils/request";
-  import { replaceObj } from "../utils/util";
+  import {replaceObj} from "../utils/util";
   import {handleSongs} from "../utils/store/action";
 
   export default {
@@ -53,19 +53,19 @@
       const singerInfo = reactive({});
 
       const infoList = computed(() => [
-        { text: singerInfo.name, className: 'text-title' },
-        { text: (singerInfo.alias || []).join('、'), className: 'text-small' },
+        {text: singerInfo.name, className: 'text-title'},
+        {text: (singerInfo.alias || []).join('、'), className: 'text-small'},
       ])
 
       // 获取歌手的专辑、热门信息、相似歌手等信息
       const getMoreInfo = async () => {
-        const { id, mid, platform } = route.query;
+        const {id, mid, platform} = route.query;
         if (type.value === 'info' || singerInfo[`${type.value}s`] || (!mid && !id)) {
           return;
         }
-        const { data } = await request({
+        const {data} = await request({
           api: `SINGER_${type.value.toUpperCase()}`,
-          data: { id: mid || id, platform },
+          data: {id: mid || id, platform},
         })
         switch (type.value) {
           case 'song':
@@ -78,30 +78,30 @@
       }
 
       // 获取歌手信息
-      const updateSinger = async () => {
-        const { id, mid, platform } = route.query;
-        if (!id && !mid) {
-          return;
-        }
-        const { data } = await request({
-          api: 'SINGER_INFO',
-          data: { id: mid || id, platform },
-        })
-        replaceObj(singerInfo, data);
-        getMoreInfo();
-      }
-
-      watch(() => route.query, updateSinger);
+      watch(
+        () => route.query,
+        async () => {
+          const {id, mid, platform} = route.query;
+          if (!id && !mid) {
+            return;
+          }
+          const {data} = await request({
+            api: 'SINGER_INFO',
+            data: {id: mid || id, platform},
+          })
+          replaceObj(singerInfo, data);
+          getMoreInfo();
+        },
+        {immediate: true},
+      );
       watch(() => type.value, getMoreInfo);
-
-      updateSinger();
 
       return {
         tabs: [
-          { icon: 'song', val: 'song', color: 'red', text: '热门歌曲' },
-          { icon: 'album', val: 'album', color: 'blue', text: '专辑' },
-          { icon: 'info', val: 'info', color: 'green', text: '简介' },
-          { icon: 'link', val: 'sim', color: 'yellow', text: '相似歌手' },
+          {icon: 'song', val: 'song', color: 'red', text: '热门歌曲'},
+          {icon: 'album', val: 'album', color: 'blue', text: '专辑'},
+          {icon: 'info', val: 'info', color: 'green', text: '简介'},
+          {icon: 'link', val: 'sim', color: 'yellow', text: '相似歌手'},
         ],
         type,
         infoList,
@@ -133,6 +133,7 @@
         font-weight: 900;
         margin: 10px 0;
       }
+
       .intro-txt {
         font-size: 14px;
         margin-bottom: 20px;

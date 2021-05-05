@@ -37,6 +37,7 @@ const readLocal = (paths, app) => {
       aId: `local_${path}`,
       localPath: path,
       platform: 'local',
+      lrcPath,
     }
 
     app.loadFile.push(info);

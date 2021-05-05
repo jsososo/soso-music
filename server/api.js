@@ -15,6 +15,8 @@ const MiguUtil = require('./miguApi/util/util')
 const MiguSongSaver = require('./miguApi/util/SongSaver').default;
 const findFunc = require('./route/find');
 const JSONStorage = require('electron-json-storage');
+const axios = require('axios');
+const dialog = require('electron').dialog;
 
 const app = express();
 /**/
@@ -218,12 +220,29 @@ app.use('/cookie', (req, res, next) => {
   router(req, res, next);
 })
 
+app.use('/check', (req, res, next) => {
+  const router = express.Router();
+  router.get('/', require('./route/check'));
+  router(req, res, next);
+})
+
 
 const server = (p) => {
   app.server && app.server.close();
   port = p;
   console.log(`listen on http://localhost:${p}`);
   app.server = app.listen(p);
+  app.server.on('error', function (err) {
+    axios.get(`http://localhost:${port}/check`)
+      .then((res) => {
+        if (res.data !== 'hello world') {
+          dialog.showErrorBox('服务异常', `${port}端口被占用，请更换`)
+        }
+      })
+      .catch((err) => {
+        dialog.showErrorBox('服务异常', `${port}端口被占用，请更换`)
+      })
+  })
 }
 
 // server(4001)

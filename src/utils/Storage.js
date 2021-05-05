@@ -27,7 +27,7 @@ const Storage = {
       })
     } else if (typeof key === 'string') {
       let v = value;
-      if (toStr) {
+      if (toStr || (typeof value === 'object')) {
         v = JSON.stringify(v);
       }
       localStorage.setItem(key, v);

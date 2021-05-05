@@ -14,7 +14,6 @@ protocol.registerSchemesAsPrivileged([
 
 async function createWindow() {
   const screenSize = screen.getPrimaryDisplay().workAreaSize;
-  console.log(screenSize);
 
   // Create the browser window.
   const win = new BrowserWindow({
@@ -71,14 +70,14 @@ async function createWindow() {
   // win.webContents.openDevTools();
   app.win = win;
   app.winLyric = winLyric;
-  winLyric.setSkipTaskbar(false);
+  winLyric.setSkipTaskbar(true);
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
     winLyric.loadURL(`${process.env.WEBPACK_DEV_SERVER_URL}#/windowLyric`)
     if (!process.env.IS_TEST) win.webContents.openDevTools()
-    // if (!process.env.IS_TEST) winLyric.webContents.openDevTools()
+    if (!process.env.IS_TEST) winLyric.webContents.openDevTools()
   } else {
     createProtocol('app')
     // Load the index.html when not in development

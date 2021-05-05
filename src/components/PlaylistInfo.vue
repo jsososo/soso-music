@@ -53,15 +53,19 @@
         <div
           v-for="(s, i) in list.list"
           :key="`${s}-${i}`"
-          :class="`song-item ${playNow.aId === s ? 'played' : ''} ${!(allSongs[s].url || allSongs[s].localPath) ? 'disabled' : ''}`"
-          @click="(allSongs[s].url || allSongs[s].localPath) && playMusic({ aId: s, list: list.filterList, listId })"
+          :class="`song-item
+            ${playNow.aId === s ? 'played' : ''}
+            ${!(allSongs[s].url || allSongs[s].localPath) ? 'disabled' : ''}
+            ${showAnimate ? 'show-animate' : ''}
+           `"
+          @click="(allSongs[s].url || allSongs[s].localPath) && playMusic({ aId: s, list: list.trueList, listId })"
         >
-          <div class="playing-bg" v-if="playNow.aId === s" :style="`width: ${playerStatus.percentage * 100}%`">
+          <div class="playing-bg" v-if="playNow.pUrl && playNow.pUrl === allSongs[s].pUrl" :style="`width: ${playerStatus.percentage * 100}%`">
             <div class="wave-bg" />
             <div class="wave-bg2" />
           </div>
           <span class="song-order">{{smallIndex+i+1}}</span>
-          <img class="song-cover" :src="`${allSongs[s].al && allSongs[s].al.picUrl}`" alt=""/>
+          <img class="song-cover" v-error :src="`${allSongs[s].al && allSongs[s].al.picUrl}`" alt=""/>
           <span class="song-name">{{allSongs[s].name}}</span>
           <span class="song-artist">{{(allSongs[s].ar || []).map((a) => a.name).join('/')}}</span>
           <div class="icon-container" v-if="!allSongs[s].localPath">
@@ -172,6 +176,7 @@
         hideBigHeight, // 隐藏的底下的高度
         // listNum,
         searchFix,
+        showAnimate,
       ] = [
         ref(''),
         ref(0),
@@ -183,6 +188,7 @@
         ref(0),
         ref(0),
         ref(false),
+        ref(true),
       ];
 
       const list = computed(() => {
@@ -211,23 +217,55 @@
           hideBigHeight: (filterList.length - bigIndex.value) * 71,
           listNum: filterList.length,
           filterList,
+          trueList,
           list: filterList.filter((id, i) => state.allSongs[id] && i >= smallIndex.value && i <= bigIndex.value),
         }
       })
 
+      let scrollTimeout;
+
+      // const getShowIndex = () => {
+      //   const dom = containerDom.value;
+      //   if (!dom) {
+      //     return nextTick(getShowIndex)
+      //   }
+      //   const smallHeight = Math.max(dom.scrollTop - 700, 0);
+      //   if (Math.abs(smallHeight / 71 - smallIndex.value) > 3) {
+      //     smallIndex.value = Math.floor(smallHeight / 71);
+      //   }
+      //   const bigHeight = dom.clientHeight + dom.scrollTop + 500;
+      //   if (Math.abs(Math.min(Math.floor(bigHeight / 71), list.value.listNum) - bigIndex.value) > 3) {
+      //     bigIndex.value = Math.min(Math.floor(bigHeight / 71), list.value.listNum);
+      //   }
+      //   searchFix.value = (containerDom.value && searchDom.value) && (containerDom.value.scrollTop > searchDom.value.offsetTop)
+      // }
       const getShowIndex = throttle(() => {
         const dom = containerDom.value;
         if (!dom) {
           return nextTick(getShowIndex)
         }
-        const smallHeight = Math.max(dom.scrollTop - 500, 0);
-        smallIndex.value = Math.floor(smallHeight / 71);
-        const bigHeight = dom.clientHeight + dom.scrollTop + 300;
-        bigIndex.value = Math.min(Math.floor(bigHeight / 71), list.value.listNum);
+        const smallHeight = Math.max(dom.scrollTop - 1200, 0);
+
+
+        if (Math.abs(smallHeight / 71 - smallIndex.value) > 10 || smallHeight === 0) {
+          smallIndex.value = Math.floor(smallHeight / 71);
+        }
+        const bigHeight = dom.clientHeight + dom.scrollTop + 1000;
+        if (Math.abs(Math.min(Math.floor(bigHeight / 71), list.value.listNum) - bigIndex.value) > 10 || (bigHeight > list.value.listNum * 71)) {
+          bigIndex.value = Math.min(Math.floor(bigHeight / 71), list.value.listNum);
+        }
         searchFix.value = (containerDom.value && searchDom.value) && (containerDom.value.scrollTop > searchDom.value.offsetTop)
+
+        clearTimeout(scrollTimeout);
+        showAnimate.value = false;
+        // 滚动过程移除 hover 动画
+        scrollTimeout = setTimeout(() => {
+          showAnimate.value = true;
+        }, 500)
+
       }, 70)
 
-      watch(list.listNum, getShowIndex);
+      watch(() => list.value.listNum, getShowIndex, { immediate: true });
 
       return {
         ...state,
@@ -241,6 +279,7 @@
         listDom,
         hideBigHeight,
         searchFix,
+        showAnimate,
 
         changeUrlQuery,
 
@@ -506,7 +545,7 @@
           }
         }
 
-        &:hover {
+        &.show-animate:hover {
           opacity: 1;
           box-shadow: 0 0 10px #0003;
           border-bottom: 1px solid transparent;

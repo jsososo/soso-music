@@ -44,9 +44,7 @@
         page.total = total;
       }
 
-      watch(() => playNow.aId, () => (page.pageNo = 1) && getCommentList());
-
-      getCommentList();
+      watch(() => playNow.aId, () => (page.pageNo = 1) && getCommentList(), { immediate: true });
 
       return {
         ...state,

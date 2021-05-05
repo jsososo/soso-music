@@ -5,7 +5,7 @@
         <div class="comment-type-title">{{title}}</div>
         <div class="comments-list">
           <div class="comment-item" v-for="item in arr" :key="item.id">
-            <img class="user-avatar" :src="`${item.creator.avatar}?param=50y50`">
+            <img class="user-avatar" v-error="`https://y.gtimg.cn/mediastyle/global/img/singer_300.png`" :src="`${item.creator.avatar}?param=50y50`">
             <div class="comment-content">
               <div class="user-name-block">
                 <a :href="`#/user?id=${item.creator.id}`"><b class="user-name">{{item.creator.nick}}</b></a>
@@ -38,7 +38,7 @@
         </div>
       </div>
     </div>
-    <send-comment :info="info" :type="type" :onSendSuccess="() => getList(1)" />
+    <send-comment v-if="info.platform !== 'local'" :info="info" :type="type" :onSendSuccess="() => getList(1)" />
   </div>
 </template>
 

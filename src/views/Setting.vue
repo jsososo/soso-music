@@ -74,6 +74,80 @@
         </div>
       </div>
 
+      <div v-if="setting.tab === 'style'" class="style-tab-content">
+        <div class="input-line">
+          <div class="input-label">主区域内容：</div>
+          <div class="input-content">
+            <el-radio-group size="small" v-model="setting.MAIN_CONTENT">
+              <el-radio-button label="info">歌曲信息</el-radio-button>
+              <el-radio-button label="lyric">歌词</el-radio-button>
+            </el-radio-group>
+          </div>
+        </div>
+
+        <div class="input-line">
+          <div class="input-label">自定义背景：</div>
+          <div class="input-content">
+            <el-upload
+              :auto-upload="false"
+              :show-file-list="false"
+              accept="image/*"
+              :on-change="onChangeBgImg"
+            >
+              <div :class="`upload-box ${bgInfo.img ? 'has-img' : ''}`">
+                <img class="preview-bg" :src="bgInfo.img" />
+                <div class="cover">
+                  <i class="el-icon-plus" />
+                </div>
+              </div>
+              <el-button @click="delBg" v-if="bgInfo.img" class="del-bg-btn" type="danger">删除</el-button>
+            </el-upload>
+          </div>
+        </div>
+
+        <div class="input-line">
+          <div class="input-label">背景模糊：</div>
+          <div class="input-content">
+            <el-slider :min="0" :max="100" :step="1" v-model="bgInfo.blur" />
+          </div>
+        </div>
+
+        <div class="input-line">
+          <div class="input-label">背景亮度：</div>
+          <div class="input-content">
+            <el-slider :min="0" :max="100" :step="1" v-model="bgInfo.brightness" />
+          </div>
+        </div>
+
+        <div class="input-line">
+          <div class="input-label">背景灰度：</div>
+          <div class="input-content">
+            <el-slider :min="0" :max="100" :step="1" v-model="bgInfo.grayscale" />
+          </div>
+        </div>
+
+<!--        <div class="input-line">-->
+<!--          <div class="input-label">背景褐度：</div>-->
+<!--          <div class="input-content">-->
+<!--            <el-slider :min="0" :max="100" :step="1" v-model="bgInfo.sepia" />-->
+<!--          </div>-->
+<!--        </div>-->
+
+        <div class="input-line">
+          <div class="input-label">背景对比度：</div>
+          <div class="input-content">
+            <el-slider :min="50" :max="300" :step="1" v-model="bgInfo.contrast" />
+          </div>
+        </div>
+
+        <div class="input-line">
+          <div class="input-label">背景饱和度：</div>
+          <div class="input-content">
+            <el-slider :min="50" :max="300" :step="1" v-model="bgInfo.saturate" />
+          </div>
+        </div>
+      </div>
+
       <div v-if="setting.tab === 'download'">
         <div class="input-line">
           <div class="input-label">下载路径：</div>
@@ -183,9 +257,9 @@
       Tab,
     },
     setup() {
-      const state = mixInject(['setting', 'user']);
+      const state = mixInject(['setting', 'user', 'bgInfo']);
 
-      const { setting, user } = state;
+      const { setting, user, bgInfo } = state;
 
       const serverPort = ref(setting.SERVER_PORT);
 
@@ -204,6 +278,12 @@
             color: 'blue',
             icon: 'setting',
             text: '常规',
+          },
+          {
+            val: 'style',
+            color: 'yellow',
+            icon: 'color',
+            text: '样式',
           },
           {
             val: 'download',
@@ -252,12 +332,30 @@
           ipcRenderer.send('CLEAR_CACHE')
         },
 
+        onChangeBgImg(file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            bgInfo.img = e.target.result;
+          };
+          if (file.size/1024/1024>2) {
+            return ElMessage.error('请选择 2M 以内的图片');
+          }
+          reader.readAsDataURL(file.raw);
+        },
+
+        delBg(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          bgInfo.img = '';
+        }
       }
     }
   }
 </script>
 
 <style scoped lang="scss">
+  @import "../assets/style/value";
+
   .setting-page {
     .input-line {
       display: flex;
@@ -293,6 +391,57 @@
         font-size: 16px;
         width: 100px;
       }
+    }
+
+    .style-tab-content {
+      .input-content {
+        .el-slider {
+          width: 240px;
+        }
+      }
+      .upload-box {
+        text-align: center;
+        height: 100px;
+        width: 100px;
+        overflow: hidden;
+        border: 1px dashed #fff7;
+        position: relative;
+        display: inline-block;
+
+        &.has-img {
+          .cover {
+            background: #0008;
+            opacity: 0;
+          }
+        }
+        .cover {
+          position: absolute;
+          background: #0000;
+          width: 100px;
+          height: 100px;
+          top: 0;
+          left: 0;
+          line-height: 100px;
+          opacity: 1;
+          transition: 0.3s;
+        }
+        &:hover {
+          border-color: $blue;
+          .cover {
+            opacity: 1;
+            color: $blue;
+          }
+        }
+        .preview-bg {
+          height: 100px;
+        }
+      }
+
+      .del-bg-btn {
+        vertical-align: 10px;
+        margin-left: 24px;
+      }
+
     }
   }
 </style>

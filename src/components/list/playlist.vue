@@ -15,8 +15,8 @@
         <div class="list-img daily-img">{{date}}</div>
       </block>
       <block v-else>
-        <img :src="`${allList[aId].cover}?param=50y50`" v-error="`https://y.gtimg.cn/mediastyle/global/img/album_300.png`" class="list-bg-img" />
-        <img :src="`${allList[aId].cover}?param=200y200`" v-error="`https://y.gtimg.cn/mediastyle/global/img/album_300.png`" class="list-img" />
+        <img :src="`${allList[aId].cover}?param=50y50`" v-error class="list-bg-img" />
+        <img :src="`${allList[aId].cover}?param=200y200`" v-error class="list-img" />
       </block>
       <span class="list-name" v-html="allList[aId].name" />
       <span class="list-count" v-if="allList[aId].trackCount">{{allList[aId].trackCount}}</span>

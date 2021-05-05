@@ -96,19 +96,21 @@
       const isLoginQQ = computed(() => !u.logined && setting.platform === 'qq');
 
       // qq 的登录逻辑
-      const loadWebView = () => {
-        isLoginQQ.value && nextTick(() => {
-          const onReady = () => {
-            webView.value.insertCSS('.popup_guide { display: none !important;}')
-              .then(res => console.log('css ', res))
-            webView.value.executeJavaScript('document.cookie')
-              .then(cookie => getQQLoginStatus(cookie))
-          }
-          webView.value && (webView.value.addEventListener('dom-ready', onReady) && onReady());
-        })
-      }
-      watch([isLoginQQ, webView], loadWebView)
-      loadWebView();
+      watch(
+        [isLoginQQ, webView],
+        () => {
+          isLoginQQ.value && nextTick(() => {
+            const onReady = () => {
+              webView.value.insertCSS('.popup_guide { display: none !important;}')
+                .then(res => console.log('css ', res))
+              webView.value.executeJavaScript('document.cookie')
+                .then(cookie => getQQLoginStatus(cookie))
+            }
+            webView.value && (webView.value.addEventListener('dom-ready', onReady) && onReady());
+          })
+        },
+        { immediate: true }
+      )
       watch(() => setting.platform, () => {
         u.value.logined && getUserList();
         if (!tabs.value[selectedTab]) {
@@ -138,7 +140,7 @@
       const selectedTab = ref(tabs.value[0].val);
 
       // 最近听歌的次数/比例
-      const countMap = {};
+      const countMap = reactive({});
       const songs = reactive([]);
 
       watch(selectedTab, async (v) => {
@@ -160,7 +162,6 @@
             }
           })
           replaceObj(songs, handleSongs(s));
-          console.log(songs, countMap);
         }
       })
       return {

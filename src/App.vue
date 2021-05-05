@@ -1,37 +1,24 @@
 <template>
   <div :class="`app-platform-${setting.SYSTEM_PLATFORM} ${hidePlayer && 'hide-player'} ${hideNav && 'hide-nav'}`">
-    <div class="bg-img" />
-    <div class="play-bg-img bg-img" v-if="playNow.al" :style="`background-image: url('${playNow.al.picUrl}')`" />
+    <div
+      class="bg-img"
+      v-if="!bgInfo.img"
+      :style="bgStyle"
+    />
+    <div
+      class="play-bg-img bg-img"
+      v-if="bgInfo.img || playNow.al"
+      :style="`background-image: url('${bgInfo.img || playNow.al.picUrl}');${bgStyle}`"
+    />
     <div class="page-container">
       <left-nav />
       <div class="page-content">
         <top-nav />
         <div class="main-content hide-scroll">
-          <info-box
-            v-if="showPlayingInfo && playNow.al"
-            :pic="playNow.al.picUrl"
-            err-pic="https://y.gtimg.cn/mediastyle/global/img/album_300.png"
-            :list="infoBoxList"
-          >
-            <div class="platform-icons" >
-              <el-tooltip class="item" effect="dark" content="信息" placement="top">
-                <i :class="`iconfont icon-${playNow.platform} color-${playNow.platform} ${playNow.bPlatform ? 'op_3' : 'op_7'}`" />
-              </el-tooltip>
-              <el-tooltip v-if="playNow.bPlatform" class="item" effect="dark" content="音源" placement="top">
-                <i :class="`iconfont op_7 icon-${playNow.bPlatform} color-${playNow.bPlatform}`" />
-              </el-tooltip>
-
-            </div>
-            <div class="index-icon-content">
-              <a href="#/" class="mg_10 iconfont icon-lyric">
-                <i class="fake-icon iconfont icon-lyric" />
-              </a>
-              <a v-if="playNow.platform !== 'local'" href="#/comment" class="iconfont icon-comment mg_10">
-                <i class="fake-icon iconfont icon-comment" />
-                <span v-if="playNow.totalComments" style="font-weight: normal;vertical-align: 4px" class="pl_5 ft_12">{{numToStr(playNow.totalComments)}}</span>
-              </a>
-            </div>
-          </info-box>
+          <template v-if="showPlayingInfo">
+            <lyric v-if="setting.MAIN_CONTENT === 'lyric'" />
+            <main-info v-else />
+          </template>
           <router-view />
         </div>
       </div>
@@ -48,7 +35,8 @@ import Player from "./components/Player";
 import store from './utils/store/index';
 import {useRoute, useRouter} from "vue-router";
 import { computed } from 'vue';
-import InfoBox from "./components/InfoBox";
+import MainInfo from "./components/MainInfo";
+import Lyric from './components/Lyric';
 
 import request from "./utils/request";
 import {
@@ -62,7 +50,7 @@ import {
 } from "./utils/store/action";
 import { ipcRenderer } from 'electron'
 import { ElMessage, ElNotification } from 'element-plus';
-import { changeUrlQuery, numToStr } from "./utils/stringHelper";
+import { numToStr } from "./utils/stringHelper";
 import Storage from "./utils/Storage";
 
 export default {
@@ -71,30 +59,18 @@ export default {
     LeftNav,
     TopNav,
     Player,
-    InfoBox,
+    MainInfo,
+    Lyric,
   },
   setup() {
     // 初始化 store state
     const state = store();
-    const { playNow, allSongs } = state;
+    const { allSongs, bgInfo } = state;
 
     const route = useRoute();
     const router = useRouter();
     window.route = route;
     window.router = router;
-
-    const infoBoxList = computed(() => ([
-      { text: playNow.name, icon: 'icon-song' },
-      { text: playNow.al.name, link: changeUrlQuery({ id: playNow.al.id, mid: playNow.al.mid, platform: playNow.al.platform }, '#/album', false), icon: 'icon-album' },
-      {
-        text: playNow.ar.map(({ name, id, mid, platform }, i) =>
-          ({
-            text: `${name}${(i < playNow.ar.length - 1) ? '/' : ''}`,
-            link: changeUrlQuery({ id, mid, platform }, '#/singer', false)
-          })),
-        icon: 'icon-singer'
-      },
-    ]))
 
     const { INIT_LIST } = state.setting;
 
@@ -229,13 +205,24 @@ export default {
       }, 60000)
     }
 
+    // 背景图样式
+    const bgStyle = computed(() => `
+      filter:
+        brightness(${bgInfo.brightness}%)
+        grayscale(${bgInfo.grayscale}%)
+        blur(${bgInfo.blur}px)
+        contrast(${bgInfo.contrast}%)
+        saturate(${bgInfo.saturate}%)
+        sepia(${bgInfo.sepia}%)
+      `)
+
     return {
       ...state,
       showPlayingInfo,
-      infoBoxList,
       hideNav,
       hidePlayer,
       numToStr,
+      bgStyle,
     };
   }
 }
@@ -400,15 +387,6 @@ export default {
 
         .inner_tab_content {
           height: $innerTabHeight;
-        }
-        .platform-icons {
-          position: absolute;
-          top: 205px;
-          left: 5px;
-
-          .iconfont {
-            padding: 5px;
-          }
         }
         .index-icon-content {
           font-weight: 900;

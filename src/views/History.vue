@@ -27,7 +27,9 @@
       const list = reactive(handleSongs(playHistory[setting.HISTORY_TAB]));
       const rightInfo = reactive([]);
 
-      watch(() => [setting.HISTORY_TAB, playNow.aId], ([v]) => {
+      watch(
+        () => [setting.HISTORY_TAB, playNow.aId],
+        ([v]) => {
         const newList = playHistory[v]
         let times = [];
 
@@ -42,7 +44,9 @@
         }
         replaceObj(rightInfo, times);
         replaceObj(list, handleSongs(newList))
-      })
+      },
+        { deep: true }
+      )
       return {
         ...state,
         list,

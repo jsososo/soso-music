@@ -101,9 +101,11 @@
       }
 
       // 当平台、存储的账号变更时触发
-      watch(() => [setting.store_qq, setting.store_163, setting.platform, route.path], getList)
-
-      getList();
+      watch(
+        () => [setting.store_qq, setting.store_163, setting.platform, route.path],
+        getList,
+        { immediate: true}
+      )
 
       return {
         ...state,

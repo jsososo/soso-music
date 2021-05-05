@@ -1,5 +1,5 @@
 <template>
-  <div :class="`info-box-container ${className}`">
+  <div :class="`info-box-container ${className} align-${align}`">
     <div class="pic-container">
       <div class="pic-content" v-error="errPic" :style="`background-image: url('${pic}')`" />
     </div>
@@ -57,6 +57,10 @@
       onClick: {
         type: Function,
         default: () => {},
+      },
+      align: {
+        type: String,
+        default: 'left',
       }
     },
     setup() {
@@ -71,10 +75,27 @@
   }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
   .info-box-container {
     position: relative;
     font-size: 0;
+
+    &.align-right {
+      text-align: right;
+
+      .pic-container, .pic-content {
+        border-radius: 0 0 0 20px !important;
+      }
+      .text-info {
+        right: 170px;
+      }
+    }
+
+    &.align-left {
+      .text-info {
+        left: 170px;
+      }
+    }
 
     .pic-container {
       display: inline-block;
@@ -94,7 +115,6 @@
     .text-info {
       position: absolute;
       max-width: 210px;
-      left: 170px;
       top: 12px;
 
       .text-content {

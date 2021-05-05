@@ -109,7 +109,7 @@ export default class DrawMusic {
         linearGradient.addColorStop(1,"#5cB87a33");
         ctx.fillStyle = linearGradient;
       }
-      ctx.fillRect(x, y, w, h);
+      ctx.fillRect(x, y - h * 0.2, w, h * 1.2);
     })
   }
 

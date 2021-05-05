@@ -22,6 +22,7 @@ export const allWatch = (state) => {
     favSongMap,
     user,
     localBlackList,
+    bgInfo,
   } = state;
 
   const route = useRoute();
@@ -53,7 +54,7 @@ export const allWatch = (state) => {
   })
 
   // 监听 soso music 账号信息变更
-  watch(() => state.user.soso, (v) => Storage.set('soso_user', v, true))
+  watch(() => state.user.soso, (v) => Storage.set('soso_user', v))
 
   // 触发了路由后退
   watch(() => state.router.isBack, (v) => v && (state.router.history.length > 1) && router.back());
@@ -65,7 +66,7 @@ export const allWatch = (state) => {
   watch(state.miguFind, (v) => Storage.set('soso_music_migu_find', toRaw(v), true));
 
   // 设置
-  watch(() => Object.values(setting), () => Storage.set('soso_music_setting', toRaw(setting), true))
+  watch(() => setting, () => Storage.set('soso_music_setting', toRaw(setting), true), { deep: true })
 
   watch(() => setting.volume, (v) => playerStatus.pDom && (playerStatus.pDom.volume = v / 100));
 
@@ -86,7 +87,7 @@ export const allWatch = (state) => {
     const s = allSongs[aId];
     const { id, songid, platform, al } = s;
     const oldS = allSongs[oldAId];
-    !playNow.localPath && (playNow.liked = favSongMap[platform][aId]);
+    (playNow.platform !== 'local') && (playNow.liked = favSongMap[platform][aId]);
 
     // 网易云的歌曲，有一个打卡
     if (oldS && oldS.platform === '163') {
@@ -132,10 +133,13 @@ export const allWatch = (state) => {
     !playingList[aId] && updatePlayingList([aId]);
     Object.keys(playNow).forEach((k) => delete playNow[k]);
     Object.keys(s).forEach(k => playNow[k] = s[k]);
-    (!s.lyric) && !s.localPath &&  getLyric(aId);
+    (!s.lyric) && s.platform !== 'local'  &&  getLyric(aId);
     setWinLyric();
 
-    if (!s.localPath) {
+    if (s.localPath) {
+      ipcRenderer.send('LOAD_FILE_BUF', playNow.localPath);
+    }
+    if (s.platform !== 'local') {
       const { data: { list = [], total = 0 }} = await request({
         api: 'COMMENT',
         data: {
@@ -146,8 +150,6 @@ export const allWatch = (state) => {
       })
       playNow.hotComments = list;
       playNow.totalComments = total;
-    } else {
-      ipcRenderer.send('LOAD_FILE_BUF', playNow.localPath);
     }
 
     Storage.set('soso_music_last_play', playNow.aId);
@@ -166,6 +168,7 @@ export const allWatch = (state) => {
       pUrl: undefined,
       url: undefined,
       noUrl: undefined,
+      checkedFile: false,
     })), true);
   })
 
@@ -227,7 +230,9 @@ export const allWatch = (state) => {
   );
 
   // 记录本地歌曲黑名单列表
-  watch(() => localBlackList.size, () => Storage.set('local_black_list', [...localBlackList], true))
+  watch(() => localBlackList.size, () => Storage.set('local_black_list', [...localBlackList]))
+
+  watch(() => bgInfo, () => Storage.set('bg_info', bgInfo), { deep: true })
 
   // 更新了后端的端口
   ipcRenderer.on('REPLY_SERVER_PPINT', (e, { result, errMsg }) => {
@@ -263,11 +268,16 @@ export const allWatch = (state) => {
 
   ipcRenderer.on('RPL_FILE_BUF', (e, { path, buf }) => {
     const aId = `local_${path}`;
+    allSongs[aId] = allSongs[aId] || { aId }
     const s = allSongs[aId];
     s.file = new File([buf], aId);
     s.url = s.pUrl = URL.createObjectURL(s.file);
-    if (aId === playNow.aId) {
-      playNow.pUrl = playNow.url = s.url;
+
+    if (path === playNow.localPath) {
+      updateSongInfo({ aId, url: s.url, pUrl: s.url })
+      if (aId !== playNow.aId) {
+        updateSongInfo({ aId: playNow.aId, url: s.url, pUrl: s.url })
+      }
     }
   })
 
@@ -298,7 +308,7 @@ export const allWatch = (state) => {
     result.forEach((p) => {
       const aId = `local_${p}`;
       _localFiles.add(aId);
-      if (allSongs[aId]) {
+      if (allSongs[aId] && allSongs[aId].checkedFile) {
         localFiles.add(aId);
       } else if (!localBlackList.has(aId)) {
         ipcRenderer.send('LOAD_LOCAL_SINGLE_FILE', aId)

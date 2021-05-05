@@ -66,6 +66,9 @@
     },
     setup(props) {
       const state = mixInject(['localFiles', 'setting', 'localBlackList', 'playNow']);
+
+      const { setting, localFiles, localBlackList } = state;
+
       const open = ref(false);
 
       const listTab = ref('song');
@@ -85,16 +88,16 @@
         getFileName,
         deleteFolder() {
           mixSongHandle.removeFromPlayinig(list.value);
-          list.value.forEach((aId) => state.localFiles.delete(aId));
-          state.setting.localFolders = state.setting.localFolders.filter((v) => v !== props.path);
+          list.value.forEach((aId) => localFiles.delete(aId));
+          setting.localFolders = setting.localFolders.filter((v) => v !== props.path);
         },
         addToBlack(aId) {
           mixSongHandle.removeFromPlayinig([aId]);
-          state.localFiles.delete(aId);
-          state.localBlackList.add(aId);
+          localFiles.delete(aId);
+          localBlackList.add(aId);
         },
         removeFromBlack(aId) {
-          state.localBlackList.delete(aId);
+          localBlackList.delete(aId);
           ipcRenderer.send('LOAD_LOCAL_SINGLE_FILE', aId)
         },
         openFolder() {

@@ -35,8 +35,9 @@ createApp(App)
   .use(router)
   .use(ElementPlus, { size: 'small', locale })
   .directive('error',
-    async (el, { value }) =>
-      !(await imageIsExist(el.style.backgroundImage.replace(/^url\("|"\)$/g, ''))) &&
-      (el.tagName === 'img' ? (el.src = value) : (el.style.backgroundImage = `url("${value}")`))
+    async (el, { value = 'https://y.gtimg.cn/mediastyle/global/img/album_300.png' }) => (
+      !(await imageIsExist(el.src || el.style.backgroundImage.replace(/^url\("|"\)$/g, ''))) &&
+      (el.tagName.toLowerCase() === 'img' ? (el.src = value) : (el.style.backgroundImage = `url("${value}")`))
+    )
   )
   .mount('#app')

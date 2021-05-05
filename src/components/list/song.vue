@@ -21,6 +21,7 @@
         <div
           v-if="showCover"
           class="song-album-img"
+          v-error
           :style="`background-image: url('${allSongs[s].al && `${allSongs[s].al.picUrl}?param=50y50`}')`"
         />
         <div class="song-name">

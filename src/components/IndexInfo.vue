@@ -2,7 +2,7 @@
   <div class="index-main-container" v-if="playNow.al && playNow.ar">
     <div class="info-content">
       <div class="pic-container">
-        <img :src="playNow.al.picUrl" class="pic-content" v-error="`https://y.gtimg.cn/mediastyle/global/img/album_300.png`" />
+        <img :src="playNow.al.picUrl" class="pic-content" v-error />
       </div>
       <div class="text-info">
         <div>

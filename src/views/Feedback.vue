@@ -17,7 +17,11 @@
     </div>
     <div class="feedback-list" v-if="list.length">
       <div class="feedback-content-item" v-for="item in list" :key="item.id">
-        <div class="nick">{{item.user ? item.user.nick : '游客'}} <span class="email" v-if="item.user">{{item.user.email}}</span></div>
+        <div class="nick">
+          {{item.user ? item.user.nick : '游客'}}
+          <span class="email" v-if="item.user">{{item.user.email}}</span>
+          <span class="version" v-if="item.version">v{{item.version}}</span>
+        </div>
         <div class="content">
           {{item.content}}
         </div>
@@ -158,6 +162,7 @@
             content: inputContent.content,
             appId: setting.appId,
             uId: user.soso.logined ? user.soso.id : undefined,
+            version: setting.version,
           };
           if (inputContent.replyId) {
             data.replyId = inputContent.replyId;
@@ -306,7 +311,7 @@
           font-weight: bold;
           font-size: 16px;
           padding: 0 12px;
-          .email {
+          .email, .version {
             font-weight: normal;
             color: #fff6;
             font-size: 12px;

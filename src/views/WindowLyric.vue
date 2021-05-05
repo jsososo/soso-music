@@ -1,23 +1,20 @@
 <template>
   <div
-    @mouseleave="ignoreMouse(true, true)"
     :class="`win-lyric ${setting.ROWS === 1 && 'single'} ${!setting.LOCK && 'unlock'}`">
     <div
       class="opts-btn"
-      @mouseover="ignoreMouse(false, true)"
-      @mouseleave="ignoreMouse(true)"
     >
       <div class="btn-container">
         <span v-for="item in btnList" :key="item.key">
           <i v-if="!item.hide" :class="`iconfont icon-${item.icon}`" @click="handleOpt(item.key)" />
         </span>
       </div>
-      <div class="more-opts" @mouseover="ignoreMouse(false)">
-        <div v-if="openType === 'color'" @mouseenter="ignoreMouse(false)">
+      <div class="more-opts">
+        <div v-if="openType === 'color'">
           <el-color-picker popper-class="color-picker-popper" v-model="setting.COLOR_1" :predefine="predefine" show-alpha size="mini" />
           <el-color-picker popper-class="color-picker-popper" v-model="setting.COLOR_2" :predefine="predefine" show-alpha size="mini" />
         </div>
-        <div v-if="openType === 'fontSize'" class="font-size-slider" @mouseenter="ignoreMouse(false)">
+        <div v-if="openType === 'fontSize'" class="font-size-slider">
           <el-slider :min="10" :max="40" :step="1" v-model="setting.FONT_SIZE" size="small" />
         </div>
       </div>
@@ -29,24 +26,20 @@
       :style="`text-align:${setting.TEXT_ALIGN || 'left'};`"
     >
       <div
-        @mouseenter="ignoreMouse(false)"
-        @mouseleave="ignoreMouse(true)"
-        :style="`background-image:-webkit-linear-gradient(${setting.COLOR_ARROW || 'bottom'},${setting.COLOR_1}, ${setting.COLOR_2});
-        font-size:${setting.FONT_SIZE}px;`"
-        :class="`lyric-item lyric-0 actived ${!setting.TRANS && 'mt_15'}`"
-      >
-        <div v-if="info.list[info.index%2]">{{info.list[info.index%2].str}}</div>
-      </div>
-      <br />
-      <div
-        v-if="setting.TRANS"
-        @mouseenter="ignoreMouse(false)"
-        @mouseleave="ignoreMouse(true)"
         :style="`background-image:-webkit-linear-gradient(${setting.COLOR_ARROW || 'bottom'},${setting.COLOR_1}, ${setting.COLOR_2});
         font-size:${setting.FONT_SIZE}px;`"
         class="lyric-item lyric-0 actived"
       >
-        <div v-if="info.list[info.index%2]">{{info.list[info.index%2].trans}}</div>
+        <div v-if="info.list[info.index%2]" v-html="info.list[info.index%2].str" />
+      </div>
+      <br />
+      <div
+        v-if="setting.TRANS"
+        :style="`background-image:-webkit-linear-gradient(${setting.COLOR_ARROW || 'bottom'},${setting.COLOR_1}, ${setting.COLOR_2});
+        font-size:${setting.FONT_SIZE}px;`"
+        class="lyric-item lyric-0 actived"
+      >
+        <div v-if="info.list[info.index%2]" v-html="info.list[info.index%2].trans" />
       </div>
     </div>
     <!--  多行  -->
@@ -56,12 +49,10 @@
         :key="item ? item.str : index"
       >
         <div
-          @mouseenter="ignoreMouse(false)"
-          @mouseleave="ignoreMouse(true)"
           :style="`background-image:-webkit-linear-gradient(${setting.COLOR_ARROW || 'bottom'},${setting.COLOR_1}, ${setting.COLOR_2});font-size:${setting.FONT_SIZE}px;`"
           :class="`lyric-item lyric-${index} ${(info.index % 2) === index && 'actived'}`"
         >
-          <div v-if="item">{{item.str}}</div>
+          <div v-if="item" v-html="item.str" />
         </div>
     </div>
     </div>
@@ -83,11 +74,29 @@
         keys: [],
       }))
 
-      window.addEventListener('storage', (e) => {
+      const handleUpdateStorage = (e) => {
         if (e.key === 'soso_music_win_lyric') {
           info.value = JSON.parse(e.newValue);
         }
-      })
+        if (e.key === 'win_lyric_setting') {
+          Object.assign(setting, Storage.get('win_lyric_setting', true));
+        }
+      }
+      window.addEventListener('storage', handleUpdateStorage)
+
+      const setSize = (init) => {
+        const { x, y, width } = win.getBounds();
+        let newY = y;
+        if (init === true) {
+          newY = y * 2 + 162;
+        }
+        win.setBounds({ x, y: newY, width });
+        setting.width = width;
+        setting.x = x;
+        setting.y = y;
+      }
+      win.on('move', setSize);
+      win.on('resize', setSize);
 
       const setting = reactive(Storage.get('win_lyric_setting', true, {
         LOCK: false,
@@ -100,46 +109,17 @@
         TRANS: false,
       }))
 
+      if (!setting.y) {
+        win.center();
+        setSize(true);
+      } else {
+        const { x, y, width } = setting;
+        win.setBounds({ x, y, width });
+      }
+
       const openType = ref('');
 
-      watch(() => Object.values(setting), () => Storage.set('win_lyric_setting', toRaw(setting), true))
-
-      const ignore = ref();
-
-      // 是否忽略鼠标
-      const ignoreMouse = (val, force) => {
-        const ig = (val) => {
-          win.autoFocus = win[val ? 'blur' : 'focus']();
-          win.setIgnoreMouseEvents(val, { forward: true });
-        }
-        if (!force && setting.LOCK) {
-          ig(true);
-          return;
-        }
-        if (val) {
-          ignore.value = setTimeout(() => {
-            if (openType.value && !force) {
-              return;
-            }
-            openType.value = '';
-            ig(true)
-          }, 500)
-        } else {
-          ignore.value && clearTimeout(ignore.value)
-          ig(false);
-        }
-      }
-
-      // 监听是否出现toolTip，如果出现那就不要忽略鼠标
-      const showToolTip = () => {
-        const opened = document.querySelector('[aria-hidden="false"]');
-        if (opened) {
-          ignoreMouse(false);
-        }
-        requestAnimationFrame(showToolTip)
-      }
-
-      showToolTip();
+      watch(setting, () => Storage.set('win_lyric_setting', toRaw(setting), true), { deep: true })
 
       const btnList = computed(() => [
         { icon: 'close', key: 'close', showLock: true },
@@ -154,16 +134,28 @@
           key: 'textAlign',
           hide: !(setting.ROWS === 1 || setting.TRANS)
         },
-      ].filter(({ showLock }) => !setting.LOCK || showLock))
+      ])
+
+      watch(() => [setting.FONT_SIZE, setting.LOCK, setting.ROWS, setting.TRANS, openType.value], (
+        [ft, lock, rows, trans, open]
+      ) => {
+        let width = win.getSize()[0];
+        if (openType.value === 'fontSize') {
+          width = Math.max(40 * 30, 40 * ft);
+        }
+        const r = trans ? 2 : rows;
+        let height = r * (ft * 1.2 + 20) + 60 + ({ fontSize: 20, color: 130 }[open] || 0)
+        win.setSize(width, Math.floor(height));
+        win.setIgnoreMouseEvents(lock)
+        lock && (openType.value = '');
+      }, { immediate: true })
 
       return {
         predefine: ['#F56C6C', '#409EFF', '#67C23A', '#E6A23C', '#666666'],
         btnList,
         info,
-        ignore,
         openType,
         setting,
-        ignoreMouse,
         handleOpt(key) {
           switch (key) {
             case 'close':
@@ -207,14 +199,30 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
+    width: calc(100% - 50px);
     height: 100%;
     color: #000;
     font-size: 30px;
+    transition: 0.3s;
+    padding: 0 24px;
+    border-radius: 12px;
+    box-sizing: content-box;
+
+    .btn-container {
+      visibility: hidden;
+    }
 
     &.unlock {
+      .btn-container {
+        visibility: visible;
+      }
       .lyric-item {
         -webkit-app-region: drag !important;
+        cursor: move;
+      }
+
+      &:hover {
+        background: #0003;
       }
     }
 

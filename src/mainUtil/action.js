@@ -4,6 +4,7 @@ import path from 'path';
 import storage from 'electron-json-storage';
 import readLocal, { loadSingleFile } from './readLocal';
 import fs from 'fs-extra';
+import ID3 from 'jsmediatags'
 
 // 所有的 ipcMain 和 ipcRenderer 的事件沟通
 export default (app) => {
@@ -111,22 +112,82 @@ export default (app) => {
 
       const aId = quene.shift();
       const info = pathMap[aId];
+
+      if (!info) {
+        return this.load();
+      }
+
       loadingMap[info.localPath] = true;
 
-      fs.readFile(info.localPath, (err, buf) => {
-        info.buf = buf;
-        app && app.win.webContents.send('ADD_LOCAL_FILE', info);
-        delete loadingMap[info.localPath];
-        delete info.buf;
-        this.load();
-      })
-
-      if (info.lrcPath) {
-        fs.readFile(info.lrcPath, (err, buf) => {
-          info.rawLyric = buf.toString();
-          app && app.win.webContents.send('ADD_LOCAL_FILE', info);
-        })
+      const endCb = (info) => {
+        try {
+          if (info) {
+            app.win.webContents.send('ADD_LOCAL_FILE', info);
+            delete loadingMap[info.localPath];
+          }
+          delete pathMap[aId];
+          this.load();
+        } catch (e) {
+          this.load();
+        }
       }
+
+      const fileName = info.localPath.replace(/(.*\/)*([^.]+).*$/ig,"$2");
+
+      const handleTags = (tags) => {
+        const { title, album, artist, picture, year, track, lyrics } = tags;
+
+        try {
+          info.textInfo = JSON.parse(tags.TXXX.data.user_description);
+        } catch (e) {
+          // 无非就是这首歌不是我这人下载的呗
+        }
+        info.name = title || fileName;
+
+        let blob = '';
+
+        try {
+          if (picture) {
+            const { data, type } = picture;
+            const byteArray = new Uint8Array(data);
+            blob = new Blob([byteArray], { type });
+          }
+        } catch (e) {
+          // 图片blob 报错
+        }
+
+        year && (info.publishTime = new Date(`${year}/01/01`)).valueOf();
+
+        info.al = {
+          name: album || '',
+          picData: blob,
+          platform: 'local',
+        }
+        info.ar = [{ name: artist || '', platform: 'local' }];
+        info.trackNo = track;
+        info.rawLyric = info.rawLyric || lyrics || '';
+        delete info.file;
+        delete info.buf;
+
+        // localFiles.add(aId);
+        info.checkedFile = true; // 表示确认过加载过文件了
+
+        if (info.lrcPath) {
+          fs.readFile(info.lrcPath, (err, buf) => {
+            if (err) {
+              return endCb(info);
+            }
+            info.rawLyric = buf.toString();
+            endCb(info);
+          })
+        } else {
+          endCb(info);
+        }
+      }
+      ID3.read(info.localPath, {
+        onSuccess: ({ tags = {}}) => handleTags(tags),
+        onError: () => handleTags(),
+      });
     }
   }
 

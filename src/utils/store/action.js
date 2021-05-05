@@ -8,10 +8,20 @@ import Id3 from "browser-id3-writer";
 import timer from "../timer";
 import Storage from "../Storage";
 import {ElMessage} from "element-plus";
-import ID3 from 'jsmediatags'
 import {ipcRenderer} from "electron";
 
 export const mixDomain = 'http://music.jsososo.com/apiMix';
+
+export const getSongInfo = (aId, localPath) => {
+  const [_p, id]  = aId.split('_');
+  return request({
+    api: 'SONG_INFO',
+    data: { id, _p }
+  }).then(({ data }) => {
+    data.localPath = localPath;
+    return handleSongs([ data ])
+  })
+}
 
 // 更新歌曲信息，有链接的走这边，会顺带更新播放列表
 export const updateSongInfo = (songInfo) => {
@@ -26,57 +36,105 @@ export const updateSongInfo = (songInfo) => {
     needUpdateList = needUpdateList || (playingList[aId] && url);
 
     // 本地文件
-    if (info.localPath) {
-      console.log(info);
-      if (!info.url && info.buf) {
-        const fileName = info.localPath.replace(/(.*\/)*([^.]+).*$/ig,"$2");
-        info.file = new File([info.buf], fileName)
-        ID3.read(info.file, {
-          onSuccess({ tags = {}}) {
-            const { title, album, artist, picture, year, track, lyrics } = tags;
-            info.name = title || fileName;
-
-            let picUrl = '';
-
-            if (picture) {
-              const { data, type } = tags.picture;
-              const byteArray = new Uint8Array(data);
-              const blob = new Blob([byteArray], { type });
-              picUrl = URL.createObjectURL(blob);
-            }
-
-            year && (info.publishTime = new Date(`${year}/01/01`));
-
-            info.al = {
-              name: album || '',
-              picUrl,
-              platform: 'local',
-            }
-            info.ar = [{ name: artist || '', platform: 'local' }];
-            info.trackNo = track;
-            info.rawLyric = info.rawLyric || lyrics || '';
-            // 释放，避免内存爆炸
-            delete info.file;
-            delete info.buf;
-            delete info.tags;
-
-            allSongs[aId] = info;
-            localFiles.add(aId);
-            info.checkedFile = true; // 表示确认过加载过文件了
-          },
-          onError(e) {
-            console.log('error: ', e, info)
-          }
-        });
-        info.rawLyric && !info.lyric && (info.lyric = handleLyric(info.rawLyric, 'str', {}));
-        allSongs[aId] = info;
+    if (info.platform === 'local') {
+      if (!info.al.picUrl && info.al.picData) {
+        info.al.picUrl = URL.createObjectURL(info.al.picData);
+        delete info.al.picData;
       }
+
+      !info.lyric && info.rawLyric && (info.lyric = handleLyric(info.rawLyric, 'str', {}));
+
+      if (info.textInfo) {
+        const { textInfo } = info;
+        if (allSongs[textInfo.aId]) {
+          allSongs[aId] = {
+            ...allSongs[aId],
+            ...allSongs[textInfo.aId],
+          }
+          delete info.textInfo;
+        } else {
+          getSongInfo(textInfo.aId, info.localPath)
+            .then(([realId]) => {
+              allSongs[aId] = {
+                ...allSongs[aId],
+                ...allSongs[realId],
+              }
+              delete info.textInfo;
+            })
+        }
+      }
+
+      localFiles.add(aId);
+      // if (!info.url && info.buf) {
+      //   const fileName = info.localPath.replace(/(.*\/)*([^.]+).*$/ig,"$2");
+      //   info.file = new File([info.buf], fileName)
+      //   ID3.read(info.file, {
+      //     onSuccess({ tags = {}}) {
+      //       const { title, album, artist, picture, year, track, lyrics } = tags;
+      //       try {
+      //         const textInfo = JSON.parse(tags.TXXX.data.user_description);
+      //         if (allSongs[textInfo.aId]) {
+      //           allSongs[aId] = {
+      //             ...allSongs[aId],
+      //             ...allSongs[textInfo.aId],
+      //           }
+      //         } else {
+      //           getSongInfo(textInfo.aId, info.localPath)
+      //             .then(([realId]) => {
+      //               allSongs[aId] = {
+      //                 ...allSongs[aId],
+      //                 ...allSongs[realId],
+      //               }
+      //             })
+      //         }
+      //       } catch (e) {
+      //         // 无非就是这首歌不是我这人下载的呗
+      //       }
+      //       info.name = title || fileName;
+      //
+      //       let picUrl = '';
+      //
+      //       if (picture) {
+      //         const { data, type } = tags.picture;
+      //         const byteArray = new Uint8Array(data);
+      //         const blob = new Blob([byteArray], { type });
+      //         picUrl = URL.createObjectURL(blob);
+      //       }
+      //
+      //       year && (info.publishTime = new Date(`${year}/01/01`));
+      //
+      //       info.al = {
+      //         name: album || '',
+      //         picUrl,
+      //         platform: 'local',
+      //       }
+      //       info.ar = [{ name: artist || '', platform: 'local' }];
+      //       info.trackNo = track;
+      //       info.rawLyric = info.rawLyric || lyrics || '';
+      //       !info.lyric && info.rawLyric && (info.lyric = handleLyric(info.rawLyric, 'str', {}));
+      //       // 释放，避免内存爆炸
+      //       delete info.file;
+      //       delete info.buf;
+      //       delete info.tags;
+      //
+      //       allSongs[aId] = info;
+      //       localFiles.add(aId);
+      //       info.checkedFile = true; // 表示确认过加载过文件了
+      //     },
+      //     onError(e) {
+      //       console.log('error: ', e, info)
+      //     }
+      //   });
+      // }
+      //
+      // info.rawLyric && !info.lyric && (info.lyric = handleLyric(info.rawLyric, 'str', {}));
+      allSongs[aId] = info;
     }
     // 更新一下 playNow
     (aId === playNow.aId) && (Object.keys(info).forEach(k => playNow[k] = info[k]))
   })
 
-  needUpdateList && (playingList.trueList = playingList.raw.filter((aId) => allSongs[aId].url));
+  needUpdateList && (playingList.trueList = playingList.raw.filter((aId) => allSongs[aId].url || allSongs[aId].localPath));
 
 }
 
@@ -306,7 +364,7 @@ export const handleSongs = (list) => {
     s.url = s.url || (allSongs[s.aId] || {}).url;
     allSongs[s.aId] = {...(allSongs[s.aId] || {}), ...s};
     allSongs[s.aId].pUrl = allSongs[s.aId].pUrl || allSongs[s.aId].url;
-    allSongs[s.aId].localPath && !allSongs[s.aId].checkedFile && ipcRenderer.send('LOAD_LOCAL_SINGLE_FILE', s);
+    allSongs[s.aId].localPath && !allSongs[s.aId].checkedFile && ipcRenderer.send('LOAD_LOCAL_SINGLE_FILE', s.aId);
     !allSongs[s.aId].url && !allSongs[s.aId].noUrl && !s.localPath && s.aId && (getUrlArr.push(s.aId));
   })
 
@@ -469,18 +527,6 @@ export const cutSong = (type) => ({
   next: playNext,
   prev: playPrev,
 })[type]();
-
-// 获取单首歌曲的 url
-export const getUrl = async (id, br, _p) => {
-  return request({
-    api: 'SINGLE_URL',
-    data: {
-      id,
-      br,
-      _p
-    }
-  })
-}
 
 // 获取用户歌单
 export const getUserList = async ({id, platform} = {}) => {
@@ -705,7 +751,7 @@ export const setWinLyric = () => {
     index: 0,
     list: winLrcList,
   };
-  Storage.set('soso_music_win_lyric', winLyric, true)
+  Storage.set('soso_music_win_lyric', winLyric)
   updateSongInfo({
     aId,
     winLyric,
@@ -801,7 +847,7 @@ export const downReq = async (info) => {
     return;
   }
   downloadInfo.count += 1;
-  const {dUrl, filename, name, ar, al, songEndType, dId} = info;
+  const {dUrl, filename, name, ar, al, songEndType, dId, aId, platform, mediaId} = info;
   let picData;
   info.waiting = false;
   info.progress = 0;
@@ -837,7 +883,12 @@ export const downReq = async (info) => {
   writer.setFrame('TIT2', name)
     .setFrame('TPE1', ar.map(a => a.name))
     .setFrame('TALB', al.name)
+    .setFrame('TXXX',  {
+      description: JSON.stringify({ aId, mediaId, platform }), // 不知道为什么 value 里写入会异常，但是 description 不会
+      value: ''
+    })
     .setFrame('TRCK', data.trackNo || '');
+
   info.publishTime && writer.setFrame('TYER', timer(info.publishTime).str('YYYY'));
   picData && writer.setFrame('APIC', {type: 3, data: picData, description: al.name});
   (songEndType !== 'm4a') && writer.addTag();
@@ -969,7 +1020,6 @@ export const mixSongHandle = {
   },
   removeFromPlayinig(list) {
     window.event.stopPropagation();
-    console.log(list);
     updatePlayingList(window.$state.playingList.raw.filter((id) => id.indexOf(list) === -1), true)
   },
   likeMusic,
