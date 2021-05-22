@@ -13,12 +13,33 @@
         </div>
 
         <div class="input-line">
+          <div class="input-label">性能模式：</div>
+          <div class="input-content">
+            <el-switch v-model="setting.PERFORMANCE_MODE" />
+          </div>
+        </div>
+
+        <div class="input-line">
+          <div class="input-label">订阅测试版：</div>
+          <div class="input-content">
+            <el-switch v-model="setting.SUBSCRIBE_TEST_VERSION" />
+          </div>
+        </div>
+
+        <div class="input-line">
+          <div class="input-label">资源替换：</div>
+          <div class="input-content">
+            <div class="input-txt-info" @click="goTo('#/find')">前往设置</div>
+          </div>
+        </div>
+
+        <div class="input-line" v-if="setting.PERFORMANCE_MODE">
           <div class="input-label">看见音乐：</div>
           <div class="input-content">
             <el-switch v-model="setting.DRAW_MUSIC" />
           </div>
         </div>
-        <block v-if="setting.DRAW_MUSIC">
+        <template v-if="setting.DRAW_MUSIC && setting.PERFORMANCE_MODE">
           <div class="input-line">
             <div class="input-label">频谱设置：</div>
             <div class="input-content">
@@ -41,7 +62,7 @@
               </el-radio-group>
             </div>
           </div>
-        </block>
+        </template>
 <!--        <div class="input-line">-->
 <!--          <div class="input-label">播放格式：</div>-->
 <!--          <div class="input-content">-->
@@ -70,6 +91,13 @@
           <div class="input-content">
             {{cacheSize}}
             <el-button class="ml_20" @click="clearCache" size="mini">清除</el-button>
+          </div>
+        </div>
+
+        <div class="input-line">
+          <div class="input-label">恢复默认：</div>
+          <div class="input-content">
+            <el-button type="danger" @click="resetSetting">恢复默认设置</el-button>
           </div>
         </div>
       </div>
@@ -199,6 +227,12 @@
 
       <div v-if="setting.tab === 'user'">
         <div class="input-line">
+          <div class="input-label" />
+          <div class="input-content">
+            登陆任意平台即代表完成登陆 & 账号绑定操作，更换登陆账号即代表重新绑定
+          </div>
+        </div>
+        <div class="input-line">
           <div class="input-label">混合账号昵称：</div>
           <div class="input-content">
             <input type="text" style="width: 200px" v-model="mixNick" />
@@ -249,6 +283,7 @@
   import request from "../utils/request";
   import { mixDomain as domain } from "../utils/store/action";
   import { numToStr } from "../utils/stringHelper";
+  import Storage from "../utils/Storage";
 
   export default {
     name: "Setting",
@@ -310,7 +345,7 @@
         },
 
         selectDir() {
-          ipcRenderer.send('SHOW_SELECT_DIR', 'download');
+          ipcRenderer.send('SHOW_SELECT_DIR', { type: 'download' });
         },
 
         async saveUser(params, api) {
@@ -347,6 +382,15 @@
           e.preventDefault();
           e.stopPropagation();
           bgInfo.img = '';
+        },
+
+        resetSetting() {
+          Storage.set('soso_music_setting', '');
+          location.reload();
+        },
+
+        goTo(url) {
+          window.location.href = url;
         }
       }
     }

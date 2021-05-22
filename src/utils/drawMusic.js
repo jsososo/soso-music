@@ -42,6 +42,10 @@ export default class DrawMusic {
 
   drawMusicType = 1
 
+  destroy() {
+    this.ctx.clearRect(0, 0, this.pageWidth, this.pageHeight);
+  }
+
   // 贝塞尔曲线
   quadraticCurve({ x = [], y = [], strokeStyle, lineWidth }) {
     const { ctx } = this;

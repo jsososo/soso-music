@@ -43,7 +43,7 @@
         ...state,
         list,
         addFolder() {
-          ipcRenderer.send('SHOW_SELECT_DIR', 'local_folder');
+          ipcRenderer.send('SHOW_SELECT_DIR', { type: 'local_folder' });
         },
       }
     }

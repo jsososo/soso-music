@@ -1,5 +1,15 @@
 import { watch, toRaw } from 'vue';
-import {getLyric, search, updatePlayingList, downReq, setWinLyric, updateSongInfo, loadLocalFile} from './action';
+import {
+  getLyric,
+  search,
+  updatePlayingList,
+  downReq,
+  setWinLyric,
+  updateSongInfo,
+  loadLocalFile,
+  handlePerformanceMode,
+  handleVolume,
+} from './action';
 import Storage from "../Storage";
 import { useRoute, useRouter } from 'vue-router';
 import { ipcRenderer } from 'electron';
@@ -64,6 +74,7 @@ export const allWatch = (state) => {
 
   // 查找到的 咪咕音乐信息
   watch(state.miguFind, (v) => Storage.set('soso_music_migu_find', toRaw(v), true));
+  watch(state.miguFindBlack, (v) => Storage.set('soso_music_migu_black', toRaw(v), true));
 
   // 设置
   watch(() => setting, () => Storage.set('soso_music_setting', toRaw(setting), true), { deep: true })
@@ -191,10 +202,12 @@ export const allWatch = (state) => {
   // 更新播放、暂停状态，并同步给对应的dom
   watch(() => playerStatus.playing, (v) => {
     const { pDom } = playerStatus;
-    if (v) {
-      pDom ? pDom.play() : (playerStatus.playing = false)
+
+    if (pDom) {
+      v && pDom.play() && (pDom.volume = 0);
+      handleVolume(pDom.volume, v ? Number((setting.volume / 100).toFixed(2)) : 0, v ? 'play' : 'pause')
     } else {
-      pDom && pDom.pause();
+      playerStatus.playing = false
     }
   })
 
@@ -232,7 +245,11 @@ export const allWatch = (state) => {
   // 记录本地歌曲黑名单列表
   watch(() => localBlackList.size, () => Storage.set('local_black_list', [...localBlackList]))
 
+  // 记录背景图片信息
   watch(() => bgInfo, () => Storage.set('bg_info', bgInfo), { deep: true })
+
+  // 性能模式开关
+  watch(() => setting.PERFORMANCE_MODE, handlePerformanceMode);
 
   // 更新了后端的端口
   ipcRenderer.on('REPLY_SERVER_PPINT', (e, { result, errMsg }) => {
@@ -243,7 +260,7 @@ export const allWatch = (state) => {
 
   // 选择文件夹地址
   ipcRenderer.on('REPLY_SELECT_DIR', (e, { path, type }) => {
-    const { setting } = window.$state;
+    const { setting, selectedFile } = window.$state;
     switch (type) {
       case 'download':
         path && (setting.DOWN_DIR = path);
@@ -256,6 +273,9 @@ export const allWatch = (state) => {
           setting.localFolders = [...setting.localFolders];
           loadLocalFile([path]);
         }
+        break;
+      default:
+        selectedFile[type] = path;
         break;
     }
   })
@@ -281,12 +301,13 @@ export const allWatch = (state) => {
     }
   })
 
-
   // 返回了听歌历史数据
   ipcRenderer.on('REPLY_HISTORY_DATA', (e, v) => state.playHistory.initHistory(v))
 
   // 设置系统平台
   ipcRenderer.on('SET_SYSTEM_PLATFORM', (e, v) => state.setting.SYSTEM_PLATFORM = v);
+
+  ipcRenderer.on('REPLY_SYSTEM_PERFORMANCE', (e, v) => state.setting.PERFORMANCE_MODE = !v);
 
   // 加载本地文件，这里做一个队列管理
   ipcRenderer.on('ADD_LOCAL_FILE', (e, v) => updateSongInfo(v));

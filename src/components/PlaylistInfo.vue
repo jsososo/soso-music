@@ -68,7 +68,7 @@
           <img class="song-cover" v-error :src="`${allSongs[s].al && allSongs[s].al.picUrl}`" alt=""/>
           <span class="song-name">{{allSongs[s].name}}</span>
           <span class="song-artist">{{(allSongs[s].ar || []).map((a) => a.name).join('/')}}</span>
-          <div class="icon-container" v-if="!allSongs[s].localPath">
+          <div class="icon-container" v-if="allSongs[s].platform !== 'local'">
             <el-tooltip class="item" effect="dark" content="喜欢" placement="top">
               <i
                 :class="`operation-icon operation-icon-1 iconfont icon-${favSongMap[allSongs[s].platform][s] ? 'like' : 'unlike'}`"
@@ -339,6 +339,82 @@
 <style lang="scss">
   @import "../assets/style/value";
 
+  .high-performance-mode {
+    .list-detail-container {
+      .song-list {
+        .song-item {
+          .song-artist {
+            width: calc(90% - 100px);
+          }
+          &.show-animate:hover {
+            opacity: 1;
+            box-shadow: 0 0 10px #0003;
+            border-bottom: 1px solid transparent;
+
+            &.played {
+              .song-order {
+                color: #409EFF80;
+              }
+            }
+
+            &.disabled {
+              opacity: 0.3;
+            }
+
+            .song-artist {
+              transform: translate(55px);
+              width: calc(50% - 100px);
+            }
+
+            .song-order {
+              color: #fff5;
+              transform: translate(0, 10px);
+              user-select: none;
+            }
+
+            .song-cover {
+              filter: blur(5px);
+              opacity: 0.4;
+              transform: rotate(-30deg) scale(2) translate(0, 10px);
+              user-select: none;
+            }
+
+            .song-name {
+              font-weight: bold;
+              transform: scale(1.12) translate(45px);
+              color: #fff;
+            }
+
+            .song-mv {
+              transform: translateX(170px);
+            }
+
+            .icon-container {
+              .operation-icon {
+                transform: translate(0, 0);
+                opacity: 0.8;
+              }
+            }
+
+            .right-info {
+              transform: translateY(10px);
+            }
+          }
+
+          .icon-container {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+
+            .operation-icon- {
+              text-shadow: 0 2px 5px #0008;
+            }
+          }
+        }
+      }
+    }
+  }
+
   .list-detail-container {
 
     .scroll-content {
@@ -547,7 +623,6 @@
 
         &.show-animate:hover {
           opacity: 1;
-          box-shadow: 0 0 10px #0003;
           border-bottom: 1px solid transparent;
 
           &.played {
@@ -562,7 +637,6 @@
 
           .song-artist {
             transform: translate(55px);
-            width: calc(50% - 100px);
           }
 
           .song-order {
@@ -572,14 +646,12 @@
           }
 
           .song-cover {
-            filter: blur(5px);
             opacity: 0.4;
             transform: rotate(-30deg) scale(2) translate(0, 10px);
             user-select: none;
           }
 
           .song-name {
-            font-weight: bold;
             transform: scale(1.12) translate(45px);
             color: #fff;
           }
@@ -657,7 +729,7 @@
           vertical-align: top;
           padding-top: 20px;
           transition: 0.3s;
-          width: calc(90% - 100px);
+          width: calc(50% - 100px);
           overflow: hidden;
           white-space: nowrap;
           text-overflow: ellipsis;

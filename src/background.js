@@ -77,7 +77,7 @@ async function createWindow() {
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
     winLyric.loadURL(`${process.env.WEBPACK_DEV_SERVER_URL}#/windowLyric`)
     if (!process.env.IS_TEST) win.webContents.openDevTools()
-    if (!process.env.IS_TEST) winLyric.webContents.openDevTools()
+    // if (!process.env.IS_TEST) winLyric.webContents.openDevTools()
   } else {
     createProtocol('app')
     // Load the index.html when not in development

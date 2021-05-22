@@ -15,7 +15,7 @@
         <div class="list-img daily-img">{{date}}</div>
       </block>
       <block v-else>
-        <img :src="`${allList[aId].cover}?param=50y50`" v-error class="list-bg-img" />
+        <img v-if="setting.PERFORMANCE_MODE" :src="`${allList[aId].cover}?param=50y50`" v-error class="list-bg-img" />
         <img :src="`${allList[aId].cover}?param=200y200`" v-error class="list-img" />
       </block>
       <span class="list-name" v-html="allList[aId].name" />
@@ -73,6 +73,7 @@
 </script>
 
 <style scoped lang="scss">
+
   .playlist-item {
     position: relative;
     height: 60px;
@@ -82,16 +83,6 @@
     transition: 0.4s;
     box-shadow: 0 0 0 #0003;
 
-    .list-bg-img {
-      position: absolute;
-      z-index: 0;
-      opacity: 0.2;
-      filter: blur(30px);
-      width: 170px;
-      height: 170px;
-      top: -60px;
-      transition: 0.3s;
-    }
     .bottom-text {
       position: absolute;
       bottom: 0;
@@ -179,26 +170,6 @@
 
     &:hover {
       opacity: 1;
-      box-shadow: 0 4px 20px #0004;
-
-      .bottom-text {
-        color: #fffc;
-
-        .hearting {
-          color: #F56C6C;
-        }
-      }
-
-      .list-creator {
-        transform: translate(10px);
-        color: #fffc;
-      }
-
-      .list-count {
-        transform: rotate(-90deg) translate(-20px, 150%);
-        text-align: center;
-      }
-
       .list-name {
         transform: scale(1.1) translate(5px);
       }
@@ -208,4 +179,42 @@
       }
     }
   }
+
+  .high-performance-mode {
+    .playlist-item {
+      .list-bg-img {
+        position: absolute;
+        z-index: 0;
+        opacity: 0.2;
+        filter: blur(30px);
+        width: 170px;
+        height: 170px;
+        top: -60px;
+        transition: 0.3s;
+      }
+
+      &:hover {
+        box-shadow: 0 4px 20px #0004;
+
+        .bottom-text {
+          color: #fffc;
+
+          .hearting {
+            color: #F56C6C;
+          }
+        }
+
+        .list-creator {
+          transform: translate(10px);
+          color: #fffc;
+        }
+
+        .list-count {
+          transform: rotate(-90deg) translate(-20px, 150%);
+          text-align: center;
+        }
+      }
+    }
+  }
+
 </style>

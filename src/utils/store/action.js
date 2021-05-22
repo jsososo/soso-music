@@ -9,6 +9,7 @@ import timer from "../timer";
 import Storage from "../Storage";
 import {ElMessage} from "element-plus";
 import {ipcRenderer} from "electron";
+import DrawMusic from "../drawMusic";
 
 export const mixDomain = 'http://music.jsososo.com/apiMix';
 
@@ -185,7 +186,7 @@ export const getSingleUrl = async (aId, type = 'play') => {
       !u && (brKey = prevBr[brKey].key);
     }
     url = u || url;
-    br = brKey || br;
+    br = brNumMap[brKey] || br;
   } else {
     try {
       const {data} = await request({
@@ -209,7 +210,7 @@ export const getSingleUrl = async (aId, type = 'play') => {
 
   if (s[brMap[br]] && (url.indexOf('.m4a') === -1)) {
     url = s[brMap[br]];
-    br = brNumMap[br] || 128000;
+    br = br || 128000;
   }
 
   (br > 320000) && (songEndType = 'flac');
@@ -231,11 +232,11 @@ export const getSingleUrl = async (aId, type = 'play') => {
 }
 
 // 因为调用migu 音乐太费时了，所以改成队列的方式
-const findMusic = {
+export const findMusic = {
   quene: [],
   num: 0,
   push(aId) {
-    const {allSongs, miguFind} = window.$state;
+    const {allSongs, miguFind, miguFindBlack} = window.$state;
     const {quene} = this;
 
     const endCb = (data, key, queneNext = true) => {
@@ -268,7 +269,7 @@ const findMusic = {
       }
     }
 
-    if (miguFind[aId]) {
+    if (miguFind[aId] && miguFind[aId].cid) {
       return endCb(miguFind[aId], aId, false);
     }
     if (aId) {
@@ -293,6 +294,7 @@ const findMusic = {
             key,
             id: aId,
             duration: song.duration,
+            noMatch: miguFindBlack[aId] || [],
           }],
           _p: song.platform,
         }
@@ -303,7 +305,6 @@ const findMusic = {
       })
     }
   },
-
 }
 
 // 批量获取 url
@@ -1028,3 +1029,46 @@ export const mixSongHandle = {
     addSong2Playlist({aId, pId, type: 0})
   }
 }
+
+export const handlePerformanceMode = (mode) => {
+  const { AudioContext, webkitAudioContext, requestAnimationFrame, $state } = window;
+  let { drawMusic } = window;
+  if (!drawMusic && (AudioContext || webkitAudioContext) && mode && document.getElementById('m-player')) {
+    window.drawMusic = drawMusic = new DrawMusic();
+  }
+
+  const draw = () => {
+    drawMusic && drawMusic.draw();
+    $state.setting.PERFORMANCE_MODE ? requestAnimationFrame(draw) : drawMusic.destroy();
+  }
+
+  requestAnimationFrame(draw)
+}
+
+// 音量渐变的处理
+export const handleVolume = (start, end, operation) => {
+  const { pDom } = window.$state.playerStatus;
+  window.FADE_VOLUME && clearInterval(window.FADE_VOLUME.interval);
+  const delta = (end - start) / 20;
+  window.FADE_VOLUME = {
+    start,
+    end,
+    operation,
+    delta,
+    interval: setInterval(() => {
+      const { start, end, delta, interval } = window.FADE_VOLUME;
+      let volume = pDom.volume + delta;
+
+      volume = Math.min(Math.max(start, end), volume);
+      volume = Math.max(0, volume);
+      volume = Number(volume.toFixed(2));
+      pDom.volume = volume;
+
+      if (volume === end) {
+        clearInterval(interval);
+        (operation === 'pause') && (pDom.pause());
+      }
+    }, 16)
+  }
+}
+

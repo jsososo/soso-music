@@ -11,9 +11,8 @@
         <i :class="`iconfont icon-${playNow.platform} color-${playNow.platform} ${playNow.bPlatform ? 'op_3' : 'op_7'}`" />
       </el-tooltip>
       <el-tooltip v-if="playNow.bPlatform" class="item" effect="dark" content="音源" placement="top">
-        <i :class="`iconfont op_7 icon-${playNow.bPlatform} color-${playNow.bPlatform}`" />
+        <i @click="goFind()" :class="`iconfont op_7 icon-${playNow.bPlatform} color-${playNow.bPlatform}`" />
       </el-tooltip>
-
     </div>
     <div class="index-icon-content">
       <a href="#/" class="mg_10 iconfont icon-lyric">
@@ -23,6 +22,9 @@
         <i class="fake-icon iconfont icon-comment" />
         <span v-if="playNow.totalComments" style="font-weight: normal;vertical-align: 4px" class="pl_5 ft_12">{{numToStr(playNow.totalComments)}}</span>
       </a>
+    </div>
+    <div>
+
     </div>
   </info-box>
 </template>
@@ -64,6 +66,9 @@
         ...state,
         infoBoxList,
         numToStr,
+        goFind() {
+          window.location.href = `#/find?keyword=${playNow.name} ${(playNow.ar || []).map(({ name }) => name).join(' ')}`
+        }
       }
     }
   }

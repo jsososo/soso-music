@@ -21,6 +21,13 @@
     <div class="song-info" v-if="pDom">
       <a class="player-song-title pointer" href="#/">
         <i class="el-icon-loading mr_10" v-if="playerStatus.loading"/>
+        <el-tooltip v-if="playNow.bPlatform" class="item" effect="dark" content="音频资源不对？" placement="top">
+          <div class="inline-block">
+          <span @click="goFind()">
+            <i class="el-icon-question pointer ft_14" />
+          </span>
+          </div>
+        </el-tooltip>
         {{playNow.name}}
       </a>
       <div class="ar-container">
@@ -58,12 +65,12 @@
     />
 
     <audio
-      v-if="playNow.pUrl"
+      v-if="playNow.pUrl || playNow.localPath"
       id="m-player"
       ref="pDom"
       class="m-player"
       crossorigin="anonymous"
-      :src="transUrl(playNow.pUrl)"
+      :src="transUrl(playNow.pUrl || '')"
       controls
       @canplaythrough="canPlayThrough"
       @timeupdate="({ target }) => playerStatus.currentTime = target.currentTime"
@@ -123,6 +130,7 @@
         </div>
       </el-tooltip>
 
+      <!--桌面歌词-->
       <el-tooltip class="item" effect="dark" content="桌面歌词" placement="top">
         <div class="inline-block pd_5">
           <span @click="showWinLyric">
@@ -130,7 +138,7 @@
           </span>
         </div>
       </el-tooltip>
-
+      <!--锁定桌面歌词-->
       <el-tooltip v-if="setting.SHOW_WIN_LYRIC" class="item" effect="dark" content="锁定歌词" placement="top">
         <div class="inline-block pd_5">
           <span @click="winLyricSetting.LOCK = !winLyricSetting.LOCK">
@@ -192,12 +200,18 @@
 
 <script>
   import {mixInject} from "../utils/store/state";
-  import {cutSong, mixSongHandle, likeMusic, getSingleUrl} from "../utils/store/action";
+  import {
+    cutSong,
+    mixSongHandle,
+    likeMusic,
+    getSingleUrl,
+    handlePerformanceMode,
+    handleVolume
+  } from "../utils/store/action";
   import {changeUrlQuery, transUrl, timeToStr} from '../utils/stringHelper';
   import {ref, computed, reactive, watch, toRaw} from 'vue';
   import HandleSong from "./HandleSong";
   import { ipcRenderer } from 'electron';
-  import DrawMusic from "../utils/drawMusic";
   import Storage from "../utils/Storage";
 
   export default {
@@ -216,7 +230,7 @@
 
       const pDom = ref();
 
-      const { playerStatus, playNow } = state;
+      const { playerStatus, playNow, setting } = state;
       playerStatus.pDom = pDom;
 
       let errorId = '';
@@ -266,14 +280,10 @@
         // 加载完成
         canPlayThrough: ({target}) => {
 
-          if (!window.drawMusic && (window.AudioContext || window.webkitAudioContext)) {
-            window.drawMusic = new DrawMusic();
-            const draw = () => {
-              window.drawMusic && window.drawMusic.draw();
-              window.requestAnimationFrame(draw);
-            }
-            window.requestAnimationFrame(draw);
-          }
+          !window.drawMusic && setting.PERFORMANCE_MODE && handlePerformanceMode(setting.PERFORMANCE_MODE);
+
+          pDom.value.volume = 0;
+          handleVolume(0, Number((setting.volume / 100).toFixed(2)));
 
           errorId = '';
           state.playerStatus.loading = false;
@@ -314,11 +324,13 @@
 
         likeMusic,
 
+        goFind() {
+          window.event.preventDefault();
+          window.location.href = `#/find?keyword=${playNow.name} ${(playNow.ar || []).map(({ name }) => name).join(' ')}`
+        },
+
       }
     },
-    mounted() {
-
-    }
   }
 </script>
 

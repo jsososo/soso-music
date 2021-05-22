@@ -76,6 +76,15 @@
 </script>
 
 <style lang="scss">
+  .high-performance-mode {
+    .info-box-container {
+      .text-info {
+        .text-content:hover {
+          box-shadow: -5px 5px 20px #0003;
+        }
+      }
+    }
+  }
   .info-box-container {
     position: relative;
     font-size: 0;
@@ -143,7 +152,6 @@
 
 
         &:hover {
-          box-shadow: -5px 5px 20px #0003;
           transform: translate(4px, 0);
         }
 

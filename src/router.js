@@ -78,6 +78,10 @@ const routes = [
   {
     path: '/local',
     component: () => import('./views/Local'),
+  },
+  {
+    path: '/find',
+    component: () => import('./views/Find'),
   }
 ]
 

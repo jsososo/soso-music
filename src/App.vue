@@ -1,5 +1,10 @@
 <template>
-  <div :class="`app-platform-${setting.SYSTEM_PLATFORM} ${hidePlayer && 'hide-player'} ${hideNav && 'hide-nav'}`">
+  <div
+    :class="`app-platform-${setting.SYSTEM_PLATFORM}
+      ${hidePlayer && 'hide-player'}
+      ${hideNav && 'hide-nav'}
+      ${setting.PERFORMANCE_MODE && 'high-performance-mode'}`"
+  >
     <div
       class="bg-img"
       v-if="!bgInfo.img"
@@ -65,14 +70,18 @@ export default {
   setup() {
     // 初始化 store state
     const state = store();
-    const { allSongs, bgInfo } = state;
+    const { allSongs, bgInfo, setting } = state;
 
     const route = useRoute();
     const router = useRouter();
     window.route = route;
     window.router = router;
 
-    const { INIT_LIST } = state.setting;
+    const { INIT_LIST, PERFORMANCE_MODE } = setting;
+
+    if (PERFORMANCE_MODE === undefined) {
+      ipcRenderer.send('GET_SYSTEM_PERFORMANCE')
+    }
 
     const lastList = Storage.get('soso_music_last_list', true, '[]');
     const lastPlay = Storage.get('soso_music_last_play');
@@ -118,7 +127,7 @@ export default {
         });
 
       Object.keys(state.miguFind).forEach(k => {
-        !state.miguFind[k].url && (delete state.miguFind[k])
+        !state.miguFind[k][128] && (delete state.miguFind[k])
       })
 
       ipcRenderer.send('UPDATE_SERVER_POINT', state.setting.SERVER_PORT);
@@ -132,7 +141,7 @@ export default {
       request({
         domain,
         api: 'MIX_VERSION_CHECK',
-        data: { version: state.setting.version },
+        data: { version: state.setting.version, test: Number(setting.SUBSCRIBE_TEST_VERSION || 0) },
       }).then(({ data }) => {
         if (data) {
           ElNotification({
@@ -262,6 +271,31 @@ export default {
     color: #fffc;
     min-width: $minWidth;
     overflow: hidden;
+
+    .hide-performance-mode {
+      .common-small-box {
+        &:hover {
+          opacity: 0.9;
+
+          .box-img-container {
+            border-radius: 5px;
+            box-shadow: 0 0 30px #333333;
+
+            img {
+              width: 170px;
+              height: 170px;
+              top: -10px;
+              left: -10px;
+            }
+
+            .box-name {
+              background: #000a;
+              color: #fff;
+            }
+          }
+        }
+      }
+    }
 
     a {
       color: #fffc;
@@ -549,18 +583,10 @@ export default {
       box-shadow: 0 0 0 transparent;
 
       &:hover {
-        opacity: 0.9;
+        opacity: 1;
 
         .box-img-container {
           border-radius: 5px;
-          box-shadow: 0 0 30px #333333;
-
-          img {
-            width: 170px;
-            height: 170px;
-            top: -10px;
-            left: -10px;
-          }
 
           .box-name {
             background: #000a;

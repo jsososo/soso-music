@@ -64,7 +64,9 @@
         })
         data.list = handleSongs(data.list);
 
-        replaceObj(listInfo, data)
+        if (id === selectedId.value) {
+          replaceObj(listInfo, data)
+        }
 
       })
 

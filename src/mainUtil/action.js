@@ -4,7 +4,8 @@ import path from 'path';
 import storage from 'electron-json-storage';
 import readLocal, { loadSingleFile } from './readLocal';
 import fs from 'fs-extra';
-import ID3 from 'jsmediatags'
+import ID3 from 'jsmediatags';
+import os from 'os';
 
 // 所有的 ipcMain 和 ipcRenderer 的事件沟通
 export default (app) => {
@@ -24,10 +25,11 @@ export default (app) => {
     }
   })
 
-  // 选择地址
-  ipcMain.on('SHOW_SELECT_DIR', async (e, type) => {
+  // 选择文件地址
+  ipcMain.on('SHOW_SELECT_DIR', async (e, {type, options = {}}) => {
     const {canceled, filePaths} = await dialog.showOpenDialog(app.win, {
-      properties: ['openDirectory']
+      properties: ['openDirectory'],
+      ...options,
     }).catch(() => false);
     app.selectDir = app.selectDir || {};
     !canceled && (app.selectDir[type] = filePaths[0]);
@@ -61,15 +63,23 @@ export default (app) => {
     tray.setContextMenu(Menu.buildFromTemplate(trayMenu));
   })
 
+  // 获取历史数据
   ipcMain.on('GET_HISTORY_DATA', (e) => {
     storage.get('history_data', ( err, data) => {
       e.reply('REPLY_HISTORY_DATA', data || {});
     })
   })
 
+  // 最小化
   ipcMain.on('APP_MINIMIZE', () => app.win.minimize());
 
+  // 隐藏
   ipcMain.on('APP_HIDE', () => app.win.hide());
+
+  // 获取性能，低于8核 8g 内存的电脑默认不开启性能模式
+  ipcMain.on('GET_SYSTEM_PERFORMANCE', (e) =>
+    e.reply('REPLY_SYSTEM_PERFORMANCE', os.totalmem() / Math.pow(1024, 3) < 8 || os.cpus().length < 8)
+  )
 
   // 保存播放历史数据
   ipcMain.on('UPDATE_HISTORY_DATA', (e, v) => storage.set('history_data', v))

@@ -1,6 +1,6 @@
 <template>
   <div :class="`simple-container ${!setting.SHOW_SIMPLE_COVER && 'hide-cover'}`">
-    <block v-if="playNow.al">
+    <template v-if="playNow.al">
       <div class="img-container">
         <img class="song-img" :src="playNow.al.picUrl" alt="" />
       </div>
@@ -25,7 +25,7 @@
         </div>
       </div>
 
-    </block>
+    </template>
   </div>
 </template>
 
@@ -100,6 +100,13 @@
 <style lang="scss">
   @import "../assets/style/value";
 
+  html {
+    -webkit-app-region: drag;
+
+    .simple-container div {
+      -webkit-app-region: none;
+    }
+  }
   .simple-container {
     height: calc(#{$mainHeight} - 10vh);
     width: 90%;

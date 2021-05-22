@@ -1,29 +1,21 @@
 const Search = require('../mixApi/routes/search');
 const Url = require('../mixApi/routes/url');
-const storage = require('electron-json-storage');
 
 module.exports = {
   // 查找，根据关键词从其他平台获取播放链接
   async ['/']({req, res, request, platform, dataHandle, R, port}) {
     const {list = []} = req.query;
-    global.findMap = global.findMap || {};
-    const {findMap} = global;
     let updateFind = false;
-    const reqFunction = async ({id, key, duration}) => {
+    const reqFunction = async ({id, key, duration, noMatch = []}) => {
       try {
         if (platform !== 'migu') {
-          if (findMap[key] && findMap[key].url) {
-            const s = findMap[key];
-            return [id, s];
-          }
           const { data: s = {}} = await request({
             domain: `http://localhost:${port}/miguApi`,
             url: 'song/find',
-            data: { keyword: key, duration }
+            data: { keyword: key, duration, noMatch }
           }).catch(() => ({}))
           if (s && s.cid) {
             updateFind = true;
-            findMap[key] = s;
             s.platform = 'migu';
             s.url = s[128] || s[320] || s.flac;
             return [id, s];
@@ -46,12 +38,15 @@ module.exports = {
           request,
           dataHandle,
         })
-        const findSong = (queryRes.data.list || []).find((item) => {
-          if (duration) {
-            return (item.duration <= duration + 3) && (item.duration >= duration - 3)
-          }
-          return true;
-        });
+        console.log('hello world',queryRes.data.list)
+        const findSong = (queryRes.data.list || [])
+          .filter(({ cid }) => noMatch.indexOf(cid) === -1)
+          .find((item) => {
+            if (duration) {
+              return (item.duration <= duration + 3) && (item.duration >= duration - 3)
+            }
+            return true;
+          });
         if (!findSong) {
           return [id, ''];
         }
@@ -61,6 +56,7 @@ module.exports = {
       }
     }
 
+    console.log(list);
     Promise.all(list.map((obj) => reqFunction(obj)))
       .then(async (resArr) => {
         const sendResult = {};
@@ -97,7 +93,6 @@ module.exports = {
             };
           }
         })
-        updateFind && storage.set('find_data', findMap);
         return res.send({
           result: 100,
           data: sendResult,

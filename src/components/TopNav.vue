@@ -1,5 +1,5 @@
 <template>
-  <div :class="`page-top-nav app-platform-${setting.SYSTEM_PLATFORM}`">
+  <div @dblclick="updateWindowSize" :class="`page-top-nav app-platform-${setting.SYSTEM_PLATFORM}`">
 
     <span class="router-icon">
       <i :class="`el-icon-arrow-left ${canBack && 'actived'}`" @click="canBack && (router.isBack = true)" />
@@ -54,6 +54,7 @@
   import { ref, computed } from 'vue';
   import {useRoute} from "vue-router";
   import { ipcRenderer } from 'electron';
+  const win = require('electron').remote.getCurrentWindow()
 
   export default {
     name: "TopNav",
@@ -82,6 +83,24 @@
         },
         appCommand(opts) {
           ipcRenderer.send(opts)
+        },
+        updateWindowSize(e) {
+          if (e.target.className.split(' ')[0] !== 'page-top-nav') {
+            return;
+          }
+          if (win.isMaximized()) {
+            const { width, height } = win.getBounds();
+            console.log(width, height);
+            win.setBounds({
+              x: Number((width * 0.15).toFixed(0)),
+              y: Number((height * 0.15).toFixed(0)),
+              width: Number((width * 0.7).toFixed(0)),
+              height: Number((height * 0.7).toFixed(0)),
+            });
+          } else {
+            win.maximize()
+          }
+
         }
       }
     },
