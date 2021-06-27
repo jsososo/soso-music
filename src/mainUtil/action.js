@@ -4,7 +4,7 @@ import path from 'path';
 import storage from 'electron-json-storage';
 import readLocal, { loadSingleFile } from './readLocal';
 import fs from 'fs-extra';
-import ID3 from 'jsmediatags';
+import musicMetadata from 'music-metadata';
 import os from 'os';
 
 // 所有的 ipcMain 和 ipcRenderer 的事件沟通
@@ -194,9 +194,10 @@ export default (app) => {
           endCb(info);
         }
       }
-      ID3.read(info.localPath, {
-        onSuccess: ({ tags = {}}) => handleTags(tags),
-        onError: () => handleTags(),
+      musicMetadata.parseFile(info.localPath).then(metadata => {
+        handleTags(metadata.common);
+      }, () => {
+        handleTags();
       });
     }
   }
