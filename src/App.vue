@@ -212,6 +212,9 @@ export default {
           state.user.qq = { id: state.user.qq.id };
         }
       }, 60000)
+
+
+
     }
 
     // 背景图样式

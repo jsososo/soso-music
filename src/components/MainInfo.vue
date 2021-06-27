@@ -57,7 +57,7 @@
               link: platform === 'local' ?
                 null :
                 changeUrlQuery({ id, mid, platform }, '#/singer', false)
-            })),
+            })).filter(({ text }) => text),
           icon: 'icon-singer'
         },
       ]))

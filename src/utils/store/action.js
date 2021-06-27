@@ -441,17 +441,20 @@ export const updatePlayingList = (list, force) => {
 }
 
 // 更新当前播放歌曲 & 且更新播放队列
-export const updatePlaying = (aId, list, force = true) => {
-  const {playNow} = window.$state;
+export const updatePlaying = (aId, list, force = true, radioId) => {
+  const {playNow, playerStatus} = window.$state;
+  playerStatus.radioId = radioId;
   playNow.aId = aId;
   updatePlayingList(list, force);
+  playerStatus.heartMode = false;
 }
 
 // 上一首
 export const playPrev = () => {
-  const {playingList, allSongs, playNow, setting} = window.$state;
+  const {playingList, allSongs, playNow, setting, playerStatus} = window.$state;
   const {history, index, trueList, random} = playingList;
-  const {orderType} = setting;
+  let {orderType} = setting;
+  playerStatus.radioId && (orderType = 'liebiao');
   const {aId} = playNow;
   if (index > 0) {
     playingList.index -= 1;
@@ -478,7 +481,8 @@ export const playPrev = () => {
 // 下一首
 export const playNext = () => {
   const {playingList, allSongs, playNow, setting, playerStatus} = window.$state;
-  const {orderType} = setting;
+  let {orderType} = setting;
+  playerStatus.radioId && (orderType = 'liebiao')
   const {history, index, trueList, random} = playingList;
   const {aId} = playNow;
   playingList.index += 1;
@@ -626,7 +630,7 @@ const getMixUser = async (id, nick, p) => {
 
 // 网易云登录校验
 export const get163LoginStatus = async () => {
-  const {account, profile} = await request('LOGIN_STATUS').catch(() => ({}));
+  const {account, profile} = await request('LOGIN_STATUS').catch(() => ({})) || {};
   if (!account) {
     return false;
   }
@@ -1072,3 +1076,22 @@ export const handleVolume = (start, end, operation) => {
   }
 }
 
+export const getMoreRadioList = async (force) => {
+  const { playerStatus } = window.$state;
+  const { radioId = '' } = playerStatus;
+  const [platform, id] = radioId.split('_');
+
+  if (!id || !platform) return;
+
+  let api = 'MIX_RADIO_SONGS';
+  id === 'privateRadio' && (api = 'MIX_RADIO_PRIVATE');
+  const { data = [] } = await request({
+    api,
+    data: { id, platform }
+  }).catch(() => ({}));
+  const list = handleSongs(data);
+  force ?
+    updatePlaying(list[0], list, true, radioId) :
+    updatePlayingList(list);
+
+}

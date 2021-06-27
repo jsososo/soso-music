@@ -82,6 +82,10 @@ const routes = [
   {
     path: '/find',
     component: () => import('./views/Find'),
+  },
+  {
+    path: '/radio',
+    component: () => import('./views/Radio'),
   }
 ]
 

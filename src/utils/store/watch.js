@@ -9,6 +9,8 @@ import {
   loadLocalFile,
   handlePerformanceMode,
   handleVolume,
+  getMoreRadioList,
+  updatePlaying,
 } from './action';
 import Storage from "../Storage";
 import { useRoute, useRouter } from 'vue-router';
@@ -42,11 +44,11 @@ export const allWatch = (state) => {
   watch(() => [playNow.aId, playerStatus.playing, playNow.liked, user.qq, user['163']], () => {
     ipcRenderer.send('UPDATE_PLAYING_STATUS', {
       name: playNow.name,
-      liked: playNow.liked || (playNow.platform && favSongMap[playNow.platform][playNow.aId]),
+      liked: playNow.liked === undefined ? (playNow.platform && favSongMap[playNow.platform][playNow.aId]) : playNow.liked,
       logined: !!(user[playNow.platform] || {}).logined,
       status: playerStatus.playing,
     })
-  })
+  }, { deep: true })
 
   // 监听路由变化，前进后退存储
   watch(() => route.fullPath, (v) => {
@@ -96,10 +98,42 @@ export const allWatch = (state) => {
   // 更新正在播放的音乐
   watch(() => playNow.aId, async (aId, oldAId) => {
     const s = allSongs[aId];
+    if (!s) return;
     const { id, songid, platform, al } = s;
     const oldS = allSongs[oldAId];
     (playNow.platform !== 'local') && (playNow.liked = favSongMap[platform][aId]);
+    const { playingList, playerStatus } = window.$state;
+    if (playerStatus.radioId) {
+      const index = playingList.trueList.indexOf(aId);
+      if (index > 0 && (playingList.trueList.length - index <= 3)) {
+        getMoreRadioList();
+      }
+    }
 
+    /*
+    * 如果是未登录或者非会员，有可能出现电台里的歌无法播放，且匹配失败的原因,
+    * 同时因为匹配歌曲连接需要一定的时间，所以这里加了一个定时器判断
+    * */
+    clearTimeout(window.checkRadioTimeout);
+    playerStatus.radioId && (window.checkRadioTimeout = setTimeout(() => {
+      const { playerStatus, playingList, playNow } = window.$state;
+      const { radioId } = playerStatus;
+      if (!radioId) return;
+      const { aId } = playNow;
+      const { trueList } = playingList;
+
+      if (!trueList.length) {
+        return getMoreRadioList(true);
+      }
+      const index = trueList.indexOf(aId);
+      if (index < 0) {
+        return updatePlaying(trueList[0], trueList, true, radioId);
+      }
+      if (trueList.length - index <= 3) {
+        getMoreRadioList();
+      }
+
+    }, 5000))
     // 网易云的歌曲，有一个打卡
     if (oldS && oldS.platform === '163') {
       request({
@@ -156,10 +190,12 @@ export const allWatch = (state) => {
         data: {
           id: songid || id,
           platform,
-          hot: 1,
+          hot: 0,
+          pageNo: 1,
+          pageSize: 20,
         }
       })
-      playNow.hotComments = list;
+      playNow.comments = list;
       playNow.totalComments = total;
     }
 

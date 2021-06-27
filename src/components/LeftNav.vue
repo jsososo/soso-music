@@ -52,6 +52,11 @@
             name: '榜单',
           },
           {
+            url: '#/radio',
+            icon: 'radio',
+            name: '电台',
+          },
+          {
             url: '#/download',
             icon: 'down',
             name: '下载',

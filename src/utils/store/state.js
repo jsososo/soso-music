@@ -55,6 +55,7 @@ const state = {
   playerStatus: {
     playing: false,
     loading: true,
+    radioId: '',
   },
   // 下载列表
   downloadList: new Proxy(Storage.get('soso_music_download', true, '[]').map((v) => {
@@ -130,8 +131,8 @@ const state = {
     localFolders: [], // 本地文件夹，用于读取本地歌曲
     ...Storage.get('soso_music_setting', true, '{}'),
     platform: '163', // 默认平台
-    version: '1.2.1',
-    versionType: 'beta',
+    version: '1.3.0',
+    versionType: '',
   },
   codeMap: {
     PLAY_NEXT: '39',

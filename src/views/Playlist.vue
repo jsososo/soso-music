@@ -71,6 +71,19 @@
             }
             listIds = uId.value ? await getUserList({ id: uId.value, platform }): [];
             if (uId.value === user[platform].id) {
+              const privateRadioId = `${platform}_privateRadio`
+              handlePlayLists([{
+                aId: privateRadioId,
+                listId: privateRadioId,
+                id: 'privateRadio',
+                name: '私人电台',
+                creator: {},
+                platform: [],
+                list: [],
+              }])
+              listIds.unshift(privateRadioId);
+              replaceObj(list, listIds);
+
               request('DAILY_PLAYLIST', platform)
                 .then(({ data = [] }) => {
                   const songIds = handleSongs(data);

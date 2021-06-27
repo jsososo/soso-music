@@ -223,6 +223,7 @@ module.exports = {
 	'mixApi_lyric': require('./mixApi/routes/lyric.js'),
 	'mixApi_mv': require('./mixApi/routes/mv.js'),
 	'mixApi_playlist': require('./mixApi/routes/playlist.js'),
+	'mixApi_radio': require('./mixApi/routes/radio.js'),
 	'mixApi_search': require('./mixApi/routes/search.js'),
 	'mixApi_singer': require('./mixApi/routes/singer.js'),
 	'mixApi_song': require('./mixApi/routes/song.js'),

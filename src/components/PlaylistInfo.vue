@@ -126,6 +126,24 @@
         <!--        <i class="iconfont icon-delete" />-->
         <!--      </div>-->
       </div>
+      <div class="fix-btn-list">
+        <div class="fix-btn" v-if="list.list.indexOf(playNow.aId) > -1" @click="scrollToPlayNow">
+          <i class="iconfont icon-focus" />
+        </div>
+        <el-popconfirm
+          v-if="id === 'playing'"
+          title="清空播放列表？"
+          placement="left"
+          @confirm="clearPlaying()"
+        >
+          <template #reference>
+            <div class="fix-btn">
+              <i class="iconfont icon-delete" />
+            </div>
+          </template>
+        </el-popconfirm>
+
+      </div>
     </div>
   </page-right-container>
 </template>
@@ -322,7 +340,7 @@
         scrollToPlayNow() {
           const {aId} = state.playNow;
           const index = list.value.list.findIndex((v) => v === aId);
-          (index > -1) && containerDom.value.scrollTo(0, index * 71 + listDom.value.offsetTop);
+          (index > -1) && containerDom.value.scrollTo(0, index * 71 + listDom.value.offsetTop - 50);
         },
 
         playMusic({aId, list}) {
@@ -763,6 +781,31 @@
           bottom: 0;
           transform: translateY(20px);
           transition: 0.3s;
+        }
+      }
+    }
+
+    .fix-btn-list {
+      position: fixed;
+      right: 40px;
+      bottom: 100px;
+      text-align: center;
+      line-height: 42px;
+
+      .fix-btn {
+        background: $red;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        margin: 12px 0;
+        font-size: 24px;
+        box-shadow: 5px 5px 4px #0001;
+        opacity: 0.5;
+        transition: 0.3s;
+
+        &:hover {
+          box-shadow: 5px 5px 10px #0004;
+          opacity: 0.8;
         }
       }
     }

@@ -246,9 +246,9 @@
       position: fixed;
       bottom: 120px;
       right: 40px;
-      width: 50px;
-      height: 50px;
-      border-radius: 25px;
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
       background: #F23C3C;
       border: 2px solid #F23C3C;
       opacity: 0.3;
@@ -261,10 +261,10 @@
       white-space: nowrap;
 
       .iconfont {
-        font-size: 22px;
+        font-size: 20px;
         color: #fff;
-        line-height: 50px;
-        padding-left: 15px;
+        line-height: 40px;
+        padding-left: 10px;
         transition: 0.3s;
       }
 
@@ -281,7 +281,7 @@
         opacity: 0.7;
         width: 130px;
         font-size: 14px;
-        line-height: 50px;
+        line-height: 40px;
 
         .iconfont {
           padding-left: 0;

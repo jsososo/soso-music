@@ -4,44 +4,45 @@
       v-for="aId in list"
       :key="`playlist-${aId}`"
       class="playlist-item"
-      @click="changeUrlQuery({ aId }, '#/playlist/detail')"
+      @click="changeUrlQuery({ aId, id: allList[aId].id }, '#/playlist/detail')"
     >
       <!--    <div v-if="playingListId == item.listId && isPlaying" class="playing-item-bg">-->
       <!--      <div v-for="(o, i) in new Array(100)" :key="`bg-item-${i}`" :class="`playing-bg-${i}`">-->
       <!--        <div class="bg-item-inside" />-->
       <!--      </div>-->
       <!--    </div>-->
-      <block v-if="allList[aId].id === 'daily'">
+      <template v-if="allList[aId].id === 'daily'">
         <div class="list-img daily-img">{{date}}</div>
-      </block>
-      <block v-else>
+      </template>
+      <template v-else>
         <img v-if="setting.PERFORMANCE_MODE" :src="`${allList[aId].cover}?param=50y50`" v-error class="list-bg-img" />
         <img :src="`${allList[aId].cover}?param=200y200`" v-error class="list-img" />
-      </block>
+      </template>
       <span class="list-name" v-html="allList[aId].name" />
       <span class="list-count" v-if="allList[aId].trackCount">{{allList[aId].trackCount}}</span>
       <div class="bottom-text">
-        <!--      <el-tooltip-->
-        <!--        class="item"-->
-        <!--        effect="dark"-->
-        <!--        content="心动模式"-->
-        <!--        placement="top"-->
-        <!--        v-if="selected === '163' && user.userId && userList['163'] && userList['163'].favListId === item.listId"-->
-        <!--      >-->
-        <!--        <i @click="toHeartMode(item.listId)" :class="`iconfont icon-heart heart-btn ${heartMode && 'hearting'}`" />-->
-        <!--      </el-tooltip>-->
-        <!--      <el-tooltip-->
-        <!--        v-if="userList[selected] && !userList[selected].mine[item.listId]"-->
-        <!--        class="item"-->
-        <!--        effect="dark"-->
-        <!--        :content="userList[selected].sub[item.listId] ? '已收藏' : '收藏'"-->
-        <!--        placement="top"-->
-        <!--      >-->
-        <!--        <i @click="collectPlaylist(item)" :class="`collect-btn iconfont icon-${userList[selected].sub[item.listId] ? 'collected' : 'collect'}`" />-->
-        <!--      </el-tooltip>-->
+        <el-tooltip
+          class="item"
+          effect="dark"
+          content="心动模式"
+          placement="top"
+          v-if="setting.platform === '163' && user.id && user.favId === aId"
+        >
+          <i @click="toHeartMode(aId)" :class="`iconfont icon-heart heart-btn ${playerStatus.heartMode && 'hearting'}`"/>
+        </el-tooltip>
+        <el-tooltip
+          v-if="user.id && !user.myList[aId] && !noFavList.has(aId)"
+          class="item"
+          effect="dark"
+          :content="user.subList[aId] ? '已收藏' : '收藏'"
+          placement="top"
+        >
+          <i @click="collectPlaylist(aId)"
+             :class="`collect-btn iconfont icon-${user.subList[aId] ? 'collected' : 'collect'}`"/>
+        </el-tooltip>
         <span class="list-creator" v-if="allList[aId].creator && allList[aId].creator.nick">
-          By: <span v-html="allList[aId].creator.nick" />
-          <span class="pl_20" v-if="allList[aId].playCount"><i class="iconfont icon-yinyue" />: {{numToStr(allList[aId].playCount)}}</span>
+          By: <span v-html="allList[aId].creator.nick"/>
+          <span class="pl_20" v-if="allList[aId].playCount"><i class="iconfont icon-yinyue"/>: {{numToStr(allList[aId].playCount)}}</span>
         </span>
       </div>
     </div>
@@ -49,8 +50,12 @@
 </template>
 
 <script>
-  import { changeUrlQuery, numToStr } from "../../utils/stringHelper";
+  import {changeUrlQuery as updateUrl, numToStr} from "../../utils/stringHelper";
   import {mixInject} from "../../utils/store/state";
+  import {getMoreRadioList, handleSongs, updatePlaying} from "../../utils/store/action";
+  import {computed} from 'vue';
+  import request from "../../utils/request";
+  import {ElMessage} from 'element-plus';
 
   export default {
     name: "playlist",
@@ -58,11 +63,71 @@
       list: Object,
     },
     setup() {
-      const state = mixInject([ 'allList', 'setting' ])
+      const state = mixInject(['allList', 'setting', 'playerStatus', 'user', 'favSongMap'])
+
+      const { favSongMap, setting, playerStatus } = state;
+      const user = computed(() => state.user[setting.platform]);
+
+      console.log(state.allList, user);
       return {
         ...state,
 
-        changeUrlQuery,
+        user,
+
+        noFavList: new Set(['163', 'qq'].map((p) => ['daily', 'privateRadio'].map((v) => `${p}_${v}`)).flat()),
+
+        changeUrlQuery({id, aId}) {
+          const {playerStatus} = state;
+          if (id === 'privateRadio') {
+            playerStatus.radioId = aId;
+            playerStatus.playing = true;
+            return getMoreRadioList(true);
+          }
+          updateUrl(...arguments);
+        },
+
+        toHeartMode(aId) {
+          window.event.stopPropagation();
+          const [platform, pid] = aId.split('_');
+          const firstFavId = Object.keys(favSongMap[setting.platform])[0];
+          if (!firstFavId) return ElMessage.warning('没有喜欢的歌曲 = =||');
+          request({
+            api: 'MIX_RADIO_HEART',
+            data: {
+              pid,
+              id: firstFavId.split('_')[1],
+            }
+          }, platform)
+          .then(({ data = []}) => {
+            const list = handleSongs(data);
+            if (list.length) {
+              updatePlaying(list[0], list, true);
+              playerStatus.heartMode = true;
+              playerStatus.playing = true;
+              ElMessage.success('心动模式！');
+            } else {
+              ElMessage.warning('没有找到心动的歌曲 = =||');
+            }
+          })
+        },
+
+        collectPlaylist(aId) {
+          window.event.stopPropagation();
+          const [platform, id] = aId.split('_');
+          console.log(user, user.value.subList, id, aId);
+          const isSub = user.value.subList[aId];
+          request({
+            api: 'MIX_COLLECT_PLAYLIST',
+            data: { id, sub: Number(!isSub) },
+          }, platform).then(({ result }) => {
+            if (result === 100) {
+              user.value.subList[aId] = Number(!isSub);
+              ElMessage.success('操作成功');
+            } else {
+              ElMessage.error('操作失败');
+            }
+          })
+        },
 
         numToStr,
 
@@ -95,6 +160,7 @@
 
       .collect-btn, .heart-btn {
         margin-right: 15px;
+
         &.heart-btn {
 
           &.hearting {
@@ -114,7 +180,7 @@
       }
     }
 
-    .list-creator{
+    .list-creator {
       font-size: 14px;
       color: #fff5;
       transition: 0.3s;
@@ -124,6 +190,7 @@
         transition: 0.3s;
       }
     }
+
     .list-img {
       border-radius: 5px;
       display: inline-block;
@@ -144,6 +211,7 @@
         border: 1px solid #fff6;
       }
     }
+
     .list-name {
       display: inline-block;
       vertical-align: top;
@@ -154,6 +222,7 @@
       padding-left: 60px;
       white-space: nowrap;
     }
+
     .list-count {
       position: absolute;
       right: 10px;
@@ -170,9 +239,11 @@
 
     &:hover {
       opacity: 1;
+
       .list-name {
         transform: scale(1.1) translate(5px);
       }
+
       .list-img {
         transform: rotate(-30deg) scale(0.7) translate(-70px, -150px);
         opacity: 0.7;

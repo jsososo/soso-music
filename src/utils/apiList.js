@@ -13,6 +13,15 @@ const apiList = {
   'MIX_VERSION_DEL': '/app/version/del',
   'MIX_VERSION_CHECK': '/app/version/check',
 
+  'MIX_COLLECT_PLAYLIST': '/mixApi/playlist/collect', // 收藏歌单
+
+  // 电台相关
+  'MIX_RADIO_CATE': '/mixApi/radio/category',
+  'MIX_RADIO_LIST': '/mixApi/radio/list',
+  'MIX_RADIO_SONGS': '/mixApi/radio/songs',
+  'MIX_RADIO_PRIVATE': '/mixApi/radio/private',
+  'MIX_RADIO_HEART': '/mixApi/radio/heart',
+
   'SEARCH': '/mixApi/search',
   'LYRIC': '/mixApi/lyric',
   'ALBUM': '/mixApi/album',

@@ -1,5 +1,8 @@
 <template>
   <div :class="`simple-container ${!setting.SHOW_SIMPLE_COVER && 'hide-cover'}`">
+    <view class="touch-move touch-top" />
+    <view class="touch-move touch-bottom" />
+    <view class="touch-move touch-left" />
     <template v-if="playNow.al">
       <div class="img-container">
         <img class="song-img" :src="playNow.al.picUrl" alt="" />
@@ -100,11 +103,29 @@
 <style lang="scss">
   @import "../assets/style/value";
 
-  html {
+  .touch-move {
     -webkit-app-region: drag;
+    position: fixed;
+    z-index: -1;
 
-    .simple-container div {
-      -webkit-app-region: none;
+    &.touch-top {
+      top: 0;
+      width: 100vw;
+      height: 100px;
+      left: 0;
+    }
+
+    &.touch-bottom {
+      width: 100vw;
+      bottom: 0;
+      left: 0;
+      height: 70px;
+    }
+    &.touch-left {
+      width: 10%;
+      top: 100px;
+      left: 0;
+      height: 100vh;
     }
   }
   .simple-container {
@@ -223,6 +244,7 @@
       box-sizing: border-box;
       width: 100%;
       left: 0;
+      z-index: 2;
 
       &:hover {
         transition: 0.3s;

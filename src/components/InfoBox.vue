@@ -5,7 +5,7 @@
     </div>
     <div class="text-info">
       <div v-for="(item, index) in list" :key="`${id}-${index}`">
-        <div v-if="item.text" :class="`text-content ${item.className}`">
+        <div v-if="item.text && item.text.length" :class="`text-content ${item.className}`">
           <i v-if="item.icon" :class="`iconfont ${item.icon}`" />
           <component
             :is="item.link ? 'a' : 'span'"

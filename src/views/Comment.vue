@@ -44,7 +44,22 @@
         page.total = total;
       }
 
-      watch(() => playNow.aId, () => (page.pageNo = 1) && getCommentList(), { immediate: true });
+      const getHotComments = async () => {
+        const { songid, id, platform } = playNow;
+        if (!id) {
+          return;
+        }
+        const { data: { list = [], }} = await request({
+          api: 'COMMENT',
+          data: {
+            id: songid || id,
+            hot: 1,
+          }
+        }, platform)
+        playNow.hotComments = list;
+      }
+
+      watch(() => playNow.aId, () => getHotComments(), { immediate: true });
 
       return {
         ...state,

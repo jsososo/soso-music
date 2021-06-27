@@ -3,7 +3,7 @@
     <page-title title="TOP"/>
     <div class="cats-list">
       <div v-for="(top, index) in topList" :key="`top-${index}`">
-        <block v-if="top">
+        <template v-if="top">
           <div class="top-cat-title">{{top.title}}</div>
           <div v-for="item in top.list" :key="item.id"
                :class="`common-small-box ${selectedId === item.id && 'selected'}`">
@@ -12,7 +12,7 @@
             </div>
             <div class="box-name pointer" @click="selectedId = item.id">{{item.name}}</div>
           </div>
-        </block>
+        </template>
       </div>
     </div>
     <playlist-info
