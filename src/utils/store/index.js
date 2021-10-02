@@ -1,4 +1,4 @@
-import {allProvide} from './state';
-import {allWatch} from './watch';
+import { allProvide } from './state';
+import { allWatch } from './watch';
 
 export default () => allWatch(allProvide());

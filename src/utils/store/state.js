@@ -1,4 +1,4 @@
-import {reactive, provide, inject} from 'vue';
+import { reactive, provide, inject } from 'vue';
 import Storage from '../Storage';
 import PlayHistory from '../PlayHistory';
 
@@ -71,7 +71,7 @@ const state = {
     }),
     {
       get(target, p) {
-        return target[p] ? target[p] : target.find(({dId}) => dId === p);
+        return target[p] ? target[p] : target.find(({ dId }) => dId === p);
       },
     },
   ),
@@ -153,8 +153,8 @@ const state = {
     QUIT_SIMPLE: '27',
     GO_SIMPLE: 'ctrl-83',
   },
-  miguFind: {...Storage.get('soso_music_migu_find', true, '{}')},
-  miguFindBlack: {...Storage.get('soso_music_migu_black', true, '{}')},
+  miguFind: { ...Storage.get('soso_music_migu_find', true, '{}') },
+  miguFindBlack: { ...Storage.get('soso_music_migu_black', true, '{}') },
   playHistory: new PlayHistory(),
   _localFiles: new Set(), // node 读取到的本地歌曲列表
   localFiles: new Set(), // 校验过的本地歌曲列表，应该比上面的短
