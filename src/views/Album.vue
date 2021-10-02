@@ -1,10 +1,18 @@
 <template>
   <div class="album-page">
-    <info-box :pic="albumInfo.picUrl" :list="infoList" />
-    <div class="album-desc hide-scroll">{{albumInfo.desc}}</div>
+    <info-box
+      :pic="albumInfo.picUrl"
+      :list="infoList"
+    />
+    <div class="album-desc hide-scroll">
+      {{ albumInfo.desc }}
+    </div>
     <page-right-container>
-      <book-mark v-model="type" :tabs="tabs"/>
-      <song-list :songs="albumInfo.songs || []" />
+      <book-mark
+        v-model="type"
+        :tabs="tabs"
+      />
+      <song-list :songs="albumInfo.songs || []"/>
     </page-right-container>
   </div>
 </template>

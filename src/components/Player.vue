@@ -2,9 +2,15 @@
   <div class="main-player-container">
     <div class="p-bg"/>
     <!-- 播放，上一首、下一首进度 -->
-    <div v-if="pDom" class="control-btn">
+    <div
+      v-if="pDom"
+      class="control-btn"
+    >
       <div class="inline-block">
-        <i class="icon-shangyishou1 iconfont" @click="cutSong('prev')"/>
+        <i
+          class="icon-shangyishou1 iconfont"
+          @click="cutSong('prev')"
+        />
       </div>
       <div class="inline-block">
         <i
@@ -13,22 +19,40 @@
         />
       </div>
       <div class="inline-block">
-        <i class="icon-xiayishou1 iconfont" @click="cutSong('next')"/>
+        <i
+          class="icon-xiayishou1 iconfont"
+          @click="cutSong('next')"
+        />
       </div>
     </div>
 
     <!-- 歌曲信息 -->
-    <div v-if="pDom" class="song-info">
-      <a class="player-song-title pointer" href="#/">
-        <i v-if="playerStatus.loading" class="el-icon-loading mr_10"/>
-        <el-tooltip v-if="playNow.bPlatform" class="item" effect="dark" content="音频资源不对？" placement="top">
+    <div
+      v-if="pDom"
+      class="song-info"
+    >
+      <a
+        class="player-song-title pointer"
+        href="#/"
+      >
+        <i
+          v-if="playerStatus.loading"
+          class="el-icon-loading mr_10"
+        />
+        <el-tooltip
+          v-if="playNow.bPlatform"
+          class="item"
+          effect="dark"
+          content="音频资源不对？"
+          placement="top"
+        >
           <div class="inline-block">
-          <span @click="goFind()">
-            <i class="el-icon-question pointer ft_14"/>
-          </span>
+            <span @click="goFind()">
+              <i class="el-icon-question pointer ft_14"/>
+            </span>
           </div>
         </el-tooltip>
-        {{playNow.name}}
+        {{ playNow.name }}
       </a>
       <div class="ar-container">
         <component
@@ -38,7 +62,7 @@
           class="ar-name"
           :href="changeUrlQuery({ id: a.id, mid: a.mid, platform: playNow.platform }, '#/singer', false)"
         >
-          {{a.name}}
+          {{ a.name }}
           <span v-if="i < playNow.ar.length - 1">/</span>
         </component>
       </div>
@@ -52,8 +76,10 @@
 
     <!--  播放时间  -->
     <div class="play-time">
-      <div class="current-time">{{timeToStr(playerStatus.currentTime)}}</div>
-      <div>{{timeToStr(playerStatus.duration)}}</div>
+      <div class="current-time">
+        {{ timeToStr(playerStatus.currentTime) }}
+      </div>
+      <div>{{ timeToStr(playerStatus.duration) }}</div>
     </div>
 
     <el-slider
@@ -78,30 +104,54 @@
       @error="playerError"
     />
 
-    <div v-if="playNow.url" class="control-btn opt-btn">
-      <span v-if="user[playNow.platform] && user[playNow.platform].logined" class="ml_15 inline-block pd_5"
-            @click="likeMusic(playNow.aId)">
+    <div
+      v-if="playNow.url"
+      class="control-btn opt-btn"
+    >
+      <span
+        v-if="user[playNow.platform] && user[playNow.platform].logined"
+        class="ml_15 inline-block pd_5"
+        @click="likeMusic(playNow.aId)"
+      >
         <i :class="`iconfont icon-${favSongMap[playNow.platform][playNow.aId] ? 'like' : 'unlike'} ft_16 pointer`"/>
       </span>
 
-      <handle-song v-if="playNow.platform !== 'local'" :a-id="playNow.aId" class-name="pd_5"/>
+      <handle-song
+        v-if="playNow.platform !== 'local'"
+        :a-id="playNow.aId"
+        class-name="pd_5"
+      />
 
       <!-- 音量控制 -->
-      <div class="volume-control" @mouseleave="showVolume = false">
-        <div v-if="showVolume" class="volume-slider-container" @mouseleave="showVolume = false"
-             @mouseover="showVolume = true">
+      <div
+        class="volume-control"
+        @mouseleave="showVolume = false"
+      >
+        <div
+          v-if="showVolume"
+          class="volume-slider-container"
+          @mouseleave="showVolume = false"
+          @mouseover="showVolume = true"
+        >
           <div class="volume-slider">
             <el-slider
               v-model="setting.volume"
               :vertical="true"
               height="80px"
-              :max="100"/>
+              :max="100"
+            />
           </div>
         </div>
-        <i class="iconfont icon-volume pd_5 ft_18" @mouseover="showVolume = true"/>
+        <i
+          class="iconfont icon-volume pd_5 ft_18"
+          @mouseover="showVolume = true"
+        />
       </div>
       <!-- 播放顺序 -->
-      <div class="order-control" @mouseleave="showOrder = false">
+      <div
+        class="order-control"
+        @mouseleave="showOrder = false"
+      >
         <div
           v-if="showOrder"
           class="order-list-container"
@@ -114,51 +164,87 @@
               :key="`order-${key}`"
               @click="setting.orderType = key"
             >
-              <i :class="`ft_18 iconfont icon-${key}`" />
+              <i :class="`ft_18 iconfont icon-${key}`"/>
             </div>
           </div>
         </div>
-        <div class="now-order-type" @mouseover="showOrder = true">
-          <i :class="`ft_18 iconfont icon-${setting.orderType}`" />
+        <div
+          class="now-order-type"
+          @mouseover="showOrder = true"
+        >
+          <i :class="`ft_18 iconfont icon-${setting.orderType}`"/>
         </div>
       </div>
       <!--下载-->
-      <el-tooltip v-if="!playNow.localPath" class="item" effect="dark" content="下载" placement="top">
+      <el-tooltip
+        v-if="!playNow.localPath"
+        class="item"
+        effect="dark"
+        content="下载"
+        placement="top"
+      >
         <div class="inline-block pd_5">
           <span @click="download(playNow.aId)">
-            <i class="iconfont icon-download ft_16 pointer" />
+            <i class="iconfont icon-download ft_16 pointer"/>
           </span>
         </div>
       </el-tooltip>
 
       <!--桌面歌词-->
-      <el-tooltip class="item" effect="dark" content="桌面歌词" placement="top">
+      <el-tooltip
+        class="item"
+        effect="dark"
+        content="桌面歌词"
+        placement="top"
+      >
         <div class="inline-block pd_5">
           <span @click="showWinLyric">
-            <i :class="`iconfont icon-lyric ft_16 pointer ${!setting.SHOW_WIN_LYRIC && 'op_5'}`" />
+            <i :class="`iconfont icon-lyric ft_16 pointer ${!setting.SHOW_WIN_LYRIC && 'op_5'}`"/>
           </span>
         </div>
       </el-tooltip>
       <!--锁定桌面歌词-->
-      <el-tooltip v-if="setting.SHOW_WIN_LYRIC" class="item" effect="dark" content="锁定歌词" placement="top">
+      <el-tooltip
+        v-if="setting.SHOW_WIN_LYRIC"
+        class="item"
+        effect="dark"
+        content="锁定歌词"
+        placement="top"
+      >
         <div class="inline-block pd_5">
           <span @click="winLyricSetting.LOCK = !winLyricSetting.LOCK">
-            <i :class="`iconfont icon-${winLyricSetting.LOCK ? 'lock' : 'unlock'} ft_16 pointer`" />
+            <i :class="`iconfont icon-${winLyricSetting.LOCK ? 'lock' : 'unlock'} ft_16 pointer`"/>
           </span>
         </div>
       </el-tooltip>
     </div>
 
     <div class="control-btn opt-btn right-control">
-      <el-tooltip class="item" effect="dark" content="播放历史" placement="top">
-        <div class="inline-block ml_5 pd_5" @click="changeUrlQuery({}, '#/history')">
+      <el-tooltip
+        class="item"
+        effect="dark"
+        content="播放历史"
+        placement="top"
+      >
+        <div
+          class="inline-block ml_5 pd_5"
+          @click="changeUrlQuery({}, '#/history')"
+        >
           <span>
             <i class="iconfont icon-history ft_16 pointer"/>
           </span>
         </div>
       </el-tooltip>
-      <el-tooltip class="item" effect="dark" content="正在播放" placement="top">
-        <div class="inline-block ml_5 pd_5" @click="changeUrlQuery({ aId: 'playing' }, '#/playlist/detail')">
+      <el-tooltip
+        class="item"
+        effect="dark"
+        content="正在播放"
+        placement="top"
+      >
+        <div
+          class="inline-block ml_5 pd_5"
+          @click="changeUrlQuery({ aId: 'playing' }, '#/playlist/detail')"
+        >
           <span>
             <i class="iconfont icon-list ft_16 pointer"/>
           </span>
@@ -167,35 +253,35 @@
     </div>
 
     <!-- 音量、播放顺序、列表等控制 -->
-<!--        <div class="other-control inline-block">-->
+    <!--        <div class="other-control inline-block">-->
 
-<!--          <input id="cp-share-input" :value="changeUrlQuery({ shareId: playNow.id, from: playNow.platform, shareCid: playNow.cid }, 'http://music.jsososo.com/#/', false)">-->
+    <!--          <input id="cp-share-input" :value="changeUrlQuery({ shareId: playNow.id, from: playNow.platform, shareCid: playNow.cid }, 'http://music.jsososo.com/#/', false)">-->
 
-<!--          &lt;!&ndash; 更多 &ndash;&gt;-->
-<!--          <div class="more-control"  @mouseleave="showMore = false">-->
-<!--            <div v-if="showMore" class="more-list-container" @mouseleave="showMore = false" @mouseover="showMore = true">-->
-<!--              <div class="more-list">-->
-<!--                <div v-for="more in moreList" @click="handleClickMore(more.key)" :key="`more-key-${more.key}`">-->
-<!--                  <i :class="`iconfont icon-${more.key}`" />-->
-<!--                  <span style="padding-left: 5px;">{{more.text}}</span>-->
-<!--                </div>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--            <div class="ml_10" @mouseover="showMore = true" >-->
-<!--              <i class="iconfont icon-more" />-->
-<!--            </div>-->
-<!--            <div class="rate-slider" v-if="showRateSlider" @mouseleave="showRateSlider = false">-->
-<!--              <el-slider-->
-<!--                @input="(v) => playerDom.playbackRate = v"-->
-<!--                v-model="rate"-->
-<!--                :max="3"-->
-<!--                :min="0.3"-->
-<!--                :step="0.1"-->
-<!--              />-->
-<!--            </div>-->
-<!--          </div>-->
-<!--          -->
-<!--        </div>-->
+    <!--          &lt;!&ndash; 更多 &ndash;&gt;-->
+    <!--          <div class="more-control"  @mouseleave="showMore = false">-->
+    <!--            <div v-if="showMore" class="more-list-container" @mouseleave="showMore = false" @mouseover="showMore = true">-->
+    <!--              <div class="more-list">-->
+    <!--                <div v-for="more in moreList" @click="handleClickMore(more.key)" :key="`more-key-${more.key}`">-->
+    <!--                  <i :class="`iconfont icon-${more.key}`" />-->
+    <!--                  <span style="padding-left: 5px;">{{more.text}}</span>-->
+    <!--                </div>-->
+    <!--              </div>-->
+    <!--            </div>-->
+    <!--            <div class="ml_10" @mouseover="showMore = true" >-->
+    <!--              <i class="iconfont icon-more" />-->
+    <!--            </div>-->
+    <!--            <div class="rate-slider" v-if="showRateSlider" @mouseleave="showRateSlider = false">-->
+    <!--              <el-slider-->
+    <!--                @input="(v) => playerDom.playbackRate = v"-->
+    <!--                v-model="rate"-->
+    <!--                :max="3"-->
+    <!--                :min="0.3"-->
+    <!--                :step="0.1"-->
+    <!--              />-->
+    <!--            </div>-->
+    <!--          </div>-->
+    <!--          -->
+    <!--        </div>-->
   </div>
 </template>
 

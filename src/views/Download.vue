@@ -1,7 +1,10 @@
 <template>
   <div class="downlaod-page">
-    <page-title title="DOWNLOAD" />
-    <tab v-model="type" :tabs="tabs">
+    <page-title title="DOWNLOAD"/>
+    <tab
+      v-model="type"
+      :tabs="tabs"
+    >
       <div class="tab-btn">
         <el-popconfirm
           v-if="list.length"
@@ -10,12 +13,19 @@
         >
           <template #reference>
             <div>
-              <div class="tab-btn">清除下列记录({{list.length}})</div>
+              <div class="tab-btn">
+                清除下列记录({{ list.length }})
+              </div>
             </div>
           </template>
         </el-popconfirm>
       </div>
-      <div class="tab-btn" @click="openFileManager">打开文件夹</div>
+      <div
+        class="tab-btn"
+        @click="openFileManager"
+      >
+        打开文件夹
+      </div>
     </tab>
     <div class="download-list">
       <div
@@ -23,28 +33,72 @@
         :key="`${item.filename}-${index}`"
         :class="`download-item ${item.finished && (item.successed ? 'status-success' : 'status-fail')}`"
       >
-        <div class="song-order">{{index + 1}}</div>
-        <div class="inline-block" style="width: 45%">
-          <div class="song-name">{{item.filename}}</div>
+        <div class="song-order">
+          {{ index + 1 }}
+        </div>
+        <div
+          class="inline-block"
+          style="width: 45%"
+        >
+          <div class="song-name">
+            {{ item.filename }}
+          </div>
         </div>
         <div class="down-status">
-          <span v-if="item.errMsg" class="color-red">{{item.errMsg}}</span>
-          <span v-if="!item.finished && !item.waiting">{{item.progress}}%</span>
+          <span
+            v-if="item.errMsg"
+            class="color-red"
+          >{{ item.errMsg }}</span>
+          <span v-if="!item.finished && !item.waiting">{{ item.progress }}%</span>
           <span v-if="item.waiting">waiting...</span>
         </div>
-        <div v-if="!item.finished && !item.waiting" class="song-bg"
-             :style="`transform: translateX(${item.progress - 100}%)`"/>
+        <div
+          v-if="!item.finished && !item.waiting"
+          class="song-bg"
+          :style="`transform: translateX(${item.progress - 100}%)`"
+        />
 
-        <el-tooltip class="item" effect="dark" content="重新下载" placement="top">
-          <div class="re-down-btn" @click="download(item.aId, item)"><i class="iconfont icon-download" /></div>
+        <el-tooltip
+          class="item"
+          effect="dark"
+          content="重新下载"
+          placement="top"
+        >
+          <div
+            class="re-down-btn"
+            @click="download(item.aId, item)"
+          >
+            <i class="iconfont icon-download"/>
+          </div>
         </el-tooltip>
-        <el-tooltip v-if="item.finished" class="item" effect="dark" content="删除记录" placement="top">
-          <div class="re-down-btn" @click="delRecord(item)"><i class="iconfont icon-delete" /></div>
+        <el-tooltip
+          v-if="item.finished"
+          class="item"
+          effect="dark"
+          content="删除记录"
+          placement="top"
+        >
+          <div
+            class="re-down-btn"
+            @click="delRecord(item)"
+          >
+            <i class="iconfont icon-delete"/>
+          </div>
         </el-tooltip>
-        <el-tooltip v-else class="item" effect="dark" content="取消下载" placement="top">
-          <div class="re-down-btn" @click="cancelDownload(item)"><i class="iconfont icon-cancel" /></div>
+        <el-tooltip
+          v-else
+          class="item"
+          effect="dark"
+          content="取消下载"
+          placement="top"
+        >
+          <div
+            class="re-down-btn"
+            @click="cancelDownload(item)"
+          >
+            <i class="iconfont icon-cancel"/>
+          </div>
         </el-tooltip>
-
       </div>
     </div>
   </div>

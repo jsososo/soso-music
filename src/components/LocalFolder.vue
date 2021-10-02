@@ -1,17 +1,25 @@
 <template>
   <div :class="`local-fold-item ${open && 'opened'}`">
     <div class="fold-head">
-      <i class="iconfont icon-folder" @dblclick="openFolder" />
+      <i
+        class="iconfont icon-folder"
+        @dblclick="openFolder"
+      />
       <div class="local-path">
-        <el-tooltip class="item" effect="dark" :content="path" placement="top">
-          <span @dblclick="openFolder">{{getFileName(path)}}</span>
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="path"
+          placement="top"
+        >
+          <span @dblclick="openFolder">{{ getFileName(path) }}</span>
         </el-tooltip>
       </div>
       <div class="operation-btns">
         <el-popconfirm
           v-if="canDelete"
-          confirm-button-text='不要了'
-          cancel-button-text='再等等'
+          confirm-button-text="不要了"
+          cancel-button-text="再等等"
           icon="el-icon-info"
           icon-color="red"
           title="确定不再听这个文件夹了？"
@@ -25,27 +33,59 @@
     </div>
     <div>
       <div class="list-count-container">
-        <span v-if="!open" class="list-count ft_14 pl_10">揪出了{{list.length}}首歌</span>
-        <span v-else :class="`list-count tab-selected-${listTab}`">
-          <span class="list-tab tab-song" @click="listTab = 'song'">
+        <span
+          v-if="!open"
+          class="list-count ft_14 pl_10"
+        >揪出了{{ list.length }}首歌</span>
+        <span
+          v-else
+          :class="`list-count tab-selected-${listTab}`"
+        >
+          <span
+            class="list-tab tab-song"
+            @click="listTab = 'song'"
+          >
             <span class="list-title">
-              <i class="iconfont icon-song"/>{{list.length}}
+              <i class="iconfont icon-song"/>{{ list.length }}
             </span>
           </span>
-          <span class="list-tab tab-black" @click="listTab = 'black'">
+          <span
+            class="list-tab tab-black"
+            @click="listTab = 'black'"
+          >
             <span class="list-title">
-              <i class="iconfont icon-blacklist"/>{{blackList.length}}
+              <i class="iconfont icon-blacklist"/>{{ blackList.length }}
             </span>
           </span>
         </span>
-        <i class="iconfont icon-arrow-down-1" @click="open = !open"/>
+        <i
+          class="iconfont icon-arrow-down-1"
+          @click="open = !open"
+        />
       </div>
     </div>
-    <div v-if="open" class="file-list">
-      <div v-for="path in (listTab === 'song' ? list : blackList)" :key="`f_p_${path}`" class="file-item">
-        <div class="file-name">{{getFileName(path)}}</div>
-        <i v-if="listTab === 'song'" class="iconfont icon-blacklist" @click="addToBlack(path)"/>
-        <i v-if="listTab === 'black'" class="iconfont icon-add" @click="removeFromBlack(path)"/>
+    <div
+      v-if="open"
+      class="file-list"
+    >
+      <div
+        v-for="path in (listTab === 'song' ? list : blackList)"
+        :key="`f_p_${path}`"
+        class="file-item"
+      >
+        <div class="file-name">
+          {{ getFileName(path) }}
+        </div>
+        <i
+          v-if="listTab === 'song'"
+          class="iconfont icon-blacklist"
+          @click="addToBlack(path)"
+        />
+        <i
+          v-if="listTab === 'black'"
+          class="iconfont icon-add"
+          @click="removeFromBlack(path)"
+        />
       </div>
     </div>
   </div>

@@ -1,19 +1,32 @@
 <template>
   <div :class="`info-box-container ${className} align-${align}`">
     <div class="pic-container">
-      <div v-error="errPic" class="pic-content" :style="`background-image: url('${pic}')`"/>
+      <div
+        v-error="errPic"
+        class="pic-content"
+        :style="`background-image: url('${pic}')`"
+      />
     </div>
     <div class="text-info">
-      <div v-for="(item, index) in list" :key="`${id}-${index}`">
-        <div v-if="item.text && item.text.length" :class="`text-content ${item.className}`">
-          <i v-if="item.icon" :class="`iconfont ${item.icon}`" />
+      <div
+        v-for="(item, index) in list"
+        :key="`${id}-${index}`"
+      >
+        <div
+          v-if="item.text && item.text.length"
+          :class="`text-content ${item.className}`"
+        >
+          <i
+            v-if="item.icon"
+            :class="`iconfont ${item.icon}`"
+          />
           <component
             :is="item.link ? 'a' : 'span'"
             v-if="isString(item.text)"
             :href="item.link"
             @click="onClick({ index, item })"
           >
-            {{item.text}}
+            {{ item.text }}
           </component>
           <span v-else>
             <component
@@ -23,7 +36,7 @@
               :href="t.link"
               @click="onClick({ index, j, item: t })"
             >
-              {{t.text}}
+              {{ t.text }}
             </component>
           </span>
         </div>

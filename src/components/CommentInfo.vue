@@ -1,27 +1,61 @@
 <template>
-  <div class="comment-container hide-scroll" @scroll="onScroll">
-    <div v-for="({ title, arr }) in comments" :key="`list-${title}`">
-      <div v-if="arr.length" class="comment-type-block">
-        <div class="comment-type-title">{{title}}</div>
+  <div
+    class="comment-container hide-scroll"
+    @scroll="onScroll"
+  >
+    <div
+      v-for="({ title, arr }) in comments"
+      :key="`list-${title}`"
+    >
+      <div
+        v-if="arr.length"
+        class="comment-type-block"
+      >
+        <div class="comment-type-title">
+          {{ title }}
+        </div>
         <div class="comments-list">
-          <div v-for="item in arr" :key="item.id" class="comment-item">
-            <img v-error="`https://y.gtimg.cn/mediastyle/global/img/singer_300.png`" class="user-avatar"
-                 :src="`${item.creator.avatar}?param=50y50`">
+          <div
+            v-for="item in arr"
+            :key="item.id"
+            class="comment-item"
+          >
+            <img
+              v-error="`https://y.gtimg.cn/mediastyle/global/img/singer_300.png`"
+              class="user-avatar"
+              :src="`${item.creator.avatar}?param=50y50`"
+            >
             <div class="comment-content">
               <div class="user-name-block">
-                <a :href="`#/user?id=${item.creator.id}`"><b class="user-name">{{item.creator.nick}}</b></a>
-                <span class="pl_20 comment-time">{{timeStr(item.time)}}</span>
+                <a :href="`#/user?id=${item.creator.id}`"><b class="user-name">{{ item.creator.nick }}</b></a>
+                <span class="pl_20 comment-time">{{ timeStr(item.time) }}</span>
               </div>
-              <div class="content" v-html="item.content"></div>
-              <blockquote v-if="item.beReplied && item.beReplied[0]" class="be-replied">
-                <a :href="`#/user?id=${item.creator.id}`" class="user-name">@{{item.beReplied[0].creator.nick}}</a>
-                ：<span v-html="item.beReplied[0].content"></span>
+              <div
+                class="content"
+                v-html="item.content"
+              />
+              <blockquote
+                v-if="item.beReplied && item.beReplied[0]"
+                class="be-replied"
+              >
+                <a
+                  :href="`#/user?id=${item.creator.id}`"
+                  class="user-name"
+                >@{{ item.beReplied[0].creator.nick }}</a>
+                ：<span v-html="item.beReplied[0].content"/>
               </blockquote>
               <div class="mt_10">
-                <i :class="`iconfont pointer ${item.newLike && 'new-like'} icon-zan${item.liked ? '' : '-o'}`"
-                   @click="likeComment(item)"/>
-                <span class="pl_10 ft_12">{{numToStr(item.likedCount)}}</span>
-                <i v-if="item.platform === '163'" class="iconfont icon-reply ml_20 pointer" style="vertical-align: -1px;" @click="reply(item)" />
+                <i
+                  :class="`iconfont pointer ${item.newLike && 'new-like'} icon-zan${item.liked ? '' : '-o'}`"
+                  @click="likeComment(item)"
+                />
+                <span class="pl_10 ft_12">{{ numToStr(item.likedCount) }}</span>
+                <i
+                  v-if="item.platform === '163'"
+                  class="iconfont icon-reply ml_20 pointer"
+                  style="vertical-align: -1px;"
+                  @click="reply(item)"
+                />
                 <el-popconfirm
                   v-if="item.canDelete || item.creator.id === user[item.creator.platform].id"
                   title="删除评论？"
@@ -40,7 +74,12 @@
         </div>
       </div>
     </div>
-    <send-comment v-if="info.platform !== 'local'" :info="info" :type="type" :on-send-success="() => getList(1)"/>
+    <send-comment
+      v-if="info.platform !== 'local'"
+      :info="info"
+      :type="type"
+      :on-send-success="() => getList(1)"
+    />
   </div>
 </template>
 

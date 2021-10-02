@@ -1,11 +1,26 @@
 <template>
-  <div :class="`list-singers ${className || ''}`" >
-    <div v-for="s in singers" :key="`${s.id}-${s.mid}`" class="singer-item" @click="goTo(s)">
-      <img v-error="`https://y.gtimg.cn/mediastyle/global/img/singer_300.png`" class="singer-img"
-           :src="`${s.picUrl}?param=120y120`"/>
-      <div class="singer-name">{{s.name}}</div>
+  <div :class="`list-singers ${className || ''}`">
+    <div
+      v-for="s in singers"
+      :key="`${s.id}-${s.mid}`"
+      class="singer-item"
+      @click="goTo(s)"
+    >
+      <img
+        v-error="`https://y.gtimg.cn/mediastyle/global/img/singer_300.png`"
+        class="singer-img"
+        :src="`${s.picUrl}?param=120y120`"
+      >
+      <div class="singer-name">
+        {{ s.name }}
+      </div>
     </div>
-    <div v-if="(singers || []).length === 0" class="text-center mt_40">{{emptyText || '没啥歌手哟'}}</div>
+    <div
+      v-if="(singers || []).length === 0"
+      class="text-center mt_40"
+    >
+      {{ emptyText || '没啥歌手哟' }}
+    </div>
   </div>
 </template>
 

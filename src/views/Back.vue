@@ -1,20 +1,44 @@
 <template>
   <div>
     <div>
-      <el-input v-model="delVersion" type="text" style="width: 140px"/>
-      <el-button @click="del">删除版本</el-button>
+      <el-input
+        v-model="delVersion"
+        type="text"
+        style="width: 140px"
+      />
+      <el-button @click="del">
+        删除版本
+      </el-button>
     </div>
 
     <div class="mt_10">
-      <el-input v-model="version" placeholder="版本" style="width: 140px"/>
-      <br />
-      <el-input v-model="versionType" placeholder="版本类型" style="width: 140px"/>
-      <br />
-      <el-input v-model="explain" placeholder="说明" style="width: 140px"/>
-      <br />
-      <el-input v-model="date" placeholder="时间" style="width: 140px"/>
-      <br />
-      <el-button @click="add">新增</el-button>
+      <el-input
+        v-model="version"
+        placeholder="版本"
+        style="width: 140px"
+      />
+      <br>
+      <el-input
+        v-model="versionType"
+        placeholder="版本类型"
+        style="width: 140px"
+      />
+      <br>
+      <el-input
+        v-model="explain"
+        placeholder="说明"
+        style="width: 140px"
+      />
+      <br>
+      <el-input
+        v-model="date"
+        placeholder="时间"
+        style="width: 140px"
+      />
+      <br>
+      <el-button @click="add">
+        新增
+      </el-button>
     </div>
   </div>
 </template>

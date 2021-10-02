@@ -1,5 +1,8 @@
 <template>
-  <div ref="lyricContainer" :class="`lyric-content-container main-${setting.MAIN_CONTENT}`">
+  <div
+    ref="lyricContainer"
+    :class="`lyric-content-container main-${setting.MAIN_CONTENT}`"
+  >
     <div
       :class="`lyric-list-container ${grab ? 'grabbing' : ''}`"
       @mousedown="changeGrab(true)"
@@ -7,27 +10,37 @@
       @mouseleave="changeGrab(false)"
       @mousemove="dragLyric"
     >
-      <div v-if="playNow.lyric" class="lyric-list" :style="`top: ${top + moveY}px;`">
+      <div
+        v-if="playNow.lyric"
+        class="lyric-list"
+        :style="`top: ${top + moveY}px;`"
+      >
         <div
           v-for="(item, index) in playNow.lyric"
           :key="`${playNow.aId}-${item.str}-${index}`"
           :ref="(el) => setLyricRef(index, el)"
           :class="`lyric-item ${index === lyricKey ? 'lyric-item-now' : ''}`"
         >
-          <div v-html="item.str || ''" />
-          <div v-if="item.trans" v-html="item.trans" />
+          <div v-html="item.str || ''"/>
+          <div
+            v-if="item.trans"
+            v-html="item.trans"
+          />
         </div>
       </div>
     </div>
-    <div v-show="moveY || baseMoveY" class="play-line-center">
-      <hr/>
+    <div
+      v-show="moveY || baseMoveY"
+      class="play-line-center"
+    >
+      <hr>
       <div
         class="p-time-btn"
         @mouseover="changeGrab(true)"
         @mouseleave="changeGrab(false)"
         @click="playAtCenter"
       >
-        {{timeToStr(centerTime)}}
+        {{ timeToStr(centerTime) }}
         <i class="iconfont icon-play"/>
       </div>
     </div>

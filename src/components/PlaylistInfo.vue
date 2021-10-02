@@ -1,16 +1,32 @@
 <template>
   <page-right-container class-name="list-detail-container">
     <slot/>
-    <div ref="containerDom" class="scroll-content" @scroll="getShowIndex">
-      <div v-if="!listInfo && loading && list.length === 0" class="text-center fc_fff ft_20"
-           style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">拼命查找了！
+    <div
+      ref="containerDom"
+      class="scroll-content"
+      @scroll="getShowIndex"
+    >
+      <div
+        v-if="!listInfo && loading && list.length === 0"
+        class="text-center fc_fff ft_20"
+        style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;"
+      >
+        拼命查找了！
       </div>
       <!--   歌单信息   -->
-      <div v-if="!loading" class="list-info-detail">
+      <div
+        v-if="!loading"
+        class="list-info-detail"
+      >
         <div v-if="listInfo.name">
-          <img class="list-info-cover" :src="listInfo.cover">
+          <img
+            class="list-info-cover"
+            :src="listInfo.cover"
+          >
           <div class="list-info-txt">
-            <div class="list-info-name">{{listInfo.name}}</div>
+            <div class="list-info-name">
+              {{ listInfo.name }}
+            </div>
             <div class="list-info-creator">
               <!--            <el-tooltip-->
               <!--              v-if="user[platform].listMap && !user[platform].listMap[listId]"-->
@@ -21,35 +37,79 @@
               <!--            >-->
               <!--              <i @click="collectPlaylist(listInfo)" :class="`collect-btn mr_10 iconfont icon-${user[platform].subMap[listId] ? 'collected' : 'collect'}`" />-->
               <!--            </el-tooltip>-->
-              <span v-if="listInfo.creator">By <span class="creator-name">{{listInfo.creator.nick}}</span></span>
+              <span v-if="listInfo.creator">By <span class="creator-name">{{ listInfo.creator.nick }}</span></span>
             </div>
-            <div class="list-desc" v-html="listInfo.desc"/>
+            <div
+              class="list-desc"
+              v-html="listInfo.desc"
+            />
           </div>
         </div>
-        <div ref="searchDom" class="search-container">
+        <div
+          ref="searchDom"
+          class="search-container"
+        >
           <div :class="`search-content ${searchFix && 'fixed'}`">
-            <input v-model="search" class="search-input" type="text" placeholder="找呀找呀找歌曲">
-            <div class="inline-block pt_5">下列歌曲：</div>
-            <el-tooltip class="item" effect="dark" content="播放" placement="top">
-              <div class="inline-block pt_5 pointer play" style="line-height: 20px;" @click="playListShow(true)">
+            <input
+              v-model="search"
+              class="search-input"
+              type="text"
+              placeholder="找呀找呀找歌曲"
+            >
+            <div class="inline-block pt_5">
+              下列歌曲：
+            </div>
+            <el-tooltip
+              class="item"
+              effect="dark"
+              content="播放"
+              placement="top"
+            >
+              <div
+                class="inline-block pt_5 pointer play"
+                style="line-height: 20px;"
+                @click="playListShow(true)"
+              >
                 <i class="iconfont icon-play pl_10 pr_10"/>
               </div>
             </el-tooltip>
-            <el-tooltip class="item" effect="dark" content="添加到播放列表" placement="top">
-              <div class="inline-block pt_5 pointer play" style="line-height: 20px;" @click="playListShow()">
+            <el-tooltip
+              class="item"
+              effect="dark"
+              content="添加到播放列表"
+              placement="top"
+            >
+              <div
+                class="inline-block pt_5 pointer play"
+                style="line-height: 20px;"
+                @click="playListShow()"
+              >
                 <i class="iconfont icon-list-add pl_10 pr_10"/>
               </div>
             </el-tooltip>
-            <el-tooltip class="item" effect="dark" content="下载" placement="top">
-              <div class="inline-block pt_5 pointer play" style="line-height: 20px;" @click="downShow">
+            <el-tooltip
+              class="item"
+              effect="dark"
+              content="下载"
+              placement="top"
+            >
+              <div
+                class="inline-block pt_5 pointer play"
+                style="line-height: 20px;"
+                @click="downShow"
+              >
                 <i class="iconfont icon-download pl_10 pr_10"/>
               </div>
             </el-tooltip>
           </div>
         </div>
       </div>
-      <div v-if="list.filterList && list.filterList.length" ref="listDom" class="song-list">
-        <div :style="`height:${smallIndex*71}px;`"></div>
+      <div
+        v-if="list.filterList && list.filterList.length"
+        ref="listDom"
+        class="song-list"
+      >
+        <div :style="`height:${smallIndex*71}px;`"/>
         <div
           v-for="(s, i) in list.list"
           :key="`${s}-${i}`"
@@ -60,37 +120,73 @@
            `"
           @click="(allSongs[s].url || allSongs[s].localPath) && playMusic({ aId: s, list: list.trueList, listId })"
         >
-          <div v-if="playNow.pUrl && playNow.pUrl === allSongs[s].pUrl" class="playing-bg"
-               :style="`width: ${playerStatus.percentage * 100}%`">
+          <div
+            v-if="playNow.pUrl && playNow.pUrl === allSongs[s].pUrl"
+            class="playing-bg"
+            :style="`width: ${playerStatus.percentage * 100}%`"
+          >
             <div class="wave-bg"/>
             <div class="wave-bg2"/>
           </div>
-          <span class="song-order">{{smallIndex+i+1}}</span>
-          <img v-error class="song-cover" :src="`${allSongs[s].al && allSongs[s].al.picUrl}`" alt=""/>
-          <span class="song-name">{{allSongs[s].name}}</span>
-          <span class="song-artist">{{(allSongs[s].ar || []).map((a) => a.name).join('/')}}</span>
-          <div v-if="allSongs[s].platform !== 'local'" class="icon-container">
-            <el-tooltip class="item" effect="dark" content="喜欢" placement="top">
+          <span class="song-order">{{ smallIndex+i+1 }}</span>
+          <img
+            v-error
+            class="song-cover"
+            :src="`${allSongs[s].al && allSongs[s].al.picUrl}`"
+            alt=""
+          >
+          <span class="song-name">{{ allSongs[s].name }}</span>
+          <span class="song-artist">{{ (allSongs[s].ar || []).map((a) => a.name).join('/') }}</span>
+          <div
+            v-if="allSongs[s].platform !== 'local'"
+            class="icon-container"
+          >
+            <el-tooltip
+              class="item"
+              effect="dark"
+              content="喜欢"
+              placement="top"
+            >
               <i
                 :class="`operation-icon operation-icon-1 iconfont icon-${favSongMap[allSongs[s].platform][s] ? 'like' : 'unlike'}`"
                 @click="likeMusic(s)"
               />
             </el-tooltip>
-            <handle-song :a-id="s" class-name="operation-icon operation-icon-2 ft_14"/>
-            <el-tooltip v-if="playingList[s]" class="item" effect="dark" content="移出播放列表" placement="top">
+            <handle-song
+              :a-id="s"
+              class-name="operation-icon operation-icon-2 ft_14"
+            />
+            <el-tooltip
+              v-if="playingList[s]"
+              class="item"
+              effect="dark"
+              content="移出播放列表"
+              placement="top"
+            >
               <i
                 class="operation-icon operation-icon-3 iconfont icon-list-reomve"
                 @click="removeFromPlayinig([s])"
               />
             </el-tooltip>
-            <el-tooltip v-if="allSongs[s].url && !playingList[s]" class="item" effect="dark" content="加入播放列表"
-                        placement="top">
+            <el-tooltip
+              v-if="allSongs[s].url && !playingList[s]"
+              class="item"
+              effect="dark"
+              content="加入播放列表"
+              placement="top"
+            >
               <i
                 class="operation-icon operation-icon-3 iconfont icon-list-add"
                 @click="addToPlaying([s])"
               />
             </el-tooltip>
-            <el-tooltip v-if="!!allSongs[s].url" class="item" effect="dark" content="下载" placement="top">
+            <el-tooltip
+              v-if="!!allSongs[s].url"
+              class="item"
+              effect="dark"
+              content="下载"
+              placement="top"
+            >
               <i
                 class="operation-icon operation-icon-4 iconfont icon-download"
                 @click="download(s)"
@@ -117,12 +213,21 @@
             <!--          </el-tooltip>-->
           </div>
 
-          <div v-if="rightInfo && rightInfo[i]" class="right-info">{{rightInfo[i]}}</div>
+          <div
+            v-if="rightInfo && rightInfo[i]"
+            class="right-info"
+          >
+            {{ rightInfo[i] }}
+          </div>
         </div>
         <div :style="`min-height:0;height:${list.hideBigHeight}px;`" />
       </div>
       <div class="fix-btn-list">
-        <div v-if="list.trueList.indexOf(playNow.aId) > -1" class="fix-btn" @click="scrollToPlayNow">
+        <div
+          v-if="list.trueList.indexOf(playNow.aId) > -1"
+          class="fix-btn"
+          @click="scrollToPlayNow"
+        >
           <i class="iconfont icon-focus"/>
         </div>
         <el-popconfirm
@@ -133,11 +238,10 @@
         >
           <template #reference>
             <div class="fix-btn">
-              <i class="iconfont icon-delete" />
+              <i class="iconfont icon-delete"/>
             </div>
           </template>
         </el-popconfirm>
-
       </div>
     </div>
   </page-right-container>

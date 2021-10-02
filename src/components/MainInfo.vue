@@ -6,26 +6,50 @@
     :list="infoBoxList"
     :align="setting.MAIN_CONTENT === 'lyric' ? 'right' : 'left'"
   >
-    <div :class="`platform-icons content-${setting.MAIN_CONTENT}`" >
-      <el-tooltip class="item" effect="dark" content="信息" placement="top">
-        <i :class="`iconfont icon-${playNow.platform} color-${playNow.platform} ${playNow.bPlatform ? 'op_3' : 'op_7'}`" />
+    <div :class="`platform-icons content-${setting.MAIN_CONTENT}`">
+      <el-tooltip
+        class="item"
+        effect="dark"
+        content="信息"
+        placement="top"
+      >
+        <i
+          :class="`iconfont icon-${playNow.platform} color-${playNow.platform} ${playNow.bPlatform ? 'op_3' : 'op_7'}`"/>
       </el-tooltip>
-      <el-tooltip v-if="playNow.bPlatform" class="item" effect="dark" content="音源" placement="top">
-        <i :class="`iconfont op_7 icon-${playNow.bPlatform} color-${playNow.bPlatform}`" @click="goFind()"/>
+      <el-tooltip
+        v-if="playNow.bPlatform"
+        class="item"
+        effect="dark"
+        content="音源"
+        placement="top"
+      >
+        <i
+          :class="`iconfont op_7 icon-${playNow.bPlatform} color-${playNow.bPlatform}`"
+          @click="goFind()"
+        />
       </el-tooltip>
     </div>
     <div class="index-icon-content">
-      <a href="#/" class="mg_10 iconfont icon-lyric">
-        <i class="fake-icon iconfont icon-lyric" />
+      <a
+        href="#/"
+        class="mg_10 iconfont icon-lyric"
+      >
+        <i class="fake-icon iconfont icon-lyric"/>
       </a>
-      <a v-if="playNow.platform !== 'local'" href="#/comment" class="iconfont icon-comment mg_10">
-        <i class="fake-icon iconfont icon-comment" />
-        <span v-if="playNow.totalComments" style="font-weight: normal;vertical-align: 4px" class="pl_5 ft_12">{{numToStr(playNow.totalComments)}}</span>
+      <a
+        v-if="playNow.platform !== 'local'"
+        href="#/comment"
+        class="iconfont icon-comment mg_10"
+      >
+        <i class="fake-icon iconfont icon-comment"/>
+        <span
+          v-if="playNow.totalComments"
+          style="font-weight: normal;vertical-align: 4px"
+          class="pl_5 ft_12"
+        >{{ numToStr(playNow.totalComments) }}</span>
       </a>
     </div>
-    <div>
-
-    </div>
+    <div/>
   </info-box>
 </template>
 

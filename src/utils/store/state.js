@@ -1,6 +1,6 @@
-import { reactive, provide, inject } from 'vue';
-import Storage from "../Storage";
-import PlayHistory from "../PlayHistory";
+import {reactive, provide, inject} from 'vue';
+import Storage from '../Storage';
+import PlayHistory from '../PlayHistory';
 
 const state = {
   // 用户信息
@@ -38,18 +38,20 @@ const state = {
     local: {}, // 本地，用来防止报错
   },
   // 播放列表
-  playingList: new Proxy({
-    random: [],
-    raw: [],
-    trueList: [],
-    history: [],
-    index: 0,
-  }, {
-    get(target, key) {
-      return target[key] ? target[key] :
-        target.raw.find((aId) => aId === key)
+  playingList: new Proxy(
+    {
+      random: [],
+      raw: [],
+      trueList: [],
+      history: [],
+      index: 0,
     },
-  }),
+    {
+      get(target, key) {
+        return target[key] ? target[key] : target.raw.find((aId) => aId === key);
+      },
+    },
+  ),
   // 正在播放的音乐
   playNow: {},
   playerStatus: {
@@ -58,19 +60,21 @@ const state = {
     radioId: '',
   },
   // 下载列表
-  downloadList: new Proxy(Storage.get('soso_music_download', true, '[]').map((v) => {
-    if (!v.finished) {
-      v.finished = true;
-      v.waiting = false;
-      v.errMsg = '下载中断';
-    }
-    return v;
-  }), {
-    get(target, p) {
-      return target[p] ? target[p] :
-        target.find(({dId}) => dId === p);
-    }
-  }),
+  downloadList: new Proxy(
+    Storage.get('soso_music_download', true, '[]').map((v) => {
+      if (!v.finished) {
+        v.finished = true;
+        v.waiting = false;
+        v.errMsg = '下载中断';
+      }
+      return v;
+    }),
+    {
+      get(target, p) {
+        return target[p] ? target[p] : target.find(({dId}) => dId === p);
+      },
+    },
+  ),
   // 歌单信息和歌单中的歌曲列表，放在这里是为了方便对歌曲收藏取消操作时好同步数据
   listInfo: {},
   // 将歌曲添加到歌单
@@ -123,7 +127,13 @@ const state = {
     INIT_LIST: '1', // 下次登录时的播放列表，-1 表示未设置，逻辑按0处理，0 表示使用推荐歌单，1 表示记住上一次记录，2 表示网易云日推
     SUBSCRIBE_TEST_VERSION: false, // 订阅测试版
     appId: (() => {
-      const getRandom = (num) => Number(`${num}`.split('').sort(() => Math.random() - 0.5).join('')).toString(36);
+      const getRandom = (num) =>
+        Number(
+          `${num}`
+            .split('')
+            .sort(() => Math.random() - 0.5)
+            .join(''),
+        ).toString(36);
       const randomT = getRandom(new Date().valueOf());
       const randomN = getRandom(Math.round(Math.random() * 99999));
       return randomN + randomT;
@@ -131,7 +141,7 @@ const state = {
     localFolders: [], // 本地文件夹，用于读取本地歌曲
     ...Storage.get('soso_music_setting', true, '{}'),
     platform: '163', // 默认平台
-    version: '1.3.0',
+    version: '1.4.0',
     versionType: '',
   },
   codeMap: {
@@ -156,14 +166,14 @@ const state = {
     contrast: 100,
     saturate: 100,
     sepia: 0,
-    ...Storage.get('bg_info', true, '{}')
+    ...Storage.get('bg_info', true, '{}'),
   },
-  selectedFile: {} // 选择文件地址的回调
-}
+  selectedFile: {}, // 选择文件地址的回调
+};
 
 const result = {};
 
-Object.keys(state).forEach(k => result[k] = [k, reactive(state[k])])
+Object.keys(state).forEach((k) => (result[k] = [k, reactive(state[k])]));
 
 const mixHandle = (type, keys) => {
   const func = { provide, inject }[type];
@@ -173,22 +183,20 @@ const mixHandle = (type, keys) => {
       return;
     }
     obj[k] = func(...result[k]);
-    if (type === 'provide')
-      obj[k] = result[k][1]
-  }
+    if (type === 'provide') obj[k] = result[k][1];
+  };
   if (typeof keys === 'string') {
-    singleProvide(keys)
+    singleProvide(keys);
   } else if (Array.isArray(keys)) {
-    keys.forEach(k => singleProvide(k))
+    keys.forEach((k) => singleProvide(k));
   }
   return obj;
-}
+};
 
 export const mixProvide = (keys) => mixHandle('provide', keys);
 
 export const mixInject = (keys) => mixHandle('inject', keys);
 
 export const allProvide = () => mixProvide(Object.keys(state));
-
 
 export default result;

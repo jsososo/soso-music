@@ -3,34 +3,71 @@
     <page-title title="FEEDBACK" />
     <div class="feedback-input-container">
       <div class="info-input-container">
-        <span v-if="user.soso.logined" class="input-user" @click="goToMixUser">{{user.soso.nick}}</span>
-        <div v-else>游客</div>
+        <span
+          v-if="user.soso.logined"
+          class="input-user"
+          @click="goToMixUser"
+        >{{ user.soso.nick }}</span>
+        <div v-else>
+          游客
+        </div>
       </div>
-      <hr/>
-      <div v-if="inputContent.replyId" class="reply-info">
-        回复 @{{inputContent.replyNick}}：
-        <span class="reply-content">{{shortString(inputContent.replyContent)}}</span>
-        <i class="iconfont icon-cancel" @click="setReply()"/>
+      <hr>
+      <div
+        v-if="inputContent.replyId"
+        class="reply-info"
+      >
+        回复 @{{ inputContent.replyNick }}：
+        <span class="reply-content">{{ shortString(inputContent.replyContent) }}</span>
+        <i
+          class="iconfont icon-cancel"
+          @click="setReply()"
+        />
       </div>
-      <textarea v-model="inputContent.content" class="feedback-textarea" placeholder="说些啥呢" cols="30" rows="10"/>
-      <i class="iconfont icon-plane" @click="addFeedback"/>
+      <textarea
+        v-model="inputContent.content"
+        class="feedback-textarea"
+        placeholder="说些啥呢"
+        cols="30"
+        rows="10"
+      />
+      <i
+        class="iconfont icon-plane"
+        @click="addFeedback"
+      />
     </div>
-    <div v-if="list.length" class="feedback-list">
-      <div v-for="item in list" :key="item.id" class="feedback-content-item">
+    <div
+      v-if="list.length"
+      class="feedback-list"
+    >
+      <div
+        v-for="item in list"
+        :key="item.id"
+        class="feedback-content-item"
+      >
         <div class="nick">
-          {{item.user ? item.user.nick : '游客'}}
-          <span v-if="item.user" class="email">{{item.user.email}}</span>
-          <span v-if="item.version" class="version">v{{item.version}}</span>
+          {{ item.user ? item.user.nick : '游客' }}
+          <span
+            v-if="item.user"
+            class="email"
+          >{{ item.user.email }}</span>
+          <span
+            v-if="item.version"
+            class="version"
+          >v{{ item.version }}</span>
         </div>
         <div class="content">
-          {{item.content}}
+          {{ item.content }}
         </div>
-        <blockquote v-if="item.replyId && item.replyContent" class="reply-info">
-          <span class="reply-nick">@{{item.replyUser ? item.replyUser.nick : '游客'}}：</span>
-          <span>{{item.replyContent}}</span>
+        <blockquote
+          v-if="item.replyId && item.replyContent"
+          class="reply-info"
+        >
+          <span class="reply-nick">@{{ item.replyUser ? item.replyUser.nick : '游客' }}：</span>
+          <span>{{ item.replyContent }}</span>
         </blockquote>
         <div class="time">
-          {{timeStr(item.created)}}
+          {{ timeStr(item.created) }}
           <el-popconfirm
             v-if="canDelete(item)"
             title="确定删除评论？"
@@ -43,7 +80,10 @@
               <i class="iconfont icon-delete ft_14 ml_10"/>
             </template>
           </el-popconfirm>
-          <i class="iconfont icon-reply ml_10" @click="setReply(item)" />
+          <i
+            class="iconfont icon-reply ml_10"
+            @click="setReply(item)"
+          />
         </div>
       </div>
     </div>
@@ -54,8 +94,8 @@
       :page-size="10"
       class="mb_20"
       :total="page.total"
-      @current-change="(v) => page.pageNo = v">
-    </el-pagination>
+      @current-change="(v) => page.pageNo = v"
+    />
   </div>
 </template>
 

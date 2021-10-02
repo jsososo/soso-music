@@ -5,32 +5,62 @@
     <view class="touch-move touch-left" />
     <template v-if="playNow.al">
       <div class="img-container">
-        <img class="song-img" :src="playNow.al.picUrl" alt="" />
+        <img
+          class="song-img"
+          :src="playNow.al.picUrl"
+          alt=""
+        >
       </div>
-      <div v-if="allSongs[playNow.aId]" class="song-info">
+      <div
+        v-if="allSongs[playNow.aId]"
+        class="song-info"
+      >
         <div class="d-table">
           <div class="d-table-cell">
-            <div class="song-name">{{playNow.name}}</div>
-            <div class="song-artist"><span v-for="a in playNow.ar" :key="a.id" class="pr_5">{{a.name}}</span></div>
+            <div class="song-name">
+              {{ playNow.name }}
+            </div>
+            <div class="song-artist">
+              <span
+                v-for="a in playNow.ar"
+                :key="a.id"
+                class="pr_5"
+              >{{ a.name }}</span>
+            </div>
             <div class="song-lyric">
-              <div v-for="(item, index) in showLyrics" :key="`lyric-${item}-${index}`"
-                   :class="`lyric-item ${index === 1 && 'actived'}`">{{item}}
+              <div
+                v-for="(item, index) in showLyrics"
+                :key="`lyric-${item}-${index}`"
+                :class="`lyric-item ${index === 1 && 'actived'}`"
+              >
+                {{ item }}
               </div>
             </div>
           </div>
         </div>
       </div>
       <div class="bottom-btn">
-        <div v-if="playNow.rawTrans" class="iconfont icon-trans"
-             @click="setting.SHOW_SIMPLE_TRANS = !setting.SHOW_SIMPLE_TRANS">
-          <div v-if="!setting.SHOW_SIMPLE_TRANS" class="hide-trans"/>
+        <div
+          v-if="playNow.rawTrans"
+          class="iconfont icon-trans"
+          @click="setting.SHOW_SIMPLE_TRANS = !setting.SHOW_SIMPLE_TRANS"
+        >
+          <div
+            v-if="!setting.SHOW_SIMPLE_TRANS"
+            class="hide-trans"
+          />
         </div>
 
-        <div class="iconfont icon-cover" @click="setting.SHOW_SIMPLE_COVER = !setting.SHOW_SIMPLE_COVER">
-          <div v-if="!setting.SHOW_SIMPLE_COVER" class="hide-trans"/>
+        <div
+          class="iconfont icon-cover"
+          @click="setting.SHOW_SIMPLE_COVER = !setting.SHOW_SIMPLE_COVER"
+        >
+          <div
+            v-if="!setting.SHOW_SIMPLE_COVER"
+            class="hide-trans"
+          />
         </div>
       </div>
-
     </template>
   </div>
 </template>

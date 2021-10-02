@@ -1,49 +1,106 @@
 <template>
-  <div :class="`page-top-nav app-platform-${setting.SYSTEM_PLATFORM}`" @dblclick="updateWindowSize">
-
+  <div
+    :class="`page-top-nav app-platform-${setting.SYSTEM_PLATFORM}`"
+    @dblclick="updateWindowSize"
+  >
     <span class="router-icon">
-      <i :class="`el-icon-arrow-left ${canBack && 'actived'}`" @click="canBack && (router.isBack = true)"/>
-      <i :class="`el-icon-arrow-right ${canReBack && 'actived'}`" @click="canReBack && (router.isReBack = true)"/>
+      <i
+        :class="`el-icon-arrow-left ${canBack && 'actived'}`"
+        @click="canBack && (router.isBack = true)"
+      />
+      <i
+        :class="`el-icon-arrow-right ${canReBack && 'actived'}`"
+        @click="canReBack && (router.isReBack = true)"
+      />
     </span>
 
-    <input v-model="keyword" :class="`search-input ${isSearchPage && 'is-search-page'}`" type="text"
-           placeholder="SEARCH..." @keyup="onKeyUp"/>
+    <input
+      v-model="keyword"
+      :class="`search-input ${isSearchPage && 'is-search-page'}`"
+      type="text"
+      placeholder="SEARCH..."
+      @keyup="onKeyUp"
+    >
 
     <div :class="`platform-select active-${setting.platform}`">
-      <i class="iconfont icon-163 color-163" @click="updatePlatform('163')"/>
-      <i class="iconfont icon-qq color-qq" @click="updatePlatform('qq')" />
+      <i
+        class="iconfont icon-163 color-163"
+        @click="updatePlatform('163')"
+      />
+      <i
+        class="iconfont icon-qq color-qq"
+        @click="updatePlatform('qq')"
+      />
     </div>
 
     <div class="top-nav-right-container">
-      <a v-if="!u.logined" href="#/user" class="top-nav-btn iconfont icon-user user-btn"/>
-      <a v-else href="#/user" class="top-nav-btn user-btn"><img :src="u.avatar"/></a>
+      <a
+        v-if="!u.logined"
+        href="#/user"
+        class="top-nav-btn iconfont icon-user user-btn"
+      />
+      <a
+        v-else
+        href="#/user"
+        class="top-nav-btn user-btn"
+      ><img :src="u.avatar"></a>
       <template v-if="setting.SYSTEM_PLATFORM === 'darwin'">
-        <a href="#/simple" class="top-nav-btn iconfont icon-windmill"/>
-        <a href="#/setting" class="top-nav-btn iconfont icon-setting"/>
-        <a href="#/feedback" class="top-nav-btn iconfont icon-feedback"/>
-        <a href="#/about" class="top-nav-btn icon-version-container">
+        <a
+          href="#/simple"
+          class="top-nav-btn iconfont icon-windmill"
+        />
+        <a
+          href="#/setting"
+          class="top-nav-btn iconfont icon-setting"
+        />
+        <a
+          href="#/feedback"
+          class="top-nav-btn iconfont icon-feedback"
+        />
+        <a
+          href="#/about"
+          class="top-nav-btn icon-version-container"
+        >
           <i class="iconfont icon-version ft_20"/>
         </a>
       </template>
       <template v-else>
-        <span class="top-nav-btn sys-icon iconfont icon-mini" @click="appCommand('APP_MINIMIZE')"/>
+        <span
+          class="top-nav-btn sys-icon iconfont icon-mini"
+          @click="appCommand('APP_MINIMIZE')"
+        />
         <el-popover
           popper-class="top-nav-popover top-nav-right-container"
           trigger="hover"
         >
           <div>
-            <a href="#/simple" class="top-nav-btn iconfont icon-windmill" />
-            <a href="#/setting" class="top-nav-btn iconfont icon-setting"  />
-            <a href="#/feedback" class="top-nav-btn iconfont icon-feedback" />
-            <a href="#/about" class="top-nav-btn icon-version-container">
-              <i class="iconfont icon-version ft_20" />
+            <a
+              href="#/simple"
+              class="top-nav-btn iconfont icon-windmill"
+            />
+            <a
+              href="#/setting"
+              class="top-nav-btn iconfont icon-setting"
+            />
+            <a
+              href="#/feedback"
+              class="top-nav-btn iconfont icon-feedback"
+            />
+            <a
+              href="#/about"
+              class="top-nav-btn icon-version-container"
+            >
+              <i class="iconfont icon-version ft_20"/>
             </a>
           </div>
           <template #reference>
-            <span class="top-nav-btn sys-icon iconfont icon-more-line" />
+            <span class="top-nav-btn sys-icon iconfont icon-more-line"/>
           </template>
         </el-popover>
-        <span class="top-nav-btn sys-icon iconfont icon-close" @click="appCommand('APP_HIDE')" />
+        <span
+          class="top-nav-btn sys-icon iconfont icon-close"
+          @click="appCommand('APP_HIDE')"
+        />
       </template>
     </div>
   </div>

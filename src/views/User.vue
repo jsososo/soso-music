@@ -1,29 +1,53 @@
 <template>
   <div class="user-page">
-    <div v-if="!u.logined" class="login-container">
+    <div
+      v-if="!u.logined"
+      class="login-container"
+    >
       <div v-if="setting.platform === '163'">
-        <page-title title="网易云 LOGIN" />
+        <page-title title="网易云 LOGIN"/>
         <div class="input-line so-input">
-          <div class="input-label">账号</div>
+          <div class="input-label">
+            账号
+          </div>
           <div class="input-content">
-            <input v-model="inputUser" type="text" placeholder="邮箱/手机号"/>
+            <input
+              v-model="inputUser"
+              type="text"
+              placeholder="邮箱/手机号"
+            >
           </div>
         </div>
         <div class="input-line so-input">
-          <div class="input-label">密码</div>
+          <div class="input-label">
+            密码
+          </div>
           <div class="input-content">
-            <input v-model="inputPassword" type="password" @keydown="passwordKeyDown"/>
+            <input
+              v-model="inputPassword"
+              type="password"
+              @keydown="passwordKeyDown"
+            >
           </div>
         </div>
-        <div :class="`so-btn login-btn ${isLogin && 'actived'}`" @click="login163">
+        <div
+          :class="`so-btn login-btn ${isLogin && 'actived'}`"
+          @click="login163"
+        >
           登 录
         </div>
       </div>
 
       <div v-if="setting.platform === 'qq'">
-        <page-title title="QQ LOGIN" />
-        <div class="text-left">登录后如果没有自动跳转可以尝试切换一下其他平台再切换回来</div>
-        <webview id="login-qq" ref="webView" src="https://y.qq.com"/>
+        <page-title title="QQ LOGIN"/>
+        <div class="text-left">
+          登录后如果没有自动跳转可以尝试切换一下其他平台再切换回来
+        </div>
+        <webview
+          id="login-qq"
+          ref="webView"
+          src="https://y.qq.com"
+        />
       </div>
     </div>
     <div v-else>
@@ -35,15 +59,29 @@
             { text: u.desc, className: 'text-small' },
           ]"
         >
-          <div class="log-out-btn" @click="logOut">
-            <i class="iconfont icon-logout" />
+          <div
+            class="log-out-btn"
+            @click="logOut"
+          >
+            <i class="iconfont icon-logout"/>
             <span class="pl_5">退出</span>
           </div>
         </info-box>
         <page-right-container>
-          <book-mark v-model="selectedTab" :tabs="tabs" />
-          <playlist v-if="selectedTab === 'playlist'" :list="u.playlist || []" />
-          <song-list v-if="selectedTab === 'rank' || selectedTab === 'week'" show-index :songs="songs" :count-map="countMap" />
+          <book-mark
+            v-model="selectedTab"
+            :tabs="tabs"
+          />
+          <playlist
+            v-if="selectedTab === 'playlist'"
+            :list="u.playlist || []"
+          />
+          <song-list
+            v-if="selectedTab === 'rank' || selectedTab === 'week'"
+            show-index
+            :songs="songs"
+            :count-map="countMap"
+          />
         </page-right-container>
       </div>
     </div>

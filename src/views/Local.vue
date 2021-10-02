@@ -2,10 +2,18 @@
   <div class="local-page hide-scroll">
     <PageTitle title="LOCAL" />
     <div class="folder-list">
-      <LocalFolder :path="setting.DOWN_DIR" />
-      <LocalFolder v-for="path in setting.localFolders" :key="`local-folder-${path}`" can-delete :path="path"/>
-      <div class="add-btn" @click="addFolder">
-        <i class="iconfont icon-add" />
+      <LocalFolder :path="setting.DOWN_DIR"/>
+      <LocalFolder
+        v-for="path in setting.localFolders"
+        :key="`local-folder-${path}`"
+        can-delete
+        :path="path"
+      />
+      <div
+        class="add-btn"
+        @click="addFolder"
+      >
+        <i class="iconfont icon-add"/>
       </div>
     </div>
     <playlist-info

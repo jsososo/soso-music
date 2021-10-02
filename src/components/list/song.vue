@@ -7,11 +7,23 @@
         :class="`song-item ${!allSongs[s].url ? 'disabled' : 'hasUrl'}`"
         @click="playMusic({ id: s, arr: songs })"
       >
-        <div v-if="showIndex" class="song-order">{{i+1}}</div>
-        <div v-if="(favSongMap[allSongs[s].platform] && favSongMap[allSongs[s].platform][s])" class="liked-item" />
-        <div v-if="playNow.aId === s" class="playing-bg" :style="`width: ${playerStatus.percentage * 100}%`">
-          <div class="wave-bg" />
-          <div class="wave-bg2" />
+        <div
+          v-if="showIndex"
+          class="song-order"
+        >
+          {{ i+1 }}
+        </div>
+        <div
+          v-if="(favSongMap[allSongs[s].platform] && favSongMap[allSongs[s].platform][s])"
+          class="liked-item"
+        />
+        <div
+          v-if="playNow.aId === s"
+          class="playing-bg"
+          :style="`width: ${playerStatus.percentage * 100}%`"
+        >
+          <div class="wave-bg"/>
+          <div class="wave-bg2"/>
         </div>
         <div
           v-if="countMap && countMap[s]"
@@ -25,14 +37,14 @@
           :style="`background-image: url('${allSongs[s].al && `${allSongs[s].al.picUrl}?param=50y50`}')`"
         />
         <div class="song-name">
-          {{allSongs[s].name}}
+          {{ allSongs[s].name }}
 
-<!--          <a-->
-<!--            :href="changeUrlQuery({ id: allSongs[s].mvId, from: allSongs[s].platform }, '#/mv', false)"-->
-<!--            class="inline-block ml_5 iconfont icon-mv"-->
-<!--            style="font-size: 14px;font-weight: 100"-->
-<!--            v-if="showCover && allSongs[s].mvId"-->
-<!--          />-->
+          <!--          <a-->
+          <!--            :href="changeUrlQuery({ id: allSongs[s].mvId, from: allSongs[s].platform }, '#/mv', false)"-->
+          <!--            class="inline-block ml_5 iconfont icon-mv"-->
+          <!--            style="font-size: 14px;font-weight: 100"-->
+          <!--            v-if="showCover && allSongs[s].mvId"-->
+          <!--          />-->
         </div>
         <div>
           <div class="song-ar">
@@ -41,14 +53,17 @@
               :href="changeUrlQuery({ id: allSongs[s].mvId, from: allSongs[s].platform }, '#/mv', false)"
               class="inline-block mr_5 iconfont icon-mv"
             />
-            {{allSongs[s].ar.map((a) => a.name).join('/')}}
+            {{ allSongs[s].ar.map((a) => a.name).join('/') }}
           </div>
           <div class="song-operation">
             <i
               :class="`operation-icon operation-icon-1 iconfont icon-${(favSongMap[allSongs[s].platform][s]) ? 'like' : 'unlike'}`"
               @click="likeMusic(s)"
             />
-            <handle-song :a-id="s" class-name="operation operation-icon-2" />
+            <handle-song
+              :a-id="s"
+              class-name="operation operation-icon-2"
+            />
             <i
               v-if="!!allSongs[s].url && playingList[s]"
               class="operation-icon operation-icon-3 iconfont icon-list-reomve"
@@ -64,13 +79,25 @@
               class="operation-icon operation-icon-4 iconfont icon-download"
               @click="download(s)"
             />
-            <span v-if="countMap && countMap[s]" class="played-count-num">{{countMap[s].count}}</span>
+            <span
+              v-if="countMap && countMap[s]"
+              class="played-count-num"
+            >{{ countMap[s].count }}</span>
           </div>
         </div>
       </div>
-      <div v-if="(songs || []).length === 0" class="text-center mt_40">{{emptyText || '没啥歌曲哟'}}</div>
+      <div
+        v-if="(songs || []).length === 0"
+        class="text-center mt_40"
+      >
+        {{ emptyText || '没啥歌曲哟' }}
+      </div>
     </div>
-    <div v-if="(songs || []).length && songs.find((s) => allSongs[s].url)" class="fix-play-btn" @click="playList">
+    <div
+      v-if="(songs || []).length && songs.find((s) => allSongs[s].url)"
+      class="fix-play-btn"
+      @click="playList"
+    >
       <i class="iconfont icon-play"/>
       <span class="btn-txt">播放列表</span>
     </div>

@@ -5,12 +5,28 @@
       :key="a.id"
       class="common-small-box"
     >
-      <div class="box-img-container pointer" @click="goTo(a)">
-        <img v-error :src="`${a.picUrl}?param=200y200`"/>
+      <div
+        class="box-img-container pointer"
+        @click="goTo(a)"
+      >
+        <img
+          v-error
+          :src="`${a.picUrl}?param=200y200`"
+        >
       </div>
-      <div class="box-name pointer" @click="goTo(a)">{{a.name}}</div>
+      <div
+        class="box-name pointer"
+        @click="goTo(a)"
+      >
+        {{ a.name }}
+      </div>
     </div>
-    <div v-if="(albums || []).length === 0" class="text-center mt_40">{{emptyText || '没啥专辑哟'}}</div>
+    <div
+      v-if="(albums || []).length === 0"
+      class="text-center mt_40"
+    >
+      {{ emptyText || '没啥专辑哟' }}
+    </div>
   </div>
 </template>
 
