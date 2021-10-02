@@ -28,11 +28,12 @@
           <div class="song-name">{{item.filename}}</div>
         </div>
         <div class="down-status">
-          <span class="color-red" v-if="item.errMsg">{{item.errMsg}}</span>
+          <span v-if="item.errMsg" class="color-red">{{item.errMsg}}</span>
           <span v-if="!item.finished && !item.waiting">{{item.progress}}%</span>
           <span v-if="item.waiting">waiting...</span>
         </div>
-        <div class="song-bg" v-if="!item.finished && !item.waiting" :style="`transform: translateX(${item.progress - 100}%)`" />
+        <div v-if="!item.finished && !item.waiting" class="song-bg"
+             :style="`transform: translateX(${item.progress - 100}%)`"/>
 
         <el-tooltip class="item" effect="dark" content="重新下载" placement="top">
           <div class="re-down-btn" @click="download(item.aId, item)"><i class="iconfont icon-download" /></div>

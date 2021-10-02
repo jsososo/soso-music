@@ -1,7 +1,7 @@
 <template>
-  <page-right-container className="list-detail-container">
-    <slot />
-    <div class="scroll-content" ref="containerDom" @scroll="getShowIndex">
+  <page-right-container class-name="list-detail-container">
+    <slot/>
+    <div ref="containerDom" class="scroll-content" @scroll="getShowIndex">
       <div v-if="!listInfo && loading && list.length === 0" class="text-center fc_fff ft_20"
            style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">拼命查找了！
       </div>
@@ -26,29 +26,29 @@
             <div class="list-desc" v-html="listInfo.desc"/>
           </div>
         </div>
-        <div class="search-container" ref="searchDom">
+        <div ref="searchDom" class="search-container">
           <div :class="`search-content ${searchFix && 'fixed'}`">
             <input v-model="search" class="search-input" type="text" placeholder="找呀找呀找歌曲">
             <div class="inline-block pt_5">下列歌曲：</div>
             <el-tooltip class="item" effect="dark" content="播放" placement="top">
-              <div @click="playListShow(true)" class="inline-block pt_5 pointer play" style="line-height: 20px;">
+              <div class="inline-block pt_5 pointer play" style="line-height: 20px;" @click="playListShow(true)">
                 <i class="iconfont icon-play pl_10 pr_10"/>
               </div>
             </el-tooltip>
             <el-tooltip class="item" effect="dark" content="添加到播放列表" placement="top">
-              <div @click="playListShow()" class="inline-block pt_5 pointer play" style="line-height: 20px;">
+              <div class="inline-block pt_5 pointer play" style="line-height: 20px;" @click="playListShow()">
                 <i class="iconfont icon-list-add pl_10 pr_10"/>
               </div>
             </el-tooltip>
             <el-tooltip class="item" effect="dark" content="下载" placement="top">
-              <div @click="downShow" class="inline-block pt_5 pointer play" style="line-height: 20px;">
+              <div class="inline-block pt_5 pointer play" style="line-height: 20px;" @click="downShow">
                 <i class="iconfont icon-download pl_10 pr_10"/>
               </div>
             </el-tooltip>
           </div>
         </div>
       </div>
-      <div class="song-list" ref="listDom" v-if="list.filterList && list.filterList.length">
+      <div v-if="list.filterList && list.filterList.length" ref="listDom" class="song-list">
         <div :style="`height:${smallIndex*71}px;`"></div>
         <div
           v-for="(s, i) in list.list"
@@ -60,39 +60,40 @@
            `"
           @click="(allSongs[s].url || allSongs[s].localPath) && playMusic({ aId: s, list: list.trueList, listId })"
         >
-          <div class="playing-bg" v-if="playNow.pUrl && playNow.pUrl === allSongs[s].pUrl" :style="`width: ${playerStatus.percentage * 100}%`">
-            <div class="wave-bg" />
-            <div class="wave-bg2" />
+          <div v-if="playNow.pUrl && playNow.pUrl === allSongs[s].pUrl" class="playing-bg"
+               :style="`width: ${playerStatus.percentage * 100}%`">
+            <div class="wave-bg"/>
+            <div class="wave-bg2"/>
           </div>
           <span class="song-order">{{smallIndex+i+1}}</span>
-          <img class="song-cover" v-error :src="`${allSongs[s].al && allSongs[s].al.picUrl}`" alt=""/>
+          <img v-error class="song-cover" :src="`${allSongs[s].al && allSongs[s].al.picUrl}`" alt=""/>
           <span class="song-name">{{allSongs[s].name}}</span>
           <span class="song-artist">{{(allSongs[s].ar || []).map((a) => a.name).join('/')}}</span>
-          <div class="icon-container" v-if="allSongs[s].platform !== 'local'">
+          <div v-if="allSongs[s].platform !== 'local'" class="icon-container">
             <el-tooltip class="item" effect="dark" content="喜欢" placement="top">
               <i
                 :class="`operation-icon operation-icon-1 iconfont icon-${favSongMap[allSongs[s].platform][s] ? 'like' : 'unlike'}`"
                 @click="likeMusic(s)"
               />
             </el-tooltip>
-            <handle-song :a-id="s" class-name="operation-icon operation-icon-2 ft_14" />
+            <handle-song :a-id="s" class-name="operation-icon operation-icon-2 ft_14"/>
             <el-tooltip v-if="playingList[s]" class="item" effect="dark" content="移出播放列表" placement="top">
               <i
-                @click="removeFromPlayinig([s])"
                 class="operation-icon operation-icon-3 iconfont icon-list-reomve"
+                @click="removeFromPlayinig([s])"
               />
             </el-tooltip>
             <el-tooltip v-if="allSongs[s].url && !playingList[s]" class="item" effect="dark" content="加入播放列表"
                         placement="top">
               <i
-                @click="addToPlaying([s])"
                 class="operation-icon operation-icon-3 iconfont icon-list-add"
+                @click="addToPlaying([s])"
               />
             </el-tooltip>
             <el-tooltip v-if="!!allSongs[s].url" class="item" effect="dark" content="下载" placement="top">
               <i
-                @click="download(s)"
                 class="operation-icon operation-icon-4 iconfont icon-download"
+                @click="download(s)"
               />
             </el-tooltip>
             <el-tooltip
@@ -103,8 +104,8 @@
               placement="top"
             >
               <i
-                @click="delSongFromList(s, listInfo.id)"
                 class="operation-icon operation-icon-5 iconfont icon-delete"
+                @click="delSongFromList(s, listInfo.id)"
               />
             </el-tooltip>
             <!--          <el-tooltip class="item" effect="dark" content="从歌单中删除" placement="top">-->
@@ -116,19 +117,13 @@
             <!--          </el-tooltip>-->
           </div>
 
-          <div class="right-info" v-if="rightInfo && rightInfo[i]">{{rightInfo[i]}}</div>
+          <div v-if="rightInfo && rightInfo[i]" class="right-info">{{rightInfo[i]}}</div>
         </div>
         <div :style="`min-height:0;height:${list.hideBigHeight}px;`" />
-        <!--      <div class="focus-btn" v-if="list.indexOf(playNow.aId) > -1" @click="scrollToPlayNow">-->
-        <!--        <i class="iconfont icon-focus" />-->
-        <!--      </div>-->
-        <!--      <div class="clear-btn" v-if="id === 'playing' && playNow && list.length > 1" @click="clearPlaying">-->
-        <!--        <i class="iconfont icon-delete" />-->
-        <!--      </div>-->
       </div>
       <div class="fix-btn-list">
-        <div class="fix-btn" v-if="list.list.indexOf(playNow.aId) > -1" @click="scrollToPlayNow">
-          <i class="iconfont icon-focus" />
+        <div v-if="list.trueList.indexOf(playNow.aId) > -1" class="fix-btn" @click="scrollToPlayNow">
+          <i class="iconfont icon-focus"/>
         </div>
         <el-popconfirm
           v-if="id === 'playing'"
@@ -160,6 +155,10 @@
 
   export default {
     name: "PlayListInfo",
+    components: {
+      PageRightContainer,
+      HandleSong,
+    },
     props: {
       id: String,
       listId: String,
@@ -167,10 +166,6 @@
       loading: Boolean,
       listInfo: Object,
       rightInfo: Object,
-    },
-    components: {
-      PageRightContainer,
-      HandleSong,
     },
     setup(props) {
       const state = mixInject([
@@ -219,11 +214,11 @@
         rex && (filterList = trueList.filter((s) => (
           allSongs[s] &&
           `${allSongs[s].name}
-          ${(allSongs[s].ar || []).map((a) => a.name)}
+          ${(allSongs[s].ar || []).map((a) => a.name).join('')}
           ${allSongs[s].al.name}
           ${allSongs[s].name}
           ${allSongs[s].al.name}
-          ${(allSongs[s].ar || []).map((a) => a.name)}
+          ${(allSongs[s].ar || []).map((a) => a.name).join('')}
           ${allSongs[s].name}`
             .replace(/\s/g, '')
             .toLowerCase()
@@ -339,7 +334,7 @@
 
         scrollToPlayNow() {
           const {aId} = state.playNow;
-          const index = list.value.list.findIndex((v) => v === aId);
+          const index = list.value.trueList.findIndex((v) => v === aId);
           (index > -1) && containerDom.value.scrollTo(0, index * 71 + listDom.value.offsetTop - 50);
         },
 

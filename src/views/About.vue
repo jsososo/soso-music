@@ -6,7 +6,7 @@
       <div class="version-txt">
         <span>v</span>
         <span class="version-num">{{version}}</span>
-        <span class="vertion-type" v-if="versioinType">{{versioinType}}</span>
+        <span v-if="versioinType" class="vertion-type">{{versioinType}}</span>
       </div>
 
       <div class="pt_20 about-content">

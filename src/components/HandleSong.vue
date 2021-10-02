@@ -1,14 +1,14 @@
 <template>
   <el-popover
+    ref="popover"
     :placement="placement"
     :width="200"
-    ref="popover"
     @show="handleSong.aId = aId"
     @hide="handleSong.aId = ''"
   >
     <div class="handle-song-container">
       <div><b>添加到</b></div>
-      <div class="playlist-container" v-if="handleSong.aId">
+      <div v-if="handleSong.aId" class="playlist-container">
         <div
           v-for="(val, id) in handleSong.list"
           :key="id"

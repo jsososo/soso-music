@@ -3,8 +3,8 @@
     <div
       v-for="item in tabs"
       :key="`type-${item.val}`"
-      @click="$emit('update:modelValue', item.val)"
       :class="`tab-type ${modelValue === item.val && 'selected'}`"
+      @click="$emit('update:modelValue', item.val)"
     >
       <i :class="`iconfont color-${item.color} icon-${item.icon}`" />
       <span>{{item.text}}</span>

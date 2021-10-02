@@ -4,21 +4,32 @@
       <input
         v-model="keyword"
         placeholder="歌曲/专辑/歌手。。。"
-      />
+      >
     </div>
     <div class="find-list">
-      <div :class="`find-item ${activeAId === aId && 'actived'}`" @mouseenter="activeAId = aId" v-for="aId in list"
-           :key="`find-${aId}`">
+      <div
+        v-for="aId in list"
+        :key="`find-${aId}`"
+        :class="`find-item ${activeAId === aId && 'actived'}`"
+        @mouseenter="activeAId = aId"
+      >
         <div class="find-left">
           <div class="song-info">
-            <div class="song-name" @click="playMusic(aId)">
-              {{allSongs[aId].name}} - {{(allSongs[aId].ar || []).map(({ name }) => name).join('/')}}
+            <div
+              class="song-name"
+              @click="playMusic(aId)"
+            >
+              {{ allSongs[aId].name }} - {{ (allSongs[aId].ar || []).map(({ name }) => name).join('/') }}
             </div>
             <template v-if="activeAId === aId">
-              <img class="song-img" :src="allSongs[aId].al.picUrl" v-error/>
+              <img
+                v-error
+                class="song-img"
+                :src="allSongs[aId].al.picUrl"
+              >
               <div class="album-name">
                 <i class="iconfont icon-album"/>
-                {{allSongs[aId].al.name}}
+                {{ allSongs[aId].al.name }}
               </div>
             </template>
           </div>
@@ -26,33 +37,52 @@
         <div class="find-right">
           <div class="song-info">
             <template v-if="miguFind[aId].url">
-              <div class="song-name" @click="playMusic(aId)">
-                {{miguFind[aId].name}} - {{(miguFind[aId].artists || []).map(({ name }) => name).join('/')}}
+              <div
+                class="song-name"
+                @click="playMusic(aId)"
+              >
+                {{ miguFind[aId].name }} - {{ (miguFind[aId].artists || []).map(({ name }) => name).join('/') }}
               </div>
-              <img v-if="activeAId === aId" class="song-img" :src="miguFind[aId].picUrl" v-error/>
+              <img
+                v-if="activeAId === aId"
+                v-error
+                class="song-img"
+                :src="miguFind[aId].picUrl"
+              >
             </template>
-            <div v-else class="song-name">找不到 = =</div>
+            <div
+              v-else
+              class="song-name"
+            >
+              找不到 = =
+            </div>
             <div class="bottom-btn">
-
               <el-popover
-                :width="200"
-                ref="popover"
                 v-if="(miguFindBlack[aId] || []).length"
+                ref="popover"
+                :width="200"
               >
                 <div class="handle-black-container">
                   <div><b>黑名单</b></div>
                   <div class="blacklist-container">
-                    <div class="black-item" v-for="cid in miguFindBlack[aId]" :key="`${aId}-${cid}`">
-                      <span>{{cid}}</span>
-                      <i class="iconfont icon-delete" @click="removeFromBlack(aId, cid)" />
+                    <div
+                      v-for="cid in miguFindBlack[aId]"
+                      :key="`${aId}-${cid}`"
+                      class="black-item"
+                    >
+                      <span>{{ cid }}</span>
+                      <i
+                        class="iconfont icon-delete"
+                        @click="removeFromBlack(aId, cid)"
+                      />
                     </div>
                   </div>
                 </div>
                 <template #reference>
                   <span class="black-btn">
-                <i class="iconfont icon-blacklist" />
-                {{miguFindBlack[aId].length}}
-              </span>
+                    <i class="iconfont icon-blacklist"/>
+                    {{ miguFindBlack[aId].length }}
+                  </span>
                 </template>
               </el-popover>
 
@@ -60,8 +90,8 @@
                 v-if="activeAId === aId && miguFind[aId].url"
                 title="确定匹配错误并拉入匹配黑名单"
                 placement="top"
-                confirmButtonText="确定"
-                cancelButtonText="取消"
+                confirm-button-text="确定"
+                cancel-button-text="取消"
                 @confirm="reFind(aId, true)"
               >
                 <template #reference>
@@ -114,11 +144,11 @@
           .filter((s) => (
             allSongs[s] &&
             `${allSongs[s].name}
-            ${(allSongs[s].ar || []).map((a) => a.name)}
+            ${(allSongs[s].ar || []).map((a) => a.name).join('')}
             ${allSongs[s].al.name}
             ${allSongs[s].name}
             ${allSongs[s].al.name}
-            ${(allSongs[s].ar || []).map((a) => a.name)}
+            ${(allSongs[s].ar || []).map((a) => a.name).join('')}
             ${allSongs[s].name}`
               .replace(/\s/g, '')
               .toLowerCase()

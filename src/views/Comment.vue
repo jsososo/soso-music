@@ -5,7 +5,7 @@
       :page="page"
       :list="playNow.comments || []"
       :info="playNow"
-      :getList="getList"
+      :get-list="getList"
       type="song"
     />
   </page-right-container>
@@ -16,7 +16,7 @@
   import PageRightContainer from "../components/PageRightContainer";
   import request from "../utils/request";
   import {mixInject} from "../utils/store/state";
-  import {reactive, watch} from 'vue';
+  import {reactive, watch, nextTick} from 'vue';
   export default {
     name: "Comment",
     components: { CommentInfo, PageRightContainer },
@@ -49,7 +49,7 @@
         if (!id) {
           return;
         }
-        const { data: { list = [], }} = await request({
+        const {data: {list = [],}} = await request({
           api: 'COMMENT',
           data: {
             id: songid || id,
@@ -59,7 +59,9 @@
         playNow.hotComments = list;
       }
 
-      watch(() => playNow.aId, () => getHotComments(), { immediate: true });
+      watch(() => playNow.aId, () => {
+        nextTick(getHotComments);
+      }, {immediate: true});
 
       return {
         ...state,

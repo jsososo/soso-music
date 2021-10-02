@@ -3,7 +3,7 @@
     <info-box err-pic="https://y.gtimg.cn/mediastyle/global/img/singer_300.png" :pic="singerInfo.picUrl" :list="infoList"/>
     <div class="singer-desc hide-scroll">{{singerInfo.desc}}</div>
     <page-right-container>
-      <book-mark :tabs="tabs || []" v-model="type"/>
+      <book-mark v-model="type" :tabs="tabs || []"/>
       <song-list v-if="type === 'song'" :songs="singerInfo.songs || []"/>
       <album-list v-if="type === 'album'" :albums="singerInfo.albums || []"/>
       <singer-list v-if="type === 'sim'" :singers="singerInfo.sims || []"/>

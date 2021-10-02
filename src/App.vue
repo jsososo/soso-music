@@ -6,13 +6,13 @@
       ${setting.PERFORMANCE_MODE && 'high-performance-mode'}`"
   >
     <div
-      class="bg-img"
       v-if="!bgInfo.img"
+      class="bg-img"
       :style="bgStyle"
     />
     <div
-      class="play-bg-img bg-img"
       v-if="bgInfo.img || playNow.al"
+      class="play-bg-img bg-img"
       :style="`background-image: url('${bgInfo.img || playNow.al.picUrl}');${bgStyle}`"
     />
     <div class="page-container">
@@ -39,7 +39,7 @@ import TopNav from "./components/TopNav";
 import Player from "./components/Player";
 import store from './utils/store/index';
 import {useRoute, useRouter} from "vue-router";
-import { computed } from 'vue';
+import {computed} from 'vue';
 import MainInfo from "./components/MainInfo";
 import Lyric from './components/Lyric';
 
@@ -57,6 +57,8 @@ import { ipcRenderer } from 'electron'
 import { ElMessage, ElNotification } from 'element-plus';
 import { numToStr } from "./utils/stringHelper";
 import Storage from "./utils/Storage";
+
+const win = require('electron').remote.getCurrentWindow();
 
 export default {
   name: 'App',
@@ -105,6 +107,14 @@ export default {
     }[route.path])
 
     if (window.location.hash !== '#/windowLyric') {
+      const lastWindowSize = Storage.get('soso_main_window_size', true, '{}');
+      win.setBounds(lastWindowSize);
+      const recordSize = () => {
+        let {x, y, width, height} = win.getBounds();
+        Storage.set('soso_main_window_size', {x, y, width, height});
+      }
+      win.on('move', recordSize);
+      win.on('resize', recordSize);
       // 初始化登录
       initLogin()
         .then(async ([daily]) => {
@@ -216,7 +226,6 @@ export default {
 
 
     }
-
     // 背景图样式
     const bgStyle = computed(() => `
       filter:
@@ -255,16 +264,18 @@ export default {
      内阴影+圆角*/
     &::-webkit-scrollbar-track
     {
-      border-radius:10px;
+      border-radius: 10px;
       /*background-color: rgba(255,255,255,0.5);*/
     }
+
     /*定义滑块
      内阴影+圆角*/
-    &::-webkit-scrollbar-thumb
-    {
-      border-radius:10px;
-      background-color:rgba(255,255,255,0.5);
+    &::-webkit-scrollbar-thumb {
+      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.5);
     }
+
+    font-family: "Microsoft YaHei";
   }
 
   #app {

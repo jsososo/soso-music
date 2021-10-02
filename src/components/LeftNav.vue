@@ -2,21 +2,40 @@
   <div class="page-left-nav">
     <div class="nav-line home-line">
       <a href="#/">
-        <div class="iconfont icon-earphone" />
+        <div class="iconfont icon-earphone"/>
       </a>
     </div>
 
-    <div :class="`nav-line ${item.url === activeUrl && 'actived'}`" v-for="item in navList" :key="item.url">
-      <el-tooltip class="item" effect="dark" :visible-arrow="false" :offset="4" :content="item.name" placement="right">
+    <div
+      v-for="item in navList"
+      :key="item.url"
+      :class="`nav-line ${item.url === activeUrl && 'actived'}`"
+    >
+      <el-tooltip
+        class="item"
+        effect="dark"
+        :visible-arrow="false"
+        :offset="4"
+        :content="item.name"
+        placement="right"
+        transition="none"
+      >
         <a :href="item.url">
-          <div class="hover-bg" />
-          <el-badge v-if="item.url === '#/download'" :value="downCount" :hidden="!downCount" class="item" >
-            <i class="iconfont icon-down" />
+          <div class="hover-bg"/>
+          <el-badge
+            v-if="item.url === '#/download'"
+            :value="downCount"
+            :hidden="!downCount"
+            class="item"
+          >
+            <i class="iconfont icon-down"/>
           </el-badge>
-          <i v-else :class="`iconfont icon-${item.icon}`" />
+          <i
+            v-else
+            :class="`iconfont icon-${item.icon}`"
+          />
         </a>
       </el-tooltip>
-
     </div>
   </div>
 </template>

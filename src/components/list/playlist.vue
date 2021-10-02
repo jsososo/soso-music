@@ -15,20 +15,21 @@
         <div class="list-img daily-img">{{date}}</div>
       </template>
       <template v-else>
-        <img v-if="setting.PERFORMANCE_MODE" :src="`${allList[aId].cover}?param=50y50`" v-error class="list-bg-img" />
-        <img :src="`${allList[aId].cover}?param=200y200`" v-error class="list-img" />
+        <img v-if="setting.PERFORMANCE_MODE" v-error :src="`${allList[aId].cover}?param=50y50`" class="list-bg-img"/>
+        <img v-error :src="`${allList[aId].cover}?param=200y200`" class="list-img"/>
       </template>
       <span class="list-name" v-html="allList[aId].name" />
-      <span class="list-count" v-if="allList[aId].trackCount">{{allList[aId].trackCount}}</span>
+      <span v-if="allList[aId].trackCount" class="list-count">{{allList[aId].trackCount}}</span>
       <div class="bottom-text">
         <el-tooltip
+          v-if="setting.platform === '163' && user.id && user.favId === aId"
           class="item"
           effect="dark"
           content="心动模式"
           placement="top"
-          v-if="setting.platform === '163' && user.id && user.favId === aId"
         >
-          <i @click="toHeartMode(aId)" :class="`iconfont icon-heart heart-btn ${playerStatus.heartMode && 'hearting'}`"/>
+          <i :class="`iconfont icon-heart heart-btn ${playerStatus.heartMode && 'hearting'}`"
+             @click="toHeartMode(aId)"/>
         </el-tooltip>
         <el-tooltip
           v-if="user.id && !user.myList[aId] && !noFavList.has(aId)"
@@ -37,12 +38,12 @@
           :content="user.subList[aId] ? '已收藏' : '收藏'"
           placement="top"
         >
-          <i @click="collectPlaylist(aId)"
-             :class="`collect-btn iconfont icon-${user.subList[aId] ? 'collected' : 'collect'}`"/>
+          <i :class="`collect-btn iconfont icon-${user.subList[aId] ? 'collected' : 'collect'}`"
+             @click="collectPlaylist(aId)"/>
         </el-tooltip>
-        <span class="list-creator" v-if="allList[aId].creator && allList[aId].creator.nick">
+        <span v-if="allList[aId].creator && allList[aId].creator.nick" class="list-creator">
           By: <span v-html="allList[aId].creator.nick"/>
-          <span class="pl_20" v-if="allList[aId].playCount"><i class="iconfont icon-yinyue"/>: {{numToStr(allList[aId].playCount)}}</span>
+          <span v-if="allList[aId].playCount" class="pl_20"><i class="iconfont icon-yinyue"/>: {{numToStr(allList[aId].playCount)}}</span>
         </span>
       </div>
     </div>
@@ -58,17 +59,16 @@
   import {ElMessage} from 'element-plus';
 
   export default {
-    name: "playlist",
+    name: "Playlist",
     props: {
       list: Object,
     },
     setup() {
       const state = mixInject(['allList', 'setting', 'playerStatus', 'user', 'favSongMap'])
 
-      const { favSongMap, setting, playerStatus } = state;
+      const {favSongMap, setting, playerStatus} = state;
       const user = computed(() => state.user[setting.platform]);
 
-      console.log(state.allList, user);
       return {
         ...state,
 

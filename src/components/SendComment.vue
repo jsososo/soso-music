@@ -6,10 +6,10 @@
         <span v-else>为 <span class="comment-title">{{commentInfo.name}}</span> 献上评论</span>
       </div>
       <textarea
+        v-model="commentInfo.content"
         class="comment-input"
         :rows="2"
         placeholder="说些啥呢"
-        v-model="commentInfo.content"
       />
     </div>
     <i class="iconfont icon-cancel pointer" @click="commentInfo.open = false" />

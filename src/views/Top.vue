@@ -2,15 +2,34 @@
   <div class="top-page hide-scroll">
     <page-title title="TOP"/>
     <div class="cats-list">
-      <div v-for="(top, index) in topList" :key="`top-${index}`">
+      <div
+        v-for="(top, index) in topList"
+        :key="`top-${index}`"
+      >
         <template v-if="top">
-          <div class="top-cat-title">{{top.title}}</div>
-          <div v-for="item in top.list" :key="item.id"
-               :class="`common-small-box ${selectedId === item.id && 'selected'}`">
-            <div class="box-img-container pointer" @click="selectedId = item.id">
-              <img :src="`${item.cover}?param=200y200`" v-error />
+          <div class="top-cat-title">
+            {{ top.title }}
+          </div>
+          <div
+            v-for="item in top.list"
+            :key="item.id"
+            :class="`common-small-box ${selectedId === item.id && 'selected'}`"
+          >
+            <div
+              class="box-img-container pointer"
+              @click="selectedId = item.id"
+            >
+              <img
+                v-error
+                :src="`${item.cover}?param=200y200`"
+              >
             </div>
-            <div class="box-name pointer" @click="selectedId = item.id">{{item.name}}</div>
+            <div
+              class="box-name pointer"
+              @click="selectedId = item.id"
+            >
+              {{ item.name }}
+            </div>
           </div>
         </template>
       </div>

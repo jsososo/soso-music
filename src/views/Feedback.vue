@@ -3,24 +3,24 @@
     <page-title title="FEEDBACK" />
     <div class="feedback-input-container">
       <div class="info-input-container">
-        <span class="input-user" @click="goToMixUser" v-if="user.soso.logined">{{user.soso.nick}}</span>
+        <span v-if="user.soso.logined" class="input-user" @click="goToMixUser">{{user.soso.nick}}</span>
         <div v-else>游客</div>
       </div>
-      <hr />
-      <div class="reply-info" v-if="inputContent.replyId">
+      <hr/>
+      <div v-if="inputContent.replyId" class="reply-info">
         回复 @{{inputContent.replyNick}}：
         <span class="reply-content">{{shortString(inputContent.replyContent)}}</span>
-        <i class="iconfont icon-cancel" @click="setReply()" />
+        <i class="iconfont icon-cancel" @click="setReply()"/>
       </div>
-      <textarea v-model="inputContent.content" class="feedback-textarea" placeholder="说些啥呢" cols="30" rows="10" />
-      <i class="iconfont icon-plane" @click="addFeedback" />
+      <textarea v-model="inputContent.content" class="feedback-textarea" placeholder="说些啥呢" cols="30" rows="10"/>
+      <i class="iconfont icon-plane" @click="addFeedback"/>
     </div>
-    <div class="feedback-list" v-if="list.length">
-      <div class="feedback-content-item" v-for="item in list" :key="item.id">
+    <div v-if="list.length" class="feedback-list">
+      <div v-for="item in list" :key="item.id" class="feedback-content-item">
         <div class="nick">
           {{item.user ? item.user.nick : '游客'}}
-          <span class="email" v-if="item.user">{{item.user.email}}</span>
-          <span class="version" v-if="item.version">v{{item.version}}</span>
+          <span v-if="item.user" class="email">{{item.user.email}}</span>
+          <span v-if="item.version" class="version">v{{item.version}}</span>
         </div>
         <div class="content">
           {{item.content}}
@@ -32,15 +32,15 @@
         <div class="time">
           {{timeStr(item.created)}}
           <el-popconfirm
+            v-if="canDelete(item)"
             title="确定删除评论？"
             placement="top"
-            confirmButtonText="确定"
-            cancelButtonText="取消"
+            confirm-button-text="确定"
+            cancel-button-text="取消"
             @confirm="delFeedback(item.id)"
-            v-if="canDelete(item)"
           >
             <template #reference>
-              <i class="iconfont icon-delete ft_14 ml_10" />
+              <i class="iconfont icon-delete ft_14 ml_10"/>
             </template>
           </el-popconfirm>
           <i class="iconfont icon-reply ml_10" @click="setReply(item)" />
@@ -53,8 +53,8 @@
       :current-page="page.pageNo"
       :page-size="10"
       class="mb_20"
-      @current-change="(v) => page.pageNo = v"
-      :total="page.total">
+      :total="page.total"
+      @current-change="(v) => page.pageNo = v">
     </el-pagination>
   </div>
 </template>

@@ -12,15 +12,15 @@
           <span>{{item.name}}</span>
         </div>
       </div>
-      <div class="radio-list" v-if="radioList[setting.platform]">
+      <div v-if="radioList[setting.platform]" class="radio-list">
         <div v-for="item in radioList[setting.platform]" :key="item.id"
              :class="`common-small-box ${activeRadioId === item.id && 'selected'}`">
           <div class="box-img-container pointer" @click="activeRadioId = item.id">
-            <img :src="`${item.picUrl}?param=200y200`" v-error />
+            <img v-error :src="`${item.picUrl}?param=200y200`"/>
           </div>
           <div class="box-name pointer" @click="activeRadioId = item.id">{{item.name}}</div>
         </div>
-        <div class="text-center mt_40" v-if="!radioList[setting.platform].length">找不到～</div>
+        <div v-if="!radioList[setting.platform].length" class="text-center mt_40">找不到～</div>
       </div>
     </div>
     <playlist-info

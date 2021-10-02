@@ -1,5 +1,5 @@
 <template>
-  <div :class="`lyric-content-container main-${setting.MAIN_CONTENT}`" ref="lyricContainer">
+  <div ref="lyricContainer" :class="`lyric-content-container main-${setting.MAIN_CONTENT}`">
     <div
       :class="`lyric-list-container ${grab ? 'grabbing' : ''}`"
       @mousedown="changeGrab(true)"
@@ -19,8 +19,8 @@
         </div>
       </div>
     </div>
-    <div class="play-line-center" v-show="moveY || baseMoveY">
-      <hr />
+    <div v-show="moveY || baseMoveY" class="play-line-center">
+      <hr/>
       <div
         class="p-time-btn"
         @mouseover="changeGrab(true)"
@@ -28,7 +28,7 @@
         @click="playAtCenter"
       >
         {{timeToStr(centerTime)}}
-        <i class="iconfont icon-play" />
+        <i class="iconfont icon-play"/>
       </div>
     </div>
   </div>

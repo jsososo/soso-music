@@ -6,7 +6,7 @@
       class="common-small-box"
     >
       <div class="box-img-container pointer" @click="goTo(a)">
-        <img :src="`${a.picUrl}?param=200y200`" v-error />
+        <img v-error :src="`${a.picUrl}?param=200y200`"/>
       </div>
       <div class="box-name pointer" @click="goTo(a)">{{a.name}}</div>
     </div>
@@ -18,7 +18,7 @@
   import { changeUrlQuery } from "../../utils/stringHelper";
 
   export default {
-    name: "album",
+    name: "Album",
     props: {
       albums: Array,
       className: String,
@@ -26,7 +26,7 @@
     },
     setup() {
       return {
-        goTo({ id, mid, platform }) {
+        goTo({id, mid, platform}) {
           changeUrlQuery({
             id, mid, platform
           }, '#/album')

@@ -1,4 +1,4 @@
-import {ipcMain, dialog, Menu, Tray} from 'electron';
+import { ipcMain, dialog, Menu, Tray } from 'electron';
 import api from '../../server/api';
 import path from 'path';
 import storage from 'electron-json-storage';
@@ -12,37 +12,39 @@ export default (app) => {
   const quit = () => {
     app.exit(0);
     process.exit(0);
-  }
+  };
 
   ipcMain.on('UPDATE_SERVER_POINT', (e, v) => {
     try {
       global.port = v;
       api(v);
       app.win.webContents.send('SET_SYSTEM_PLATFORM', process.platform);
-      e.reply('REPLY_SERVER_PPINT', {result: true});
+      e.reply('REPLY_SERVER_PPINT', { result: true });
     } catch (err) {
-      e.reply('REPLY_SERVER_PPINT', {result: false, errMsg: err.message});
+      e.reply('REPLY_SERVER_PPINT', { result: false, errMsg: err.message });
     }
-  })
+  });
 
   // 选择文件地址
-  ipcMain.on('SHOW_SELECT_DIR', async (e, {type, options = {}}) => {
-    const {canceled, filePaths} = await dialog.showOpenDialog(app.win, {
-      properties: ['openDirectory'],
-      ...options,
-    }).catch(() => false);
+  ipcMain.on('SHOW_SELECT_DIR', async (e, { type, options = {} }) => {
+    const { canceled, filePaths } = await dialog
+      .showOpenDialog(app.win, {
+        properties: ['openDirectory'],
+        ...options,
+      })
+      .catch(() => false);
     app.selectDir = app.selectDir || {};
     !canceled && (app.selectDir[type] = filePaths[0]);
-    !canceled && e.reply('REPLY_SELECT_DIR', {type, path: filePaths[0]});
-  })
+    !canceled && e.reply('REPLY_SELECT_DIR', { type, path: filePaths[0] });
+  });
 
   // 设置下载地址
   ipcMain.on('SET_DOWNLOAD_DIR', async (e, v) => {
     const path = v || app.getPath('downloads');
     app.selectDir = app.selectDir || {};
     app.selectDir.download = path;
-    e.reply('REPLY_SELECT_DIR', {path, type: 'download'});
-  })
+    e.reply('REPLY_SELECT_DIR', { path, type: 'download' });
+  });
 
   // 更新播放状态，根据这个来显示菜单
   ipcMain.on('UPDATE_PLAYING_STATUS', async (e, v) => {
@@ -61,14 +63,14 @@ export default (app) => {
 
     Menu.setApplicationMenu(Menu.buildFromTemplate(mainMenu));
     tray.setContextMenu(Menu.buildFromTemplate(trayMenu));
-  })
+  });
 
   // 获取历史数据
   ipcMain.on('GET_HISTORY_DATA', (e) => {
-    storage.get('history_data', ( err, data) => {
+    storage.get('history_data', (err, data) => {
       e.reply('REPLY_HISTORY_DATA', data || {});
-    })
-  })
+    });
+  });
 
   // 最小化
   ipcMain.on('APP_MINIMIZE', () => app.win.minimize());
@@ -78,26 +80,31 @@ export default (app) => {
 
   // 获取性能，低于8核 8g 内存的电脑默认不开启性能模式
   ipcMain.on('GET_SYSTEM_PERFORMANCE', (e) =>
-    e.reply('REPLY_SYSTEM_PERFORMANCE', os.totalmem() / Math.pow(1024, 3) < 8 || os.cpus().length < 8)
-  )
+    e.reply(
+      'REPLY_SYSTEM_PERFORMANCE',
+      os.totalmem() / Math.pow(1024, 3) < 8 || os.cpus().length < 8,
+    ),
+  );
 
   // 保存播放历史数据
-  ipcMain.on('UPDATE_HISTORY_DATA', (e, v) => storage.set('history_data', v))
+  ipcMain.on('UPDATE_HISTORY_DATA', (e, v) => storage.set('history_data', v));
 
   // 获取缓存
-  ipcMain.on('GET_CACHE_SIZE', async (e) => e.reply('REPLY_CACHE_SIZE', await app.win.webContents.session.getCacheSize()));
+  ipcMain.on('GET_CACHE_SIZE', async (e) =>
+    e.reply('REPLY_CACHE_SIZE', await app.win.webContents.session.getCacheSize()),
+  );
 
   // 清除缓存
   ipcMain.on('CLEAR_CACHE', async (e) => {
-    await app.win.webContents.session.clearCache()
-    e.reply('REPLY_CACHE_SIZE', await app.win.webContents.session.getCacheSize())
-  })
+    await app.win.webContents.session.clearCache();
+    e.reply('REPLY_CACHE_SIZE', await app.win.webContents.session.getCacheSize());
+  });
 
   // 显示桌面歌词
   ipcMain.on('SHOW_LYRIC_WINDOW', async (e, show) => {
     app.winLyric[show ? 'show' : 'hide']();
     app.win.webContents.send('REPLY_SHOW_LYRIC_WINDOW', show);
-  })
+  });
 
   // 通过队列加载文件buffer
   app.loadFile = {
@@ -140,9 +147,9 @@ export default (app) => {
         } catch (e) {
           this.load();
         }
-      }
+      };
 
-      const fileName = info.localPath.replace(/(.*\/)*([^.]+).*$/ig,"$2");
+      const fileName = info.localPath.replace(/(.*\/)*([^.]+).*$/gi, '$2');
 
       const handleTags = (tags) => {
         const { title, album, artist, picture, year, track, lyrics } = tags;
@@ -172,9 +179,9 @@ export default (app) => {
           name: album || '',
           picData: blob,
           platform: 'local',
-        }
+        };
         info.ar = [{ name: artist || '', platform: 'local' }];
-        info.trackNo = track;
+        track && (info.trackNo = track);
         info.rawLyric = info.rawLyric || lyrics || '';
         delete info.file;
         delete info.buf;
@@ -189,20 +196,20 @@ export default (app) => {
             }
             info.rawLyric = buf.toString();
             endCb(info);
-          })
+          });
         } else {
           endCb(info);
         }
-      }
+      };
       ID3.read(info.localPath, {
-        onSuccess: ({ tags = {}}) => handleTags(tags),
-        onError: () => handleTags(),
+        onSuccess: ({ tags = {} }) => handleTags(tags),
+        onError: () => handleTags({}),
       });
-    }
-  }
+    },
+  };
 
   // 加载全部本地文件
-  ipcMain.on('LOAD_LOCAL_FILE', (e, paths) => readLocal(paths, app))
+  ipcMain.on('LOAD_LOCAL_FILE', (e, paths) => readLocal(paths, app));
 
   // 用队列的形式加载单个文件信息，一般在初次加载播放历史使用
   ipcMain.on('LOAD_LOCAL_SINGLE_FILE', (e, aId) => app.loadFile.push(aId));
@@ -213,25 +220,28 @@ export default (app) => {
   // 静默下载
   app.win.webContents.session.on('will-download', (event, item) => {
     // Set the save path, making Electron not to prompt a save dialog.
-    const filePath = path.join(app.selectDir.download || app.getPath('downloads'), item.getFilename());
+    const filePath = path.join(
+      app.selectDir.download || app.getPath('downloads'),
+      item.getFilename(),
+    );
     item.setSavePath(filePath);
-  })
+  });
 
   const proxyMenu = (template) => {
-    const arr = (Array.isArray(template) ? template : template.submenu || [])
+    const arr = Array.isArray(template) ? template : template.submenu || [];
     arr.forEach((item, index) => {
       if (item.submenu) {
-        arr[index] = proxyMenu(item)
+        arr[index] = proxyMenu(item);
       }
-    })
+    });
     return new Proxy(template, {
       get(target, key) {
-        return target[key] ? target[key] :
-          (Array.isArray(target) ? target : target.submenu)
-            .find(({ key: k }) => k === key);
-      }
-    })
-  }
+        return target[key]
+          ? target[key]
+          : (Array.isArray(target) ? target : target.submenu).find(({ key: k }) => k === key);
+      },
+    });
+  };
   const mainMenu = proxyMenu([
     {
       label: 'soso music',
@@ -242,13 +252,13 @@ export default (app) => {
           click: () => quit(),
         },
         {
-          type: 'separator'
+          type: 'separator',
         },
         {
           label: '关于',
           role: 'about',
         },
-      ]
+      ],
     },
     {
       label: '操作',
@@ -272,28 +282,28 @@ export default (app) => {
           key: 'like',
           // visible: false,
           click: () => app.win.webContents.send('LIKE_MUSIC'),
-        }
-      ]
+        },
+      ],
     },
     {
-      label: "编辑",
+      label: '编辑',
       key: 'edit',
       submenu: [
-        {label: '撤销', accelerator: "CmdOrCtrl+Z", selector: "undo:"},
-        {label: '重做', accelerator: "Shift+CmdOrCtrl+Z", selector: "redo:"},
-        {type: "separator"},
-        {label: '剪切', accelerator: "CmdOrCtrl+X", selector: "cut:"},
-        {label: '复制', accelerator: "CmdOrCtrl+C", selector: "copy:"},
-        {label: '粘贴', accelerator: "CmdOrCtrl+V", selector: "paste:"},
-        {label: '全选', accelerator: "CmdOrCtrl+A", selector: "selectAll:"}
-      ]
-    }
+        { label: '撤销', accelerator: 'CmdOrCtrl+Z', selector: 'undo:' },
+        { label: '重做', accelerator: 'Shift+CmdOrCtrl+Z', selector: 'redo:' },
+        { type: 'separator' },
+        { label: '剪切', accelerator: 'CmdOrCtrl+X', selector: 'cut:' },
+        { label: '复制', accelerator: 'CmdOrCtrl+C', selector: 'copy:' },
+        { label: '粘贴', accelerator: 'CmdOrCtrl+V', selector: 'paste:' },
+        { label: '全选', accelerator: 'CmdOrCtrl+A', selector: 'selectAll:' },
+      ],
+    },
   ]);
 
   const menu = Menu.buildFromTemplate(mainMenu);
   Menu.setApplicationMenu(menu);
 
-  const tray = new Tray(path.join(__static, './16x16.png'))
+  const tray = new Tray(path.join(__static, './16x16.png'));
   const trayMenu = proxyMenu([
     {
       label: '喜欢',
@@ -314,18 +324,18 @@ export default (app) => {
       label: '⏭ 下一首',
       click: () => app.win.webContents.send('PLAY_NEXT'),
     },
-    {type: "separator"},
+    { type: 'separator' },
     {
       label: '显示',
       click() {
         app.win.show();
-      }
+      },
     },
     {
       label: '隐藏',
       click() {
         app.win.hide();
-      }
+      },
     },
     {
       label: '退出',
@@ -333,18 +343,18 @@ export default (app) => {
       selector: 'terminate:',
       click() {
         quit();
-      }
-    }
-  ])
-  tray.setToolTip('soso music')
-  tray.setContextMenu(Menu.buildFromTemplate(trayMenu))
+      },
+    },
+  ]);
+  tray.setToolTip('soso music');
+  tray.setContextMenu(Menu.buildFromTemplate(trayMenu));
   app.tray = tray;
   // 单击右下角小图标显示应用左键
-  tray.on('click', function () {
+  tray.on('click', function() {
     app.win.show();
-  })
+  });
   // // 右键
   // tray.on('right-click', () => {
   //   app.win.popUpContextMenu();
   // });
-}
+};

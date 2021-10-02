@@ -1,21 +1,50 @@
 <template>
   <div
-    :class="`win-lyric ${setting.ROWS === 1 && 'single'} ${!setting.LOCK && 'unlock'}`">
+    :class="`win-lyric ${setting.ROWS === 1 && 'single'} ${!setting.LOCK && 'unlock'}`"
+  >
     <div
       class="opts-btn"
     >
       <div class="btn-container">
-        <span v-for="item in btnList" :key="item.key">
-          <i v-if="!item.hide" :class="`iconfont icon-${item.icon}`" @click="handleOpt(item.key)" />
+        <span
+          v-for="item in btnList"
+          :key="item.key"
+        >
+          <i
+            v-if="!item.hide"
+            :class="`iconfont icon-${item.icon}`"
+            @click="handleOpt(item.key)"
+          />
         </span>
       </div>
       <div class="more-opts">
         <div v-if="openType === 'color'">
-          <el-color-picker popper-class="color-picker-popper" v-model="setting.COLOR_1" :predefine="predefine" show-alpha size="mini" />
-          <el-color-picker popper-class="color-picker-popper" v-model="setting.COLOR_2" :predefine="predefine" show-alpha size="mini" />
+          <el-color-picker
+            v-model="setting.COLOR_1"
+            popper-class="color-picker-popper"
+            :predefine="predefine"
+            show-alpha
+            size="mini"
+          />
+          <el-color-picker
+            v-model="setting.COLOR_2"
+            popper-class="color-picker-popper"
+            :predefine="predefine"
+            show-alpha
+            size="mini"
+          />
         </div>
-        <div v-if="openType === 'fontSize'" class="font-size-slider">
-          <el-slider :min="10" :max="40" :step="1" v-model="setting.FONT_SIZE" size="small" />
+        <div
+          v-if="openType === 'fontSize'"
+          class="font-size-slider"
+        >
+          <el-slider
+            v-model="setting.FONT_SIZE"
+            :min="10"
+            :max="40"
+            :step="1"
+            size="small"
+          />
         </div>
       </div>
     </div>
@@ -30,16 +59,22 @@
         font-size:${setting.FONT_SIZE}px;`"
         class="lyric-item lyric-0 actived"
       >
-        <div v-if="info.list[info.index%2]" v-html="info.list[info.index%2].str" />
+        <div
+          v-if="info.list[info.index%2]"
+          v-html="info.list[info.index%2].str"
+        />
       </div>
-      <br />
+      <br>
       <div
         v-if="setting.TRANS"
         :style="`background-image:-webkit-linear-gradient(${setting.COLOR_ARROW || 'bottom'},${setting.COLOR_1}, ${setting.COLOR_2});
         font-size:${setting.FONT_SIZE}px;`"
         class="lyric-item lyric-0 actived"
       >
-        <div v-if="info.list[info.index%2]" v-html="info.list[info.index%2].trans" />
+        <div
+          v-if="info.list[info.index%2]"
+          v-html="info.list[info.index%2].trans"
+        />
       </div>
     </div>
     <!--  多行  -->
@@ -52,45 +87,52 @@
           :style="`background-image:-webkit-linear-gradient(${setting.COLOR_ARROW || 'bottom'},${setting.COLOR_1}, ${setting.COLOR_2});font-size:${setting.FONT_SIZE}px;`"
           :class="`lyric-item lyric-${index} ${(info.index % 2) === index && 'actived'}`"
         >
-          <div v-if="item" v-html="item.str" />
+          <div
+            v-if="item"
+            v-html="item.str"
+          />
         </div>
-    </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-  import { reactive, ref, computed, watch, toRaw } from 'vue';
-  import Storage from "../utils/Storage";
+  import {computed, watch} from 'vue';
+  import {setting, openType, info, predefineColor} from "../utils/winLyric";
   import {ipcRenderer} from "electron";
 
-  const win = require('electron').remote.getCurrentWindow()
   export default {
     name: "WindowLyric",
     setup() {
-      const info = ref(Storage.get('soso_music_win_lyric', true, {
-        index: 0,
-        list: [],
-        keys: [],
-      }))
+      const btnList = computed(() => [
+        {icon: 'close', key: 'close', showLock: true},
+        {icon: setting.LOCK ? 'lock' : 'unlock', key: 'lock', showLock: true},
+        {icon: 'color', key: 'color'},
+        {icon: setting.ROWS === 1 ? 'single' : 'doubble', key: 'rows'},
+        {icon: setting.TRANS ? 'trans' : 'trans-1', key: 'trans'},
+        {icon: setting.COLOR_ARROW === 'right' ? 'arrow-right-1' : 'arrow-down-1', key: 'colorArrow'},
+        {icon: 'font', key: 'fontSize'},
+        {
+          icon: {left: 'text-left', center: 'text-center', right: 'text-right'}[setting.TEXT_ALIGN] || 'text-left',
+          key: 'textAlign',
+          hide: !(setting.ROWS === 1 || setting.TRANS)
+        },
+      ])
 
-      const handleUpdateStorage = (e) => {
-        if (e.key === 'soso_music_win_lyric') {
-          info.value = JSON.parse(e.newValue);
-        }
-        if (e.key === 'win_lyric_setting') {
-          Object.assign(setting, Storage.get('win_lyric_setting', true));
-        }
-      }
-      window.addEventListener('storage', handleUpdateStorage)
+      const win = require('electron').remote.getCurrentWindow();
+      const {width: screenWidth, height: screenHeight} = require('electron').remote.screen.getPrimaryDisplay().bounds;
 
       const setSize = (init) => {
-        const { x, y, width } = win.getBounds();
-        let newY = y;
+        let {x, y, width, height} = win.getBounds();
+
         if (init === true) {
-          newY = y * 2 + 162;
+          width = screenWidth * 0.6;
+          height = 172;
+          x = screenWidth * 0.2;
+          y = screenHeight * 0.85 - 172;
+          win.setBounds({x, y, width, height});
         }
-        win.setBounds({ x, y: newY, width });
         setting.width = width;
         setting.x = x;
         setting.y = y;
@@ -98,60 +140,34 @@
       win.on('move', setSize);
       win.on('resize', setSize);
 
-      const setting = reactive(Storage.get('win_lyric_setting', true, {
-        LOCK: false,
-        COLOR_1: '#409EFF',
-        COLOR_2: '#67C23A',
-        FONT_SIZE: 30,
-        ROWS: 2,
-        COLOR_ARROW: 'bottom',
-        TEXT_ALIGN: 'text-left',
-        TRANS: false,
-      }))
-
-      if (!setting.y) {
-        win.center();
-        setSize(true);
-      } else {
-        const { x, y, width } = setting;
-        win.setBounds({ x, y, width });
-      }
-
-      const openType = ref('');
-
-      watch(setting, () => Storage.set('win_lyric_setting', toRaw(setting), true), { deep: true })
-
-      const btnList = computed(() => [
-        { icon: 'close', key: 'close', showLock: true },
-        { icon: setting.LOCK ? 'lock' : 'unlock', key: 'lock', showLock: true },
-        { icon: 'color', key: 'color' },
-        { icon: setting.ROWS === 1 ? 'single' : 'doubble', key: 'rows' },
-        { icon: setting.TRANS ? 'trans' : 'trans-1', key: 'trans' },
-        { icon: setting.COLOR_ARROW === 'right' ? 'arrow-right-1' : 'arrow-down-1', key: 'colorArrow' },
-        { icon: 'font', key: 'fontSize' },
-        {
-          icon: { left: 'text-left', center: 'text-center', right: 'text-right' }[setting.TEXT_ALIGN] || 'text-left',
-          key: 'textAlign',
-          hide: !(setting.ROWS === 1 || setting.TRANS)
-        },
-      ])
-
-      watch(() => [setting.FONT_SIZE, setting.LOCK, setting.ROWS, setting.TRANS, openType.value], (
-        [ft, lock, rows, trans, open]
+      watch(() => [setting.FONT_SIZE, setting.LOCK, setting.ROWS, setting.TRANS, openType.value, setting.RESET, setting.width], (
+        [ft, lock, rows, trans, open, reset]
       ) => {
         let width = win.getSize()[0];
-        if (openType.value === 'fontSize') {
-          width = Math.max(40 * 30, 40 * ft);
-        }
+
         const r = trans ? 2 : rows;
-        let height = r * (ft * 1.2 + 20) + 60 + ({ fontSize: 20, color: 130 }[open] || 0)
+        let height = r * (ft * 1.2 + 20) + 60 + ({fontSize: 20, color: 130}[open] || 0)
         win.setSize(width, Math.floor(height));
         win.setIgnoreMouseEvents(lock)
         lock && (openType.value = '');
+
+        if (!setting.y) {
+          win.center();
+          setSize(true);
+        } else if (!reset) {
+          const {x, y} = setting;
+          win.setBounds({x, y, width});
+        }
+
+        if (reset) {
+          setting.RESET = false;
+          setSize(true);
+        }
+
       }, { immediate: true })
 
       return {
-        predefine: ['#F56C6C', '#409EFF', '#67C23A', '#E6A23C', '#666666'],
+        predefine: predefineColor,
         btnList,
         info,
         openType,

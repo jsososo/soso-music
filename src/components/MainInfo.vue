@@ -11,7 +11,7 @@
         <i :class="`iconfont icon-${playNow.platform} color-${playNow.platform} ${playNow.bPlatform ? 'op_3' : 'op_7'}`" />
       </el-tooltip>
       <el-tooltip v-if="playNow.bPlatform" class="item" effect="dark" content="音源" placement="top">
-        <i @click="goFind()" :class="`iconfont op_7 icon-${playNow.bPlatform} color-${playNow.bPlatform}`" />
+        <i :class="`iconfont op_7 icon-${playNow.bPlatform} color-${playNow.bPlatform}`" @click="goFind()"/>
       </el-tooltip>
     </div>
     <div class="index-icon-content">

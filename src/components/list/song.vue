@@ -20,8 +20,8 @@
         />
         <div
           v-if="showCover"
-          class="song-album-img"
           v-error
+          class="song-album-img"
           :style="`background-image: url('${allSongs[s].al && `${allSongs[s].al.picUrl}?param=50y50`}')`"
         />
         <div class="song-name">
@@ -45,24 +45,24 @@
           </div>
           <div class="song-operation">
             <i
-              @click="likeMusic(s)"
               :class="`operation-icon operation-icon-1 iconfont icon-${(favSongMap[allSongs[s].platform][s]) ? 'like' : 'unlike'}`"
+              @click="likeMusic(s)"
             />
             <handle-song :a-id="s" class-name="operation operation-icon-2" />
             <i
               v-if="!!allSongs[s].url && playingList[s]"
-              @click="removeFromPlayinig([s])"
               class="operation-icon operation-icon-3 iconfont icon-list-reomve"
+              @click="removeFromPlayinig([s])"
             />
             <i
               v-if="!!allSongs[s].url && !playingList[s]"
-              @click="addToPlaying([s])"
               class="operation-icon operation-icon-3 iconfont icon-list-add"
+              @click="addToPlaying([s])"
             />
             <i
               v-if="!!allSongs[s].url"
-              @click="download(s)"
               class="operation-icon operation-icon-4 iconfont icon-download"
+              @click="download(s)"
             />
             <span v-if="countMap && countMap[s]" class="played-count-num">{{countMap[s].count}}</span>
           </div>
@@ -70,7 +70,7 @@
       </div>
       <div v-if="(songs || []).length === 0" class="text-center mt_40">{{emptyText || '没啥歌曲哟'}}</div>
     </div>
-    <div class="fix-play-btn" v-if="(songs || []).length && songs.find((s) => allSongs[s].url)" @click="playList">
+    <div v-if="(songs || []).length && songs.find((s) => allSongs[s].url)" class="fix-play-btn" @click="playList">
       <i class="iconfont icon-play"/>
       <span class="btn-txt">播放列表</span>
     </div>
@@ -85,6 +85,7 @@
 
   export default {
     name: "Song",
+    components: {HandleSong},
     props: {
       songs: Array,
       className: String,
@@ -93,7 +94,6 @@
       showIndex: Boolean,
       showCover: Boolean,
     },
-    components: { HandleSong },
     setup(props) {
       const state = mixInject(['allSongs', 'playNow', 'favSongMap', 'playingList', 'playerStatus', 'favSongMap']);
       return {

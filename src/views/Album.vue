@@ -3,7 +3,7 @@
     <info-box :pic="albumInfo.picUrl" :list="infoList" />
     <div class="album-desc hide-scroll">{{albumInfo.desc}}</div>
     <page-right-container>
-      <book-mark :tabs="tabs" v-model="type" />
+      <book-mark v-model="type" :tabs="tabs"/>
       <song-list :songs="albumInfo.songs || []" />
     </page-right-container>
   </div>

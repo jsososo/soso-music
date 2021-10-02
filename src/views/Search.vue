@@ -1,12 +1,32 @@
 <template>
   <div class="search-content">
-    <page-title title="SEARCH" />
-    <tab v-model="searchInfo.type" :tabs="typeList" />
-    <div class="search-list inner_tab_content hide-scroll" @scroll="onScroll" v-if="searchInfo">
-      <SongList v-if="searchInfo.type/1 === 0" show-index :songs="searchInfo.result[0] || []" />
-      <AlbumList v-if="searchInfo.type/1 === 2" :albums="searchInfo.result[2] || []" />
-      <SingerList v-if="searchInfo.type/1 === 3" :singers="searchInfo.result[3] || []" />
-      <Playlist v-if="searchInfo.type /1 === 1" :list="searchInfo.result[1] || []" />
+    <page-title title="SEARCH"/>
+    <tab
+      v-model="searchInfo.type"
+      :tabs="typeList"
+    />
+    <div
+      v-if="searchInfo"
+      class="search-list inner_tab_content hide-scroll"
+      @scroll="onScroll"
+    >
+      <SongList
+        v-if="searchInfo.type/1 === 0"
+        show-index
+        :songs="searchInfo.result[0] || []"
+      />
+      <AlbumList
+        v-if="searchInfo.type/1 === 2"
+        :albums="searchInfo.result[2] || []"
+      />
+      <SingerList
+        v-if="searchInfo.type/1 === 3"
+        :singers="searchInfo.result[3] || []"
+      />
+      <Playlist
+        v-if="searchInfo.type /1 === 1"
+        :list="searchInfo.result[1] || []"
+      />
     </div>
   </div>
 </template>
@@ -70,7 +90,7 @@
         (([keyword, v]) => {
           searchInfo.keyword = keyword;
           searchInfo.platform = v;
-        }));
+        }), {immediate: true});
       return {
         ...state,
         route,

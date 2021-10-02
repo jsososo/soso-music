@@ -10,13 +10,13 @@
         </div>
         <div
           v-if="inputId !== uId && inputId"
-          @click="setting[`store_${setting.platform}`] = inputId"
           class="update-btn"
+          @click="setting[`store_${setting.platform}`] = inputId"
         >更新</div>
         <div
           v-if="inputId === uId && inputId !== user[setting.platform].id && user[setting.platform].id"
-          @click="setting[`store_${setting.platform}`] = user[setting.platform].id"
           class="update-btn"
+          @click="setting[`store_${setting.platform}`] = user[setting.platform].id"
         >我的</div>
       </div>
     </div>

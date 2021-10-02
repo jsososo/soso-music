@@ -18,13 +18,13 @@
     </div>
 
     <!-- 歌曲信息 -->
-    <div class="song-info" v-if="pDom">
+    <div v-if="pDom" class="song-info">
       <a class="player-song-title pointer" href="#/">
-        <i class="el-icon-loading mr_10" v-if="playerStatus.loading"/>
+        <i v-if="playerStatus.loading" class="el-icon-loading mr_10"/>
         <el-tooltip v-if="playNow.bPlatform" class="item" effect="dark" content="音频资源不对？" placement="top">
           <div class="inline-block">
           <span @click="goFind()">
-            <i class="el-icon-question pointer ft_14" />
+            <i class="el-icon-question pointer ft_14"/>
           </span>
           </div>
         </el-tooltip>
@@ -57,11 +57,11 @@
     </div>
 
     <el-slider
-      class="m-progress"
-      @change="(v) => pDom.currentTime = v"
-      :format-tooltip="timeToStr"
       v-model="playerStatus.currentTime"
+      class="m-progress"
+      :format-tooltip="timeToStr"
       :max="playerStatus.duration || 1"
+      @change="(v) => pDom.currentTime = v"
     />
 
     <audio
@@ -78,12 +78,13 @@
       @error="playerError"
     />
 
-    <div class="control-btn opt-btn" v-if="playNow.url">
-      <span v-if="user[playNow.platform] && user[playNow.platform].logined" class="ml_15 inline-block pd_5" @click="likeMusic(playNow.aId)">
-        <i :class="`iconfont icon-${favSongMap[playNow.platform][playNow.aId] ? 'like' : 'unlike'} ft_16 pointer`" />
+    <div v-if="playNow.url" class="control-btn opt-btn">
+      <span v-if="user[playNow.platform] && user[playNow.platform].logined" class="ml_15 inline-block pd_5"
+            @click="likeMusic(playNow.aId)">
+        <i :class="`iconfont icon-${favSongMap[playNow.platform][playNow.aId] ? 'like' : 'unlike'} ft_16 pointer`"/>
       </span>
 
-      <handle-song v-if="playNow.platform !== 'local'" :a-id="playNow.aId" className="pd_5" />
+      <handle-song v-if="playNow.platform !== 'local'" :a-id="playNow.aId" class-name="pd_5"/>
 
       <!-- 音量控制 -->
       <div class="volume-control" @mouseleave="showVolume = false">
@@ -150,16 +151,16 @@
 
     <div class="control-btn opt-btn right-control">
       <el-tooltip class="item" effect="dark" content="播放历史" placement="top">
-        <div @click="changeUrlQuery({}, '#/history')" class="inline-block ml_5 pd_5">
+        <div class="inline-block ml_5 pd_5" @click="changeUrlQuery({}, '#/history')">
           <span>
-            <i class="iconfont icon-history ft_16 pointer" />
+            <i class="iconfont icon-history ft_16 pointer"/>
           </span>
         </div>
       </el-tooltip>
       <el-tooltip class="item" effect="dark" content="正在播放" placement="top">
-        <div @click="changeUrlQuery({ aId: 'playing' }, '#/playlist/detail')" class="inline-block ml_5 pd_5">
+        <div class="inline-block ml_5 pd_5" @click="changeUrlQuery({ aId: 'playing' }, '#/playlist/detail')">
           <span>
-            <i class="iconfont icon-list ft_16 pointer" />
+            <i class="iconfont icon-list ft_16 pointer"/>
           </span>
         </div>
       </el-tooltip>

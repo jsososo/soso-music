@@ -1,13 +1,13 @@
 <template>
-  <div class="index-main-container" v-if="playNow.al && playNow.ar">
+  <div v-if="playNow.al && playNow.ar" class="index-main-container">
     <div class="info-content">
       <div class="pic-container">
-        <img :src="playNow.al.picUrl" class="pic-content" v-error />
+        <img v-error :src="playNow.al.picUrl" class="pic-content"/>
       </div>
       <div class="text-info">
         <div>
           <div class="music-name text-content">
-            <i class="iconfont icon-song" />
+            <i class="iconfont icon-song"/>
             <span>{{playNow.name}}</span>
           </div>
         </div>

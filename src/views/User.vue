@@ -6,13 +6,13 @@
         <div class="input-line so-input">
           <div class="input-label">账号</div>
           <div class="input-content">
-            <input type="text" v-model="inputUser" placeholder="邮箱/手机号" />
+            <input v-model="inputUser" type="text" placeholder="邮箱/手机号"/>
           </div>
         </div>
         <div class="input-line so-input">
           <div class="input-label">密码</div>
           <div class="input-content">
-            <input type="password" @keydown="passwordKeyDown" v-model="inputPassword" />
+            <input v-model="inputPassword" type="password" @keydown="passwordKeyDown"/>
           </div>
         </div>
         <div :class="`so-btn login-btn ${isLogin && 'actived'}`" @click="login163">
@@ -23,7 +23,7 @@
       <div v-if="setting.platform === 'qq'">
         <page-title title="QQ LOGIN" />
         <div class="text-left">登录后如果没有自动跳转可以尝试切换一下其他平台再切换回来</div>
-        <webview ref="webView" id="login-qq" src="https://y.qq.com" />
+        <webview id="login-qq" ref="webView" src="https://y.qq.com"/>
       </div>
     </div>
     <div v-else>
